@@ -10,7 +10,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { getGenesByPathway, mapSectionToTable, type Gene, type IntersectionGene } from "@/lib/api-service"
 
-
+// Generar rutas estáticas para el export
+export async function generateStaticParams() {
+  const sections = ['A', 'B', 'C', 'AB', 'AC', 'BC', 'ABC']
+  const elements = ['__TODOS_LOS_DATOS__']
+  
+  return sections.flatMap((section) =>
+    elements.map((element) => ({
+      section: section,
+      element: element
+    }))
+  )
+}
 
 export default function ElementDataPage() {
   const router = useRouter()
