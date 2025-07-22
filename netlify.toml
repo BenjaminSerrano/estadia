@@ -1,7 +1,7 @@
 [build]
   base = "intento"
   publish = "out"
-  command = "npm ci && npm run build"
+  command = "npm install --legacy-peer-deps && npm run build"
 
 [build.environment]
   NODE_VERSION = "18"
