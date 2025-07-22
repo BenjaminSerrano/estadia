@@ -2,8 +2,8 @@
  * Servicio para interactuar con la API del backend
  */
 
-// URL base de la API
-const API_BASE_URL = 'http://localhost:8000/api';
+// URL base de la API - dinámica para desarrollo y producción
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 console.log('API_BASE_URL configurado como:', API_BASE_URL);
 
 // Función para obtener estadísticas de intersección de tablas
