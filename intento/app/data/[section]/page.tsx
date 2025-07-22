@@ -1,5 +1,14 @@
 "use client"
 
+// Generar rutas estáticas para el export
+export async function generateStaticParams() {
+  const sections = ['A', 'B', 'C', 'AB', 'AC', 'BC', 'ABC']
+  
+  return sections.map((section) => ({
+    section: section
+  }))
+}
+
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 

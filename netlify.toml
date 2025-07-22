@@ -1,6 +1,7 @@
 [build]
-  publish = "intento/out"
-  command = "cd intento && npm ci && npm run build"
+  base = "intento"
+  publish = "out"
+  command = "npm ci && npm run build"
 
 [build.environment]
   NODE_VERSION = "18"
