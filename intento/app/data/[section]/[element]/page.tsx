@@ -1,5 +1,3 @@
-"use client"
-
 // Generar rutas estáticas para el export
 export async function generateStaticParams() {
   const sections = ['A', 'B', 'C', 'AB', 'AC', 'BC', 'ABC']
@@ -17,6 +15,8 @@ export async function generateStaticParams() {
   
   return paths
 }
+
+"use client"
 
 import { useEffect, useState, useMemo } from "react"
 import { useRouter, useParams } from "next/navigation"
