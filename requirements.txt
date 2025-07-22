@@ -1,0 +1,30 @@
+# Aplicación Web de Análisis de Genes
+# Dependencias del proyecto
+
+# Backend - Framework FastAPI
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Base de datos
+sqlalchemy==2.0.23
+sqlite3  # Incluido en Python estándar
+
+# Middleware y CORS
+python-multipart==0.0.6
+
+# Validación de datos
+pydantic==2.5.0
+
+# Frontend - Next.js con TypeScript
+# (Las dependencias de Node.js están en intento/package.json)
+
+# Análisis de datos y visualización (usado en /db)
+matplotlib==3.8.2
+pandas==2.1.4
+numpy==1.25.2
+openpyxl==3.1.2
+
+# Dependencias de desarrollo Python
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2  # Para testing de FastAPI
