@@ -422,16 +422,7 @@ export default function ElementDataClient() {
                                         });
                                       }
                                       
-                                      if (value && value !== "-" && !isNaN(parseFloat(String(value)))) {
-                                        const numValue = parseFloat(String(value));
-                                        return (
-                                          <span className={numValue > 0 
-                                            ? "text-green-600 dark:text-green-400" 
-                                            : "text-red-600 dark:text-red-400"}>
-                                            {value}
-                                          </span>
-                                        );
-                                      }
+                                      // Mostrar el valor tal como viene de la base de datos
                                       return value || "-";
                                     })()}
                                   </td>
@@ -439,20 +430,7 @@ export default function ElementDataClient() {
                               </>
                             ) : (
                               <td className="p-3 text-sm font-mono">
-                                {(() => {
-                                  const value = (gene as any).log2FoldChange;
-                                  if (value && value !== "-" && !isNaN(parseFloat(String(value)))) {
-                                    const numValue = parseFloat(String(value));
-                                    return (
-                                      <span className={numValue > 0 
-                                        ? "text-green-600 dark:text-green-400" 
-                                        : "text-red-600 dark:text-red-400"}>
-                                        {value}
-                                      </span>
-                                    );
-                                  }
-                                  return value || "-";
-                                })()}
+{(gene as any).log2FoldChange || "-"}
                               </td>
                             )}
                             
