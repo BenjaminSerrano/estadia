@@ -18,33 +18,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Configuración para rutas dinámicas en export estático
-  exportPathMap: async function () {
-    const paths = {}
-    
-    // Página principal
-    paths['/'] = { page: '/' }
-    
-    // Rutas estáticas básicas para evitar errores de build
-    const sections = ['A', 'B', 'C', 'AB', 'AC', 'BC', 'ABC']
-    const elements = ['__TODOS_LOS_DATOS__']
-    
-    sections.forEach(section => {
-      paths[`/data/${section}`] = { 
-        page: '/data/[section]', 
-        query: { section } 
-      }
-      
-      elements.forEach(element => {
-        paths[`/data/${section}/${element}`] = { 
-          page: '/data/[section]/[element]', 
-          query: { section, element } 
-        }
-      })
-    })
-    
-    return paths
-  },
   experimental: {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
