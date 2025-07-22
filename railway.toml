@@ -1,0 +1,14 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "cd backend && python main.py"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[env]
+# Railway configura automáticamente PORT
+# RAILWAY_ENVIRONMENT se configura automáticamente
+
+# Variables adicionales si necesitas
+# DATABASE_URL se puede configurar en Railway UI
