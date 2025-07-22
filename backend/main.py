@@ -17,16 +17,22 @@ app = FastAPI(title="Genes API",
 allowed_origins = [
     "http://localhost:3000",  # Desarrollo local
     "https://localhost:3000",  # Desarrollo local HTTPS
+    "https://687fb35af2799d00080d8f7d--lovely-jelly-fe7bb8.netlify.app",  # Netlify deployment
 ]
 
 # En producción, permitir dominios específicos
 if os.getenv("RAILWAY_ENVIRONMENT"):
     # Agregar dominios de producción cuando se despliegue
     allowed_origins.extend([
+        "https://687fb35af2799d00080d8f7d--lovely-jelly-fe7bb8.netlify.app",
+        "https://lovely-jelly-fe7bb8.netlify.app",
         "https://*.netlify.app",
         "https://*.railway.app",
         "https://*.vercel.app"
     ])
+else:
+    # En desarrollo local también permitir el dominio de Netlify para pruebas
+    allowed_origins.append("https://687fb35af2799d00080d8f7d--lovely-jelly-fe7bb8.netlify.app")
 
 app.add_middleware(
     CORSMiddleware,
@@ -36,8 +42,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Incluir los routers
-app.include_router(router, prefix="/api")
+# Incluir los routers - Sin prefijo para que coincida con el frontend
+app.include_router(router)
 
 # Redirigir la ruta raíz a /docs
 @app.get("/")
