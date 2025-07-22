@@ -1,21 +1,3 @@
-// Generar rutas estáticas para el export
-export async function generateStaticParams() {
-  const sections = ['A', 'B', 'C', 'AB', 'AC', 'BC', 'ABC']
-  const elements = ['__TODOS_LOS_DATOS__', 'Metabolism', 'Human-Diseases'] // Elementos básicos
-  
-  const paths = []
-  for (const section of sections) {
-    for (const element of elements) {
-      paths.push({
-        section: section,
-        element: element
-      })
-    }
-  }
-  
-  return paths
-}
-
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
