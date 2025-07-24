@@ -3,7 +3,10 @@
  */
 
 // URL base de la API - dinámica para desarrollo y producción
+// Producción: Railway
+// Local: Servidor local (comentar/descomentar según necesidad)
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://estadia-production.up.railway.app';
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 console.log('API_BASE_URL configurado como:', API_BASE_URL);
 
 // Función para obtener estadísticas de intersección de tablas
