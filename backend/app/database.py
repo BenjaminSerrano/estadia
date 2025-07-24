@@ -3,8 +3,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Configuración de base de datos para Railway
+# Configuración de base de datos para Railway (producción) y local
+# Producción: Railway con base de datos configurada
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///../db/data.db")
+# Local: Base de datos local SQLite (comentar/descomentar según necesidad)
+# DATABASE_URL = "sqlite:///./data.db"
 
 # En Railway, ajustar la ruta de SQLite si es necesario
 if DATABASE_URL.startswith("sqlite://") and os.getenv("RAILWAY_ENVIRONMENT"):
