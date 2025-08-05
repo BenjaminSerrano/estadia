@@ -7,7 +7,7 @@ class geneResponse(BaseModel):
     KO_code: str
     Protein_accession: str
     Name: str
-    log2FoldChange: float
+    log2FoldChange: str
     pvalue: float
     padj: float
     Accession: str
