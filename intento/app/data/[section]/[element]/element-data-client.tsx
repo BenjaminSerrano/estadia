@@ -45,6 +45,27 @@ export default function ElementDataClient() {
       default: return []
     }
   }
+
+  // Helper function to render log2FoldChange with conditional coloring
+  const renderLog2FoldChange = (value: any) => {
+    if (!value || value === "-" || value === "") {
+      return <span className="text-slate-500">-</span>
+    }
+    
+    // Convert to number to check if positive or negative
+    const numValue = parseFloat(String(value))
+    
+    if (isNaN(numValue)) {
+      return <span className="text-slate-500">{value}</span>
+    }
+    
+    // Apply conditional styling: green for positive, red for negative
+    const colorClass = numValue > 0 ? "text-green-600 dark:text-green-400" : 
+                      numValue < 0 ? "text-red-600 dark:text-red-400" : 
+                      "text-slate-600 dark:text-slate-400"
+    
+    return <span className={colorClass}>{value}</span>
+  }
   
   // Ahora manejamos tanto conjuntos individuales como intersecciones
 
@@ -422,15 +443,15 @@ export default function ElementDataClient() {
                                         });
                                       }
                                       
-                                      // Mostrar el valor tal como viene de la base de datos
-                                      return value || "-";
+                                      // Usar la función helper para aplicar colores
+                                      return renderLog2FoldChange(value);
                                     })()}
                                   </td>
                                 ))}
                               </>
                             ) : (
                               <td className="p-3 text-sm font-mono">
-{(gene as any).log2FoldChange || "-"}
+                                {renderLog2FoldChange((gene as any).log2FoldChange)}
                               </td>
                             )}
                             
