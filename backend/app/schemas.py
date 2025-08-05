@@ -50,7 +50,7 @@ class Comparison_16_38_Response(BaseModel):
     KO_code_38: str
     Protein_accession_16: str
     Name_16: str
-    log2FoldChange_16: float
+    log2FoldChange_16: str
     pvalue_16: float
     padj_16: float
     Accession_16: str
@@ -60,7 +60,7 @@ class Comparison_16_38_Response(BaseModel):
     Orientation_16: str
     Protein_accession_38: str
     Name_38: str
-    log2FoldChange_38: float
+    log2FoldChange_38: str
     pvalue_38: float
     padj_38: float
     Accession_38: str
@@ -89,7 +89,7 @@ class Comparison_16_41_Response(BaseModel):
     KO_code_41: str
     Protein_accession_16: str
     Name_16: str
-    log2FoldChange_16: float
+    log2FoldChange_16: str
     pvalue_16: float
     padj_16: float
     Accession_16: str
@@ -99,7 +99,7 @@ class Comparison_16_41_Response(BaseModel):
     Orientation_16: str
     Protein_accession_41: str
     Name_41: str
-    log2FoldChange_41: float
+    log2FoldChange_41: str
     pvalue_41: float
     padj_41: float
     Accession_41: str
@@ -128,7 +128,7 @@ class Comparison_38_41_Response(BaseModel):
     KO_code_41: str
     Protein_accession_38: str
     Name_38: str
-    log2FoldChange_38: float
+    log2FoldChange_38: str
     pvalue_38: float
     padj_38: float
     Accession_38: str
@@ -138,7 +138,7 @@ class Comparison_38_41_Response(BaseModel):
     Orientation_38: str
     Protein_accession_41: str
     Name_41: str
-    log2FoldChange_41: float
+    log2FoldChange_41: str
     pvalue_41: float
     padj_41: float
     Accession_41: str
@@ -167,7 +167,7 @@ class Comparison_16_38_41_Response(BaseModel):
     KO_code_41: str
     Protein_accession_16: str
     Name_16: str
-    log2FoldChange_16: float
+    log2FoldChange_16: str
     pvalue_16: float
     padj_16: float
     Accession_16: str
@@ -177,7 +177,7 @@ class Comparison_16_38_41_Response(BaseModel):
     Orientation_16: str
     Protein_accession_38: str
     Name_38: str
-    log2FoldChange_38: float
+    log2FoldChange_38: str
     pvalue_38: float
     padj_38: float
     Accession_38: str
@@ -188,7 +188,7 @@ class Comparison_16_38_41_Response(BaseModel):
     KO_code_38: str
     Protein_accession_41: str
     Name_41: str
-    log2FoldChange_41: float
+    log2FoldChange_41: str
     pvalue_41: float
     padj_41: float
     Accession_41: str
