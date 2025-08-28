@@ -1,6 +1,7 @@
 # Backend FastAPI para Railway
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
+setuptools>=68.0.0
 
 # Base de datos SQLite
 sqlalchemy==2.0.23
