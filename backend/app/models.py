@@ -52,6 +52,9 @@ class alone_38(Base):
 class alone_41(Base):
     __tablename__ = "41"
 
+
+
+    
     id = Column(Integer, primary_key=True, index=True)
     locustag = Column(String(512), index=True)
     KO_code = Column(String(512), index=True)

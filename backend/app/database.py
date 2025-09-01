@@ -5,9 +5,9 @@ from sqlalchemy.orm import sessionmaker
 
 # Configuración de base de datos para Railway (producción) y local
 # Producción: Railway con base de datos configurada
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///../db/data.db")
+#DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///../db/data.db")
 # Local: Base de datos local SQLite (comentar/descomentar según necesidad)
-# DATABASE_URL = "sqlite:///./data.db"
+DATABASE_URL = "sqlite:///../db/data.db"
 
 # En Railway, ajustar la ruta de SQLite si es necesario
 if DATABASE_URL.startswith("sqlite://") and os.getenv("RAILWAY_ENVIRONMENT"):
@@ -22,6 +22,18 @@ Base = declarative_base()
 
 def get_db():
     db = SessionLocal()
+
+
+
+
+
+
+
+
+
+
+
+    
     try:
         yield db
     finally:
