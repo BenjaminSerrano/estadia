@@ -3,7 +3,7 @@
  */
 
 // URL base de la API - dinámica para desarrollo y producción
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = 'estadia-production.up.railway.app'
 
 // Default timeout for API requests (10 seconds)
 const DEFAULT_TIMEOUT = 10000;
