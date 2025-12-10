@@ -3,11 +3,78 @@
  */
 
 // URL base de la API - dinámica para desarrollo y producción
-// Producción: Railway
-// Local: Servidor local (comentar/descomentar según necesidad)
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://estadia-production.up.railway.app';
-// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-console.log('API_BASE_URL configurado como:', API_BASE_URL);
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+// Default timeout for API requests (10 seconds)
+const DEFAULT_TIMEOUT = 10000;
+
+// Only log in development
+if (process.env.NODE_ENV === 'development') {
+  console.log('API_BASE_URL configured as:', API_BASE_URL);
+}
+
+/**
+ * Fetch with timeout support
+ * @param url - URL to fetch
+ * @param options - Fetch options
+ * @param timeout - Timeout in milliseconds (default: 10000)
+ * @returns Promise with fetch response
+ */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeout: number = DEFAULT_TIMEOUT
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error(`Request timeout after ${timeout}ms`);
+    }
+    throw error;
+  }
+}
+
+/**
+ * Safely parse a value to a number
+ * @param value - Value to parse (can be string, number, or any)
+ * @param defaultValue - Default value if parsing fails (default: 0)
+ * @returns Parsed number or default value
+ */
+function safeParseNumber(value: any, defaultValue: number = 0): number {
+  if (value === null || value === undefined || value === '') {
+    return defaultValue;
+  }
+
+  const parsed = typeof value === 'string' ? parseFloat(value) : Number(value);
+
+  return isNaN(parsed) || !isFinite(parsed) ? defaultValue : parsed;
+}
+
+/**
+ * Safely parse a value to an integer
+ * @param value - Value to parse (can be string, number, or any)
+ * @param defaultValue - Default value if parsing fails (default: 0)
+ * @returns Parsed integer or default value
+ */
+function safeParseInt(value: any, defaultValue: number = 0): number {
+  if (value === null || value === undefined || value === '') {
+    return defaultValue;
+  }
+
+  const parsed = typeof value === 'string' ? parseInt(value, 10) : Math.floor(Number(value));
+
+  return isNaN(parsed) || !isFinite(parsed) ? defaultValue : parsed;
+}
 
 // Función para obtener estadísticas de intersección de tablas
 export async function getIntersectionStats(tables: string[]): Promise<IntersectionStats> {
@@ -17,7 +84,9 @@ export async function getIntersectionStats(tables: string[]): Promise<Intersecti
     
     // Si estamos en modo prueba o desarrollo, usamos datos simulados
     if (USE_MOCK_DATA) {
-      console.log('Usando datos simulados para intersección de tablas');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Using mock data for table intersection');
+      }
       
       // Datos simulados para cada intersección
       const intersectionData: Record<string, IntersectionStats> = {
@@ -72,14 +141,15 @@ export async function getIntersectionStats(tables: string[]): Promise<Intersecti
         common_genes: []
       };
     } else {
-      // En un entorno real, hacemos una llamada a la API
-      console.log(`Obteniendo estadísticas para la intersección de tablas: ${tables.join('/')}`);
-      
-      // Construir la URL correcta
+      // In production, make API call
       const url = `${API_BASE_URL}/intersection/${tables.join('/')}/stats`;
-      
-      // Hacer la llamada a la API
-      const response = await fetch(url, {
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Getting statistics for table intersection: ${tables.join('/')}`);
+      }
+
+      // Make API call with timeout
+      const response = await fetchWithTimeout(url, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -92,10 +162,13 @@ export async function getIntersectionStats(tables: string[]): Promise<Intersecti
       if (!response.ok) {
         throw new Error(`Error al obtener estadísticas de intersección: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
-      console.log('Datos de intersección recibidos:', data);
-      
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Intersection data received:', data);
+      }
+
       return data;
     }
   } catch (error) {
@@ -374,7 +447,7 @@ export interface UnifiedGeneFilterResponse {
  */
 export async function getTableStats(tableName: string): Promise<TableStats> {
   try {
-    const response = await fetch(`${API_BASE_URL}/stats/${tableName}`);
+    const response = await fetchWithTimeout(`${API_BASE_URL}/stats/${tableName}`);
 
     if (!response.ok) {
       throw new Error(`Error al obtener estadísticas: ${response.statusText}`);
@@ -399,7 +472,7 @@ export async function getTableStats(tableName: string): Promise<TableStats> {
  */
 export async function getTablePathways(tableName: string): Promise<PathwaysData> {
   try {
-    const response = await fetch(`${API_BASE_URL}/pathways/${tableName}`);
+    const response = await fetchWithTimeout(`${API_BASE_URL}/pathways/${tableName}`);
 
     if (!response.ok) {
       throw new Error(`Error al obtener propiedades: ${response.statusText}`);
@@ -423,9 +496,12 @@ export async function getTablePathways(tableName: string): Promise<PathwaysData>
 export async function getAllGenes(tableName: string): Promise<UnifiedGeneFilterResponse> {
   try {
     const url = `${API_BASE_URL}/genes/all/${tableName}`;
-    console.log('Llamando a API URL para todos los datos:', url);
-    
-    const response = await fetch(url, {
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Calling API URL for all data:', url);
+    }
+
+    const response = await fetchWithTimeout(url, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -434,15 +510,20 @@ export async function getAllGenes(tableName: string): Promise<UnifiedGeneFilterR
       },
       cache: 'no-store'
     });
-    
-    console.log('Estado de la respuesta (todos los datos):', response.status, response.statusText);
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Response status (all data):', response.status, response.statusText);
+    }
 
     if (!response.ok) {
-      throw new Error(`Error al obtener todos los genes: ${response.statusText}`);
+      throw new Error(`Error getting all genes: ${response.statusText}`);
     }
 
     const data = await response.json();
-    console.log(`Todos los datos obtenidos: ${data?.genes?.length || 0} genes`);
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`All data obtained: ${data?.genes?.length || 0} genes`);
+    }
     
     return data;
   } catch (error) {
@@ -459,29 +540,33 @@ export async function getAllGenes(tableName: string): Promise<UnifiedGeneFilterR
  */
 export async function getGenesByPathway(tableName: string, pathway: string): Promise<UnifiedGeneFilterResponse> {
   try {
-    // Caso especial: si pathway es "__TODOS_LOS_DATOS__", usar la función getAllGenes
+    // Special case: if pathway is "__TODOS_LOS_DATOS__", use getAllGenes function
     if (pathway === "__TODOS_LOS_DATOS__") {
-      console.log('Obteniendo todos los datos de la tabla:', tableName);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Getting all data from table:', tableName);
+      }
       return await getAllGenes(tableName);
     }
     
-    // Codificar el pathway para la URL (por si contiene caracteres especiales)
+    // Encode pathway for URL (in case it contains special characters)
     const encodedPathway = encodeURIComponent(pathway);
-    
-    // Construir la URL correcta para el backend
+
+    // Build correct URL for backend
     const url = `${API_BASE_URL}/genes/filter/${tableName}/${encodedPathway}`;
-    console.log('Llamando a API URL:', url);
-    
-    // Caso especial de logging para Metabolism en tabla 41
-    if (tableName === "41" && pathway.toLowerCase() === "metabolism") {
-      console.log('⚠️ Caso especial: Solicitando pathway Metabolism en tabla 41');
-      console.log('Este caso debe devolver exactamente 107 genes');
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Calling API URL:', url);
+
+      // Special logging for Metabolism in table 41
+      if (tableName === "41" && pathway.toLowerCase() === "metabolism") {
+        console.log('⚠️ Special case: Requesting Metabolism pathway in table 41 (should return 107 genes)');
+      }
     }
     
-    // Utilizar método GET explícito y configurar headers para aceptar JSON
-    // Agregamos un timestamp para evitar posibles problemas de caché
+    // Use explicit GET method and configure headers to accept JSON
+    // Add timestamp to avoid potential cache issues
     const timestamp = new Date().getTime();
-    const response = await fetch(`${url}?t=${timestamp}`, {
+    const response = await fetchWithTimeout(`${url}?t=${timestamp}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -490,49 +575,58 @@ export async function getGenesByPathway(tableName: string, pathway: string): Pro
         'Pragma': 'no-cache',
         'Expires': '0'
       },
-      // Asegurar que no se envía caché para obtener datos frescos
+      // Ensure no cache is sent to get fresh data
       cache: 'no-store'
     });
-    
-    console.log('Estado de la respuesta:', response.status, response.statusText);
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Response status:', response.status, response.statusText);
+    }
 
     if (!response.ok) {
       throw new Error(`Error al obtener genes: ${response.statusText}`);
     }
 
-    // Convertir la respuesta a texto primero para depurar
+    // Convert response to text first for debugging
     const responseText = await response.text();
-    console.log('Respuesta texto:', responseText.substring(0, 200) + '...');
-    
-    // Intentar parsear el texto a JSON
+
+    // Try to parse text to JSON
     let data: any;
     try {
       data = JSON.parse(responseText);
-      console.log('Datos parseados correctamente:', data ? 'OK' : 'Null');
-      
-      // Verificación específica para Metabolism
-      if (tableName === "41" && pathway.toLowerCase() === "metabolism") {
-        console.log(`🔍 Verificando conteo: ${data?.genes?.length || 0} genes (esperados: 107)`);
-        
-        if (data?.genes?.length !== 107) {
-          console.warn(`⚠️ Conteo incorrecto para Metabolism en tabla 41: ${data?.genes?.length || 0} genes (esperados: 107)`);
-        } else {
-          console.log('✓ Correcto: 107 genes encontrados para Metabolism en tabla 41');
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Response text:', responseText.substring(0, 200) + '...');
+        console.log('Data parsed correctly:', data ? 'OK' : 'Null');
+
+        // Specific verification for Metabolism
+        if (tableName === "41" && pathway.toLowerCase() === "metabolism") {
+          console.log(`🔍 Verifying count: ${data?.genes?.length || 0} genes (expected: 107)`);
+
+          if (data?.genes?.length !== 107) {
+            console.warn(`⚠️ Incorrect count for Metabolism in table 41: ${data?.genes?.length || 0} genes (expected: 107)`);
+          } else {
+            console.log('✓ Correct: 107 genes found for Metabolism in table 41');
+          }
         }
       }
     } catch (parseError) {
       console.error('Error al parsear JSON:', parseError);
       return { genes: [] };
     }
-    
-    // Asegurarse de que los datos tienen el formato correcto
+
+    // Ensure data has correct format
     if (data && typeof data === 'object' && 'genes' in data) {
-      console.log(`Datos contienen propiedad 'genes' con ${data.genes.length} elementos`);
-      
-      // Validar que genes es un array y no es undefined
+      // Validate that genes is an array and not undefined
       if (!Array.isArray(data.genes)) {
-        console.error('La propiedad genes no es un array:', data.genes);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('The genes property is not an array:', data.genes);
+        }
         return { genes: [] };
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Data contains 'genes' property with ${data.genes.length} elements`);
       }
       
       // Determinar si es una tabla de intersección o individual
@@ -610,10 +704,10 @@ export async function getGenesByPathway(tableName: string, pathway: string): Pro
             intersectionGene.Protein_accession_38 = gene.Protein_accession_38 || "-";
             intersectionGene.log2FoldChange_16 = gene.log2FoldChange_16 || "-";
             intersectionGene.log2FoldChange_38 = gene.log2FoldChange_38 || "-";
-            intersectionGene.pvalue_16 = typeof gene.pvalue_16 === 'string' ? parseFloat(gene.pvalue_16) : (gene.pvalue_16 || 0);
-            intersectionGene.pvalue_38 = typeof gene.pvalue_38 === 'string' ? parseFloat(gene.pvalue_38) : (gene.pvalue_38 || 0);
-            intersectionGene.padj_16 = typeof gene.padj_16 === 'string' ? parseFloat(gene.padj_16) : (gene.padj_16 || 0);
-            intersectionGene.padj_38 = typeof gene.padj_38 === 'string' ? parseFloat(gene.padj_38) : (gene.padj_38 || 0);
+            intersectionGene.pvalue_16 = safeParseNumber(gene.pvalue_16);
+            intersectionGene.pvalue_38 = safeParseNumber(gene.pvalue_38);
+            intersectionGene.padj_16 = safeParseNumber(gene.padj_16);
+            intersectionGene.padj_38 = safeParseNumber(gene.padj_38);
           } else if (tableName === '16_41') {
             intersectionGene.KO_code_16 = gene.KO_code_16 || "-";
             intersectionGene.KO_code_41 = gene.KO_code_41 || "-";
@@ -623,10 +717,10 @@ export async function getGenesByPathway(tableName: string, pathway: string): Pro
             intersectionGene.Protein_accession_41 = gene.Protein_accession_41 || "-";
             intersectionGene.log2FoldChange_16 = gene.log2FoldChange_16 || "-";
             intersectionGene.log2FoldChange_41 = gene.log2FoldChange_41 || "-";
-            intersectionGene.pvalue_16 = typeof gene.pvalue_16 === 'string' ? parseFloat(gene.pvalue_16) : (gene.pvalue_16 || 0);
-            intersectionGene.pvalue_41 = typeof gene.pvalue_41 === 'string' ? parseFloat(gene.pvalue_41) : (gene.pvalue_41 || 0);
-            intersectionGene.padj_16 = typeof gene.padj_16 === 'string' ? parseFloat(gene.padj_16) : (gene.padj_16 || 0);
-            intersectionGene.padj_41 = typeof gene.padj_41 === 'string' ? parseFloat(gene.padj_41) : (gene.padj_41 || 0);
+            intersectionGene.pvalue_16 = safeParseNumber(gene.pvalue_16);
+            intersectionGene.pvalue_41 = safeParseNumber(gene.pvalue_41);
+            intersectionGene.padj_16 = safeParseNumber(gene.padj_16);
+            intersectionGene.padj_41 = safeParseNumber(gene.padj_41);
           } else if (tableName === '38_41') {
             intersectionGene.KO_code_38 = gene.KO_code_38 || "-";
             intersectionGene.KO_code_41 = gene.KO_code_41 || "-";
@@ -636,10 +730,10 @@ export async function getGenesByPathway(tableName: string, pathway: string): Pro
             intersectionGene.Protein_accession_41 = gene.Protein_accession_41 || "-";
             intersectionGene.log2FoldChange_38 = gene.log2FoldChange_38 || "-";
             intersectionGene.log2FoldChange_41 = gene.log2FoldChange_41 || "-";
-            intersectionGene.pvalue_38 = typeof gene.pvalue_38 === 'string' ? parseFloat(gene.pvalue_38) : (gene.pvalue_38 || 0);
-            intersectionGene.pvalue_41 = typeof gene.pvalue_41 === 'string' ? parseFloat(gene.pvalue_41) : (gene.pvalue_41 || 0);
-            intersectionGene.padj_38 = typeof gene.padj_38 === 'string' ? parseFloat(gene.padj_38) : (gene.padj_38 || 0);
-            intersectionGene.padj_41 = typeof gene.padj_41 === 'string' ? parseFloat(gene.padj_41) : (gene.padj_41 || 0);
+            intersectionGene.pvalue_38 = safeParseNumber(gene.pvalue_38);
+            intersectionGene.pvalue_41 = safeParseNumber(gene.pvalue_41);
+            intersectionGene.padj_38 = safeParseNumber(gene.padj_38);
+            intersectionGene.padj_41 = safeParseNumber(gene.padj_41);
           } else if (tableName === '16_38_41') {
             intersectionGene.KO_code_16 = gene.KO_code_16 || "-";
             intersectionGene.KO_code_38 = gene.KO_code_38 || "-";
@@ -653,12 +747,12 @@ export async function getGenesByPathway(tableName: string, pathway: string): Pro
             intersectionGene.log2FoldChange_16 = gene.log2FoldChange_16 || "-";
             intersectionGene.log2FoldChange_38 = gene.log2FoldChange_38 || "-";
             intersectionGene.log2FoldChange_41 = gene.log2FoldChange_41 || "-";
-            intersectionGene.pvalue_16 = typeof gene.pvalue_16 === 'string' ? parseFloat(gene.pvalue_16) : (gene.pvalue_16 || 0);
-            intersectionGene.pvalue_38 = typeof gene.pvalue_38 === 'string' ? parseFloat(gene.pvalue_38) : (gene.pvalue_38 || 0);
-            intersectionGene.pvalue_41 = typeof gene.pvalue_41 === 'string' ? parseFloat(gene.pvalue_41) : (gene.pvalue_41 || 0);
-            intersectionGene.padj_16 = typeof gene.padj_16 === 'string' ? parseFloat(gene.padj_16) : (gene.padj_16 || 0);
-            intersectionGene.padj_38 = typeof gene.padj_38 === 'string' ? parseFloat(gene.padj_38) : (gene.padj_38 || 0);
-            intersectionGene.padj_41 = typeof gene.padj_41 === 'string' ? parseFloat(gene.padj_41) : (gene.padj_41 || 0);
+            intersectionGene.pvalue_16 = safeParseNumber(gene.pvalue_16);
+            intersectionGene.pvalue_38 = safeParseNumber(gene.pvalue_38);
+            intersectionGene.pvalue_41 = safeParseNumber(gene.pvalue_41);
+            intersectionGene.padj_16 = safeParseNumber(gene.padj_16);
+            intersectionGene.padj_38 = safeParseNumber(gene.padj_38);
+            intersectionGene.padj_41 = safeParseNumber(gene.padj_41);
             intersectionGene.Pathways = gene.Pathways || "-";
           }
           
@@ -674,16 +768,16 @@ export async function getGenesByPathway(tableName: string, pathway: string): Pro
           const individualGene = {
             id: gene.id || gene.ID || 0,
             Name: gene.Name || "-",
-            KO_code: gene.KO_code || "-", 
+            KO_code: gene.KO_code || "-",
             Protein_accession: gene.Protein_accession || "-",
             locustag: gene.locustag || "-",
             log2FoldChange: gene.log2FoldChange || "-",
-            pvalue: typeof gene.pvalue === 'string' ? parseFloat(gene.pvalue) : (gene.pvalue || 0),
-            padj: typeof gene.padj === 'string' ? parseFloat(gene.padj) : (gene.padj || 0),
+            pvalue: safeParseNumber(gene.pvalue),
+            padj: safeParseNumber(gene.padj),
             Accession: gene.Accession || "-",
-            Begin: typeof gene.Begin === 'string' ? parseInt(gene.Begin) : (gene.Begin || 0),
-            End: typeof gene.End === 'string' ? parseInt(gene.End) : (gene.End || 0),
-            Protein_length: typeof gene.Protein_length === 'string' ? parseInt(gene.Protein_length) : (gene.Protein_length || 0),
+            Begin: safeParseInt(gene.Begin),
+            End: safeParseInt(gene.End),
+            Protein_length: safeParseInt(gene.Protein_length),
             Orientation: gene.Orientation || "-",
             Pathway: gene.Pathway || "-",
             Brite_specific_family_1: gene.Brite_specific_family_1 || "-",
@@ -693,17 +787,19 @@ export async function getGenesByPathway(tableName: string, pathway: string): Pro
             Brite_protein_families_2: gene.Brite_protein_families_2 || "-",
             Brite_protein_families_3: gene.Brite_protein_families_3 || "-"
           };
-          
+
           return individualGene;
         }
       });
-      
-      console.log(`Validados ${validatedGenes.length} genes correctamente`)
-      // Mostrar una muestra de los datos ya procesados
-      if (validatedGenes.length > 0) {
-        console.log('Muestra del primer gen validado:', validatedGenes[0]);
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Validated ${validatedGenes.length} genes correctly`);
+        // Show sample of processed data
+        if (validatedGenes.length > 0) {
+          console.log('Sample of first validated gene:', validatedGenes[0]);
+        }
       }
-      
+
       return { genes: validatedGenes };
     }
     
@@ -734,9 +830,11 @@ export async function getGenesByPathway(tableName: string, pathway: string): Pro
  */
 export async function getComparisonTableStats(tableId: string): Promise<TableStats> {
   try {
-    console.log(`Obteniendo estadísticas de tabla de comparación: ${tableId}`);
-    
-    const response = await fetch(`${API_BASE_URL}/stats/${tableId}`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Getting comparison table statistics: ${tableId}`);
+    }
+
+    const response = await fetchWithTimeout(`${API_BASE_URL}/stats/${tableId}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -751,8 +849,11 @@ export async function getComparisonTableStats(tableId: string): Promise<TableSta
     }
 
     const data = await response.json();
-    console.log(`Estadísticas de tabla ${tableId}:`, data);
-    
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Statistics for table ${tableId}:`, data);
+    }
+
     return data;
   } catch (error) {
     console.error('Error obteniendo estadísticas de tabla de comparación:', error);
@@ -771,9 +872,11 @@ export async function getComparisonTableStats(tableId: string): Promise<TableSta
  */
 export async function getComparisonTablePathways(tableId: string): Promise<PathwaysData> {
   try {
-    console.log(`Obteniendo pathways de tabla de comparación: ${tableId}`);
-    
-    const response = await fetch(`${API_BASE_URL}/pathways/${tableId}`, {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Getting pathways from comparison table: ${tableId}`);
+    }
+
+    const response = await fetchWithTimeout(`${API_BASE_URL}/pathways/${tableId}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -788,8 +891,11 @@ export async function getComparisonTablePathways(tableId: string): Promise<Pathw
     }
 
     const data = await response.json();
-    console.log(`Pathways de tabla ${tableId}:`, data);
-    
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Pathways for table ${tableId}:`, data);
+    }
+
     return data;
   } catch (error) {
     console.error('Error obteniendo pathways de tabla de comparación:', error);

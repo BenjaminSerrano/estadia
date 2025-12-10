@@ -24,7 +24,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
   const [stats, setStats] = useState<{elements: number, uniqueProperties: number, pathwaysList?: string[], commonGenes?: string[]} | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // Cargar estadísticas de la API cuando cambie la sección
+  // Load statistics from API when section changes
   useEffect(() => {
     async function loadStats() {
       setLoading(true)
@@ -32,7 +32,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
         const sectionStats = await fetchSectionStats(section)
         setStats(sectionStats)
       } catch (error) {
-        console.error("Error cargando estadísticas:", error)
+        console.error("Error loading statistics:", error)
       } finally {
         setLoading(false)
       }
@@ -41,7 +41,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
     loadStats()
   }, [section])
 
-  // Obtener el elemento detallado seleccionado
+  // Get the selected detailed element
   const getSelectedElementDetails = () => {
     if (!selectedElement || !info.detailedElements) return null
     return info.detailedElements.find((element: any) => element.id === selectedElement)
@@ -49,7 +49,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
 
   const elementDetails = getSelectedElementDetails()
 
-  // Filtrar y ordenar los datos
+  // Filter and sort data
   const filteredAndSortedData = [...info.data]
     // Filtrar por término de búsqueda
     .filter(
@@ -69,7 +69,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
       }
     })
 
-  // Obtener categorías únicas para el filtro
+  // Get unique categories for filter
   const uniqueCategories = Array.from(new Set(info.data.map((item) => item.category)))
 
   return (
@@ -80,15 +80,15 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center gap-3 mb-6">
             <Database className="w-6 h-6 text-slate-700 dark:text-slate-300" />
-            <h1 className="text-3xl font-bold">Datos: {info.title}</h1>
+            <h1 className="text-3xl font-bold">Data: {info.title}</h1>
           </div>
 
-          {/* Dropdown para seleccionar elementos específicos en intersecciones */}
+          {/* Dropdown to select specific elements in intersections */}
           {isIntersection(section) && (
             <div className="mb-6 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
-                  <p className="text-sm font-medium mb-2">Genes en la intersección:</p>
+                  <p className="text-sm font-medium mb-2">Genes in intersection:</p>
                   <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {loading ? (
                       <span className="inline-block w-6 h-6 rounded-full border-2 border-slate-300 border-t-slate-600 animate-spin"></span>
@@ -98,7 +98,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium mb-2">Rutas metabólicas:</p>
+                  <p className="text-sm font-medium mb-2">Metabolic pathways:</p>
                   <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                     {loading ? (
                       <span className="inline-block w-6 h-6 rounded-full border-2 border-slate-300 border-t-slate-600 animate-spin"></span>
@@ -108,34 +108,34 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium mb-2">Estado:</p>
+                  <p className="text-sm font-medium mb-2">Status:</p>
                   <p className="text-sm">
                     {loading ? (
                       <span className="px-2 py-1 text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 rounded-full">
-                        Cargando...
+                        Loading...
                       </span>
                     ) : stats?.elements && stats.elements > 0 ? (
                       <span className="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 rounded-full">
-                        Datos disponibles
+                        Data available
                       </span>
                     ) : (
                       <span className="px-2 py-1 text-xs bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 rounded-full">
-                        Sin datos
+                        No data
                       </span>
                     )}
                   </p>
                 </div>
               </div>
-              
+
               <label htmlFor="pathway-selector" className="block text-sm font-medium mb-2">
-                Seleccionar ruta metabólica:
+                Select metabolic pathway:
               </label>
               <Select value={selectedElement || ""} onValueChange={(value) => setSelectedElement(value)}>
                 <SelectTrigger id="pathway-selector" className="w-full">
-                  <SelectValue placeholder="Seleccionar una ruta metabólica" />
+                  <SelectValue placeholder="Select a metabolic pathway" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Todas las rutas</SelectItem>
+                  <SelectItem value="none">All pathways</SelectItem>
                   {stats?.pathwaysList?.map((pathway, index) => (
                     <SelectItem key={index} value={pathway}>
                       {pathway}
@@ -153,7 +153,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
                   <Input
                     type="text"
-                    placeholder="Buscar por nombre o categoría..."
+                    placeholder="Search by name or category..."
                     className="pl-9"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -166,10 +166,10 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                   <Filter className="h-4 w-4 text-slate-500" />
                   <Select value={filterCategory} onValueChange={setFilterCategory}>
                     <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Filtrar por categoría" />
+                      <SelectValue placeholder="Filter by category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todas las categorías</SelectItem>
+                      <SelectItem value="all">All categories</SelectItem>
                       {uniqueCategories.map((category) => (
                         <SelectItem key={category} value={category}>
                           {category}
@@ -183,13 +183,13 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                   <ArrowUpDown className="h-4 w-4 text-slate-500" />
                   <Select value={sortField} onValueChange={setSortField}>
                     <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Ordenar por" />
+                      <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="id">ID</SelectItem>
-                      <SelectItem value="name">Nombre</SelectItem>
-                      <SelectItem value="value">Valor</SelectItem>
-                      <SelectItem value="category">Categoría</SelectItem>
+                      <SelectItem value="name">Name</SelectItem>
+                      <SelectItem value="value">Value</SelectItem>
+                      <SelectItem value="category">Category</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -198,7 +198,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                   variant="outline"
                   size="icon"
                   onClick={() => setSortDirection(sortDirection === "asc" ? "desc" : "asc")}
-                  aria-label={sortDirection === "asc" ? "Ordenar descendente" : "Ordenar ascendente"}
+                  aria-label={sortDirection === "asc" ? "Sort descending" : "Sort ascending"}
                 >
                   <ArrowUpDown className="h-4 w-4" />
                 </Button>
@@ -266,10 +266,10 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                   <thead>
                     <tr className="bg-slate-100 dark:bg-slate-700">
                       <th className="p-3 text-left text-sm font-medium">ID</th>
-                      <th className="p-3 text-left text-sm font-medium">Nombre</th>
-                      <th className="p-3 text-left text-sm font-medium">Valor</th>
-                      <th className="p-3 text-left text-sm font-medium">Categoría</th>
-                      <th className="p-3 text-left text-sm font-medium">Acciones</th>
+                      <th className="p-3 text-left text-sm font-medium">Name</th>
+                      <th className="p-3 text-left text-sm font-medium">Value</th>
+                      <th className="p-3 text-left text-sm font-medium">Category</th>
+                      <th className="p-3 text-left text-sm font-medium">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -313,7 +313,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                     ) : (
                       <tr>
                         <td colSpan={5} className="p-4 text-center text-slate-500 dark:text-slate-400">
-                          No se encontraron datos que coincidan con los criterios de búsqueda
+                          No data found matching the search criteria
                         </td>
                       </tr>
                     )}
@@ -325,29 +325,30 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
             <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">
               <div className="text-sm text-slate-500 dark:text-slate-400">
                 {selectedElement && elementDetails
-                  ? `Mostrando datos detallados de ${elementDetails.name}`
-                  : `Mostrando ${filteredAndSortedData.length} de ${info.data.length} elementos`}
+                  ? `Showing detailed data for ${elementDetails.name}`
+                  : `Showing ${filteredAndSortedData.length} of ${info.data.length} elements`}
               </div>
 
               <Button variant="outline" size="sm" className="flex items-center gap-2">
                 <Download className="h-4 w-4" />
-                Exportar datos
+                Export data
               </Button>
             </div>
           </div>
 
-          {/* Tabla de datos detallados para elementos de la intersección */}
+          {/* Detailed data table for intersection elements */}
           {isIntersection(section) && !selectedElement && (
             <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md mb-8">
-              <h2 className="text-xl font-semibold mb-4">Elementos específicos de la intersección</h2>
-              
-              {/* Agregar un panel de resumen de la intersección */}
+              <h2 className="text-xl font-semibold mb-4">Intersection specific elements</h2>
+
+
+              {/* Add intersection summary panel */}
               <div className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg mb-6">
-                <h3 className="text-md font-medium mb-3">Intersección {section.split("").join(" ∩ ")}</h3>
+                <h3 className="text-md font-medium mb-3">Intersection {section.split("").join(" ∩ ")}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm mb-2">
-                      <span className="font-medium">Total de genes: </span>
+                      <span className="font-medium">Total genes: </span>
                       {loading ? (
                         <span className="inline-block w-4 h-4 rounded-full border-2 border-slate-300 border-t-slate-600 animate-spin ml-1"></span>
                       ) : (
@@ -355,7 +356,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                       )}
                     </p>
                     <p className="text-sm mb-2">
-                      <span className="font-medium">Total de rutas: </span>
+                      <span className="font-medium">Total pathways: </span>
                       {loading ? (
                         <span className="inline-block w-4 h-4 rounded-full border-2 border-slate-300 border-t-slate-600 animate-spin ml-1"></span>
                       ) : (
@@ -365,7 +366,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                   </div>
                   <div>
                     <p className="text-sm text-slate-600 dark:text-slate-300">
-                      Esta sección muestra los genes y rutas que son comunes a los conjuntos 
+                      This section shows genes and pathways that are common to the sets 
                       {section.split("").map((char, i) => {
                         return (
                           <span key={i} className="font-semibold">
@@ -379,13 +380,13 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                 </div>
               </div>
 
-              {/* Mostrar los genes comunes si hay datos disponibles */}
+              {/* Show common genes if data is available */}
               {stats?.commonGenes && stats.commonGenes.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="text-md font-medium mb-2">Genes comunes en la intersección</h3>
+                  <h3 className="text-md font-medium mb-2">Common genes in intersection</h3>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {stats.commonGenes.slice(0, 10).map((gene, index) => (
-                      <span 
+                      <span
                         key={index}
                         className="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-xs"
                       >
@@ -394,29 +395,29 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                     ))}
                     {stats.commonGenes.length > 10 && (
                       <span className="px-3 py-1 bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300 rounded-full text-xs">
-                        +{stats.commonGenes.length - 10} más
+                        +{stats.commonGenes.length - 10} more
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Mostrando {Math.min(10, stats.commonGenes.length)} de {stats.commonGenes.length} genes comunes.
+                    Showing {Math.min(10, stats.commonGenes.length)} of {stats.commonGenes.length} common genes.
                   </p>
                 </div>
               )}
-              
-              {/* Sección para mostrar las rutas metabólicas de la intersección */}
+
+              {/* Section to show metabolic pathways in the intersection */}
               {stats?.pathwaysList && stats.pathwaysList.length > 0 && (
                 <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-                  <h3 className="text-lg font-medium mb-3">Rutas metabólicas en la intersección</h3>
+                  <h3 className="text-lg font-medium mb-3">Metabolic pathways in intersection</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     {stats.pathwaysList.map((pathway, index) => (
-                      <div 
-                        key={index} 
+                      <div
+                        key={index}
                         className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow"
                       >
                         <p className="text-sm font-medium text-blue-600 dark:text-blue-400">{pathway}</p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                          Ruta {index + 1} de {stats.pathwaysList.length}
+                          Pathway {index + 1} of {stats.pathwaysList.length}
                         </p>
                       </div>
                     ))}
@@ -427,11 +428,11 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
           )}
 
           <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md mb-8">
-            <h2 className="text-xl font-semibold mb-4">Resumen de datos</h2>
+            <h2 className="text-xl font-semibold mb-4">Data summary</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg">
-                <h3 className="text-sm font-medium mb-2">Distribución por categoría</h3>
+                <h3 className="text-sm font-medium mb-2">Distribution by category</h3>
                 <div className="space-y-2">
                   {uniqueCategories.map((category) => {
                     const count = info.data.filter((item) => item.category === category).length
@@ -470,30 +471,30 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
               </div>
 
               <div className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg">
-                <h3 className="text-sm font-medium mb-2">Estadísticas de valores</h3>
+                <h3 className="text-sm font-medium mb-2">Value statistics</h3>
                 <div className="space-y-3">
                   <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Valor promedio:</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Average value:</p>
                     <p className="font-medium">
                       {Math.round(info.data.reduce((acc, item) => acc + item.value, 0) / info.data.length)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Valor máximo:</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Maximum value:</p>
                     <p className="font-medium">{Math.max(...info.data.map((item) => item.value))}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Valor mínimo:</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Minimum value:</p>
                     <p className="font-medium">{Math.min(...info.data.map((item) => item.value))}</p>
                   </div>
                 </div>
               </div>
 
               <div className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg">
-                <h3 className="text-sm font-medium mb-2">Datos de la base de datos</h3>
+                <h3 className="text-sm font-medium mb-2">Database data</h3>
                 <div className="space-y-3">
                   <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Elementos:</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Elements:</p>
                     <p className="font-medium">
                       {loading ? (
                         <span className="inline-block w-5 h-5 rounded-full border-2 border-slate-300 border-t-slate-600 animate-spin"></span>
@@ -503,7 +504,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Propiedades:</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Properties:</p>
                     <p className="font-medium">
                       {loading ? (
                         <span className="inline-block w-5 h-5 rounded-full border-2 border-slate-300 border-t-slate-600 animate-spin"></span>
@@ -514,24 +515,24 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                   </div>
                   <div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 italic">
-                      {stats && "Datos obtenidos de la base de datos"}
+                      {stats && "Data obtained from database"}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-            
-            {/* Sección de información adicional para intersecciones */}
+
+            {/* Additional information section for intersections */}
             {isIntersection(section) && stats?.pathwaysList && stats.pathwaysList.length > 0 && (
               <div className="mt-6 bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg">
-                <h3 className="text-md font-medium mb-2">Rutas metabólicas compartidas</h3>
+                <h3 className="text-md font-medium mb-2">Shared metabolic pathways</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium mb-2">Cantidad de rutas: {stats.uniqueProperties}</p>
+                    <p className="text-sm font-medium mb-2">Number of pathways: {stats.uniqueProperties}</p>
                     <div className="flex flex-wrap gap-2">
                       {stats.pathwaysList.map((pathway, index) => (
-                        <span 
-                          key={index} 
+                        <span
+                          key={index}
                           className="px-3 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 rounded-full"
                         >
                           {pathway}
@@ -539,16 +540,16 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div>
-                    <p className="text-sm font-medium mb-2">Cantidad de genes: {stats.elements}</p>
+                    <p className="text-sm font-medium mb-2">Number of genes: {stats.elements}</p>
                     {stats.commonGenes && stats.commonGenes.length > 0 && (
                       <div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Ejemplos de genes comunes:</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Common gene examples:</p>
                         <div className="flex flex-wrap gap-2">
                           {stats.commonGenes.slice(0, 5).map((gene, index) => (
-                            <span 
-                              key={index} 
+                            <span
+                              key={index}
                               className="px-3 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 rounded-full"
                             >
                               {gene}
@@ -556,7 +557,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                           ))}
                           {stats.commonGenes.length > 5 && (
                             <span className="px-3 py-1 text-xs bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded-full">
-                              +{stats.commonGenes.length - 5} más
+                              +{stats.commonGenes.length - 5} more
                             </span>
                           )}
                         </div>
@@ -569,7 +570,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
           </div>
 
           <footer className="text-center text-sm text-slate-500 dark:text-slate-400 pb-8">
-            <p>Diagrama de Venn Interactivo © {new Date().getFullYear()}</p>
+            <p>Interactive Venn Diagram © {new Date().getFullYear()}</p>
           </footer>
         </div>
       </div>

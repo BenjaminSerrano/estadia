@@ -14,32 +14,32 @@ export default function Tutorial({ onClose }: TutorialProps) {
 
   const steps = [
     {
-      title: "Bienvenido al Diagrama de Venn Interactivo",
-      description: "Este tutorial te guiará a través de las características principales de esta herramienta.",
+      title: "Welcome to the Interactive Venn Diagram",
+      description: "This tutorial will guide you through the main features of this tool.",
       image: "/placeholder.svg?height=200&width=300",
     },
     {
-      title: "Explora el Diagrama",
+      title: "Explore the Diagram",
       description:
-        "Pasa el cursor sobre las diferentes secciones del diagrama para ver su resaltado. Cada sección representa un conjunto o una intersección entre conjuntos.",
+        "Hover over the different sections of the diagram to see them highlighted. Each section represents a set or an intersection between sets.",
       image: "/placeholder.svg?height=200&width=300",
     },
     {
-      title: "Selecciona una Sección",
+      title: "Select a Section",
       description:
-        "Haz clic en cualquier sección del diagrama o usa los botones de selección rápida para ver información detallada sobre ese conjunto o intersección.",
+        "Click on any section of the diagram or use the quick selection buttons to view detailed information about that set or intersection.",
       image: "/placeholder.svg?height=200&width=300",
     },
     {
-      title: "Explora la Información",
+      title: "Explore the Information",
       description:
-        "El panel de información muestra detalles sobre la sección seleccionada, incluyendo descripción, ejemplos, propiedades y aplicaciones.",
+        "The information panel displays details about the selected section, including description, examples, properties, and applications.",
       image: "/placeholder.svg?height=200&width=300",
     },
     {
-      title: "Características de Accesibilidad",
+      title: "Accessibility Features",
       description:
-        "Puedes navegar por el diagrama usando el teclado. Usa Tab para moverte entre secciones y Enter para seleccionar. También puedes usar Esc para restablecer la selección.",
+        "You can navigate the diagram using the keyboard. Use Tab to move between sections and Enter to select. You can also use Esc to reset the selection.",
       image: "/placeholder.svg?height=200&width=300",
     },
   ]
@@ -72,7 +72,7 @@ export default function Tutorial({ onClose }: TutorialProps) {
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">{steps[step].title}</h2>
-              <Button variant="ghost" size="icon" onClick={onClose} aria-label="Cerrar tutorial">
+              <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close tutorial">
                 <X className="h-5 w-5" />
               </Button>
             </div>
@@ -80,7 +80,7 @@ export default function Tutorial({ onClose }: TutorialProps) {
             <div className="aspect-video bg-slate-100 dark:bg-slate-700 rounded-lg mb-4 flex items-center justify-center">
               <img
                 src={steps[step].image || "/placeholder.svg"}
-                alt={`Tutorial paso ${step + 1}`}
+                alt={`Tutorial step ${step + 1}`}
                 className="max-h-full max-w-full object-contain"
               />
             </div>
@@ -101,17 +101,17 @@ export default function Tutorial({ onClose }: TutorialProps) {
                 {step > 0 && (
                   <Button variant="outline" size="sm" onClick={prevStep}>
                     <ChevronLeft className="h-4 w-4 mr-1" />
-                    Anterior
+                    Previous
                   </Button>
                 )}
                 <Button onClick={nextStep}>
                   {step < steps.length - 1 ? (
                     <>
-                      Siguiente
+                      Next
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </>
                   ) : (
-                    "Finalizar"
+                    "Finish"
                   )}
                 </Button>
               </div>

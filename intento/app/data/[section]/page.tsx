@@ -1,16 +1,16 @@
 import { redirect } from 'next/navigation'
 
-// Generar rutas estáticas para el export
+// Generate static routes for export
 export async function generateStaticParams() {
   const sections = ['A', 'B', 'C', 'AB', 'AC', 'BC', 'ABC']
-  
+
   return sections.map((section) => ({
     section: section
   }))
 }
 
-// Esta página redirige automáticamente al diagrama de Venn
+// This page automatically redirects to the Venn diagram
 export default function RedirectToHome() {
-  // Redirigir server-side
+  // Server-side redirect
   redirect("/")
 }

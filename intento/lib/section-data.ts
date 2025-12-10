@@ -2,7 +2,7 @@ import { Circle, CheckCircle } from "lucide-react"
 
 import { getTableStats, getIntersectionStats, getGenesByPathway, mapSectionToTable, getComparisonTableStats, getComparisonTablePathways, mapSectionToComparisonTable } from "./api-service"
 
-// Variable para almacenar en caché los datos de estadísticas
+// Variable to store cached statistics data
 interface StatsCache {
   [key: string]: {
     total_rows: number;
@@ -14,19 +14,19 @@ interface StatsCache {
 }
 
 const statsCache: StatsCache = {};
-const CACHE_TTL = 60000; // 1 minuto de caché
+const CACHE_TTL = 60000; // 1 minute cache
 
-// Función para obtener la información de una sección específica
+// Function to get information from a specific section
 export async function fetchSectionStats(section: string): Promise<{elements: number, uniqueProperties: number, pathwaysList?: string[], commonGenes?: string[]} | null> {
   const tableData = mapSectionToTable(section);
 
   if (!tableData) return null;
-  
-  // Verificar si es una sección simple o una intersección
+
+  // Check if it's a simple section or an intersection
   const isIntersectionSection = Array.isArray(tableData);
   const cacheKey = isIntersectionSection ? tableData.join('_') : tableData;
 
-  // Verificar si hay datos en caché y si son válidos
+  // Check if there is cached data and if it's valid
   const now = Date.now();
   if (statsCache[cacheKey] && (now - statsCache[cacheKey].timestamp < CACHE_TTL)) {
     return {
@@ -39,15 +39,15 @@ export async function fetchSectionStats(section: string): Promise<{elements: num
 
   try {
     if (isIntersectionSection) {
-      // Es una intersección, verificar si tenemos una tabla de comparación directa
+      // It's an intersection, check if we have a direct comparison table
       const comparisonTable = mapSectionToComparisonTable(section);
-      
+
       if (comparisonTable) {
-        // Usar tabla de comparación directa (16_38, 16_41, 38_41)
-        console.log(`Usando tabla de comparación ${comparisonTable} para sección ${section}`);
+        // Use direct comparison table (16_38, 16_41, 38_41)
+        console.log(`Using comparison table ${comparisonTable} for section ${section}`);
         const stats = await getComparisonTableStats(comparisonTable);
 
-        // Actualizar caché
+        // Update cache
         statsCache[cacheKey] = {
           total_rows: stats.total_rows,
           unique_pathways: stats.unique_pathways,
@@ -61,10 +61,10 @@ export async function fetchSectionStats(section: string): Promise<{elements: num
           pathwaysList: stats.pathways_list
         };
       } else {
-        // Usar el método de intersección original para casos complejos (ABC)
+        // Use the original intersection method for complex cases (ABC)
         const stats = await getIntersectionStats(tableData as string[]);
 
-        // Actualizar caché
+        // Update cache
         statsCache[cacheKey] = {
           total_rows: stats.total_rows,
           unique_pathways: stats.unique_pathways,
@@ -81,10 +81,10 @@ export async function fetchSectionStats(section: string): Promise<{elements: num
         };
       }
     } else {
-      // Es una tabla individual
+      // It's an individual table
       const stats = await getTableStats(tableData as string);
 
-      // Actualizar caché
+      // Update cache
       statsCache[cacheKey] = {
         total_rows: stats.total_rows,
         unique_pathways: stats.unique_pathways,
@@ -99,104 +99,104 @@ export async function fetchSectionStats(section: string): Promise<{elements: num
       };
     }
   } catch (error) {
-    console.error(`Error obteniendo estadísticas para la sección ${section}:`, error);
+    console.error(`Error obtaining statistics for section ${section}:`, error);
     return null;
   }
 }
 
-// Función para obtener la información de una sección específica
+// Function to get information from a specific section
 export function getSectionInfo(section: string) {
   const sectionInfo: any = {
     A: {
-      title: "Genes a 16°C",
+      title: "Genes at 16°C",
       description:
-        "Este conjunto representa genes que se expresan exclusivamente a 16°C, sin solapamiento con otras temperaturas.",
+        "This set represents genes that are exclusively expressed at 16°C, with no overlap with other temperatures.",
       color: "bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30",
       borderColor: "border-purple-200 dark:border-purple-700",
       icon: Circle,
       iconClassName: "w-6 h-6 text-purple-500",
       accentColor: "text-purple-600 dark:text-purple-400",
-      // Estructura mínima para mantener compatibilidad con la UI
+      // Minimal structure to maintain UI compatibility
       data: []
     },
     B: {
-      title: "Genes a 38°C",
+      title: "Genes at 38°C",
       description:
-        "Este conjunto representa genes que se expresan exclusivamente a 38°C, sin solapamiento con otras temperaturas.",
+        "This set represents genes that are exclusively expressed at 38°C, with no overlap with other temperatures.",
       color: "bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30",
       borderColor: "border-blue-200 dark:border-blue-700",
       icon: Circle,
       iconClassName: "w-6 h-6 text-blue-500",
       accentColor: "text-blue-600 dark:text-blue-400",
-      // Estructura mínima para mantener compatibilidad con la UI
+      // Minimal structure to maintain UI compatibility
       data: []
     },
     C: {
-      title: "Genes a 41°C",
+      title: "Genes at 41°C",
       description:
-        "Este conjunto representa genes que se expresan exclusivamente a 41°C, sin solapamiento con otras temperaturas.",
+        "This set represents genes that are exclusively expressed at 41°C, with no overlap with other temperatures.",
       color: "bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-900/30 dark:to-pink-800/30",
       borderColor: "border-pink-200 dark:border-pink-700",
       icon: Circle,
       iconClassName: "w-6 h-6 text-pink-500",
       accentColor: "text-pink-600 dark:text-pink-400",
-      // Estructura mínima para mantener compatibilidad con la UI
+      // Minimal structure to maintain UI compatibility
       data: []
     },
     AB: {
-      title: "Genes comunes: 16°C y 38°C",
+      title: "Common genes: 16°C and 38°C",
       description:
-        "Esta intersección representa genes que se expresan tanto a 16°C como a 38°C, pero no a 41°C.",
+        "This intersection represents genes that are expressed at both 16°C and 38°C, but not at 41°C.",
       color: "bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/30 dark:to-indigo-800/30",
       borderColor: "border-indigo-200 dark:border-indigo-700",
       icon: CheckCircle,
       checkClassName: "w-6 h-6 text-indigo-500",
       accentColor: "text-indigo-600 dark:text-indigo-400",
-      // Estructura mínima para mantener compatibilidad con la UI
+      // Minimal structure to maintain UI compatibility
       data: [],
-      // Placeholder para compatibilidad con la UI
+      // Placeholder for UI compatibility
       detailedElements: []
     },
     AC: {
-      title: "Genes comunes: 16°C y 41°C",
+      title: "Common genes: 16°C and 41°C",
       description:
-        "Esta intersección representa genes que se expresan tanto a 16°C como a 41°C, pero no a 38°C.",
+        "This intersection represents genes that are expressed at both 16°C and 41°C, but not at 38°C.",
       color: "bg-gradient-to-br from-fuchsia-50 to-fuchsia-100 dark:from-fuchsia-900/30 dark:to-fuchsia-800/30",
       borderColor: "border-fuchsia-200 dark:border-fuchsia-700",
       icon: CheckCircle,
       checkClassName: "w-6 h-6 text-fuchsia-500",
       accentColor: "text-fuchsia-600 dark:text-fuchsia-400",
-      // Estructura mínima para mantener compatibilidad con la UI
+      // Minimal structure to maintain UI compatibility
       data: [],
-      // Placeholder para compatibilidad con la UI
+      // Placeholder for UI compatibility
       detailedElements: []
     },
     BC: {
-      title: "Genes comunes: 38°C y 41°C",
+      title: "Common genes: 38°C and 41°C",
       description:
-        "Esta intersección representa genes que se expresan tanto a 38°C como a 41°C, pero no a 16°C.",
+        "This intersection represents genes that are expressed at both 38°C and 41°C, but not at 16°C.",
       color: "bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-900/30 dark:to-violet-800/30",
       borderColor: "border-violet-200 dark:border-violet-700",
       icon: CheckCircle,
       checkClassName: "w-6 h-6 text-violet-500",
       accentColor: "text-violet-600 dark:text-violet-400",
-      // Estructura mínima para mantener compatibilidad con la UI
+      // Minimal structure to maintain UI compatibility
       data: [],
-      // Placeholder para compatibilidad con la UI
+      // Placeholder for UI compatibility
       detailedElements: []
     },
     ABC: {
-      title: "Genes comunes en todas las temperaturas",
+      title: "Common genes at all temperatures",
       description:
-        "Esta intersección central representa genes que se expresan en las tres temperaturas: 16°C, 38°C y 41°C.",
+        "This central intersection represents genes that are expressed at all three temperatures: 16°C, 38°C, and 41°C.",
       color: "bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-700/50",
       borderColor: "border-slate-200 dark:border-slate-600",
       icon: CheckCircle,
       checkClassName: "w-6 h-6 text-slate-500",
       accentColor: "text-slate-700 dark:text-slate-300",
-      // Estructura mínima para mantener compatibilidad con la UI
+      // Minimal structure to maintain UI compatibility
       data: [],
-      // Placeholder para compatibilidad con la UI
+      // Placeholder for UI compatibility
       detailedElements: []
     },
   }
@@ -204,39 +204,39 @@ export function getSectionInfo(section: string) {
   return sectionInfo[section]
 }
 
-// Función para verificar si una sección es una intersección
+// Function to check if a section is an intersection
 export function isIntersection(section: string) {
   return section.length > 1
 }
 
-// Función para obtener genes filtrados por pathway para cualquier sección
+// Function to get genes filtered by pathway for any section
 export async function getSectionGenesByPathway(section: string, pathway: string) {
   const tableData = mapSectionToTable(section);
   
   if (!tableData) return { genes: [] };
-  
+
   try {
-    // Verificar si es una sección simple o una intersección
+    // Check if it's a simple section or an intersection
     const isIntersectionSection = Array.isArray(tableData);
-    
+
     if (isIntersectionSection) {
-      // Para intersecciones, mapear a tabla de comparación
+      // For intersections, map to comparison table
       const comparisonTable = mapSectionToComparisonTable(section);
-      
+
       if (comparisonTable) {
-        console.log(`Obteniendo genes de intersección ${section} usando tabla ${comparisonTable} con pathway ${pathway}`);
+        console.log(`Getting genes from intersection ${section} using table ${comparisonTable} with pathway ${pathway}`);
         return await getGenesByPathway(comparisonTable, pathway);
       } else {
-        console.error(`No se pudo mapear la intersección ${section} a una tabla de comparación`);
+        console.error(`Could not map intersection ${section} to a comparison table`);
         return { genes: [] };
       }
     } else {
-      // Es una tabla individual
-      console.log(`Obteniendo genes de tabla ${tableData} con pathway ${pathway}`);
+      // It's an individual table
+      console.log(`Getting genes from table ${tableData} with pathway ${pathway}`);
       return await getGenesByPathway(tableData as string, pathway);
     }
   } catch (error) {
-    console.error(`Error obteniendo genes para la sección ${section} con pathway ${pathway}:`, error);
+    console.error(`Error getting genes for section ${section} with pathway ${pathway}:`, error);
     return { genes: [] };
   }
 }

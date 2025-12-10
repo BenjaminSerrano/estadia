@@ -73,25 +73,27 @@ export default function ElementDataClient() {
   useEffect(() => {
     const fetchData = async () => {
       if (!section) {
-        console.log('No se cargan datos: no hay sección');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Data not loaded: no section');
+        }
         return;
       }
 
       try {
         setLoading(true);
         setError(null); // Reset any previous errors
-        
-        // Determinar qué tabla usar
+
+        // Determine which table to use
         let tableName: string;
         if (isIntersectionElement) {
           const tables = mapSectionToTable(section) as string[];
           if (!tables || !Array.isArray(tables)) {
-            throw new Error(`No se pudo mapear la intersección "${section}" a tablas válidas.`);
+            throw new Error(`Could not map intersection "${section}" to valid tables.`);
           }
-          
-          // Mapear a tabla de comparación
+
+          // Map to comparison table
           if (section === 'ABC') {
-            // Caso especial para ABC - usar la tabla 16_38_41
+            // Special case for ABC - use table 16_38_41
             tableName = '16_38_41';
           } else if (tables.includes('16') && tables.includes('38') && !tables.includes('41')) {
             tableName = '16_38';
@@ -100,48 +102,55 @@ export default function ElementDataClient() {
           } else if (tables.includes('38') && tables.includes('41') && !tables.includes('16')) {
             tableName = '38_41';
           } else {
-            throw new Error(`Combinación de tablas no válida: ${tables.join(', ')}`);
+            throw new Error(`Invalid table combination: ${tables.join(', ')}`);
           }
-          
-          console.log(`Obteniendo genes de intersección para tabla ${tableName} con pathway "${element}"`);
+
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`Getting intersection genes for table ${tableName} with pathway "${element}"`);
+          }
         } else {
           tableName = mapSectionToTable(section) as string;
           if (!tableName || Array.isArray(tableName)) {
-            throw new Error(`No se pudo mapear la sección "${section}" a una tabla válida.`);
+            throw new Error(`Could not map section "${section}" to a valid table.`);
           }
-          
-          console.log(`Obteniendo genes para tabla ${tableName} con pathway "${element}"`);
+
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`Getting genes for table ${tableName} with pathway "${element}"`);
+          }
         }
         
         // Usar la misma función para ambos casos
         const response = await getGenesByPathway(tableName, element);
-        
-        // Verificar la respuesta
+
+        // Verify response
         if (!response || !response.genes || !Array.isArray(response.genes)) {
-          throw new Error('Respuesta inválida');
+          throw new Error('Invalid response');
         }
-        
-        console.log(`Se encontraron ${response.genes.length} genes en la tabla ${tableName}`);
-        
-        // Mostrar estructura de los primeros genes para depuración
-        if (response.genes.length > 0) {
-          console.log('Estructura del primer gen:', response.genes[0]);
-          console.log('Campos disponibles:', Object.keys(response.genes[0]));
-        }
-        
-        if (isIntersectionElement) {
-          console.log(`✅ Datos de intersección recibidos: ${response.genes.length} genes para tabla ${tableName}`);
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Found ${response.genes.length} genes in table ${tableName}`);
+
+          // Show structure of first genes for debugging
           if (response.genes.length > 0) {
-            console.log('📊 Primer gene (campos):', Object.keys(response.genes[0]));
-            console.log('📊 Primer gene completo:', response.genes[0]);
-            console.log('📊 log2FoldChange_16:', (response.genes[0] as any).log2FoldChange_16);
-            console.log('📊 log2FoldChange_38:', (response.genes[0] as any).log2FoldChange_38);
-            console.log('📊 log2FoldChange_41:', (response.genes[0] as any).log2FoldChange_41);
+            console.log('First gene structure:', response.genes[0]);
+            console.log('Available fields:', Object.keys(response.genes[0]));
           }
+
+          if (isIntersectionElement) {
+            console.log(`✅ Intersection data received: ${response.genes.length} genes for table ${tableName}`);
+            if (response.genes.length > 0) {
+              console.log('📊 First gene (fields):', Object.keys(response.genes[0]));
+              console.log('📊 First complete gene:', response.genes[0]);
+            }
+          } else {
+            console.log(`✅ Individual data received: ${response.genes.length} genes for table ${tableName}`);
+          }
+        }
+
+        if (isIntersectionElement) {
           setIntersectionGenesData(response.genes);
           setGenesData([]);
         } else {
-          console.log(`✅ Datos individuales recibidos: ${response.genes.length} genes para tabla ${tableName}`);
           setGenesData(response.genes);
           setIntersectionGenesData([]);
         }
@@ -179,13 +188,15 @@ export default function ElementDataClient() {
     if (!currentData || !Array.isArray(currentData) || currentData.length === 0) {
       return [];
     }
-    
-    // Debug solo para el primer elemento
-    if (currentData.length > 0 && isIntersectionElement) {
-      console.log('🔍 Primer gene de intersección:', currentData[0]);
-      console.log('🔍 Campos disponibles:', Object.keys(currentData[0]));
+
+    if (process.env.NODE_ENV === 'development') {
+      // Debug only for first element
+      if (currentData.length > 0 && isIntersectionElement) {
+        console.log('🔍 First intersection gene:', currentData[0]);
+        console.log('🔍 Available fields:', Object.keys(currentData[0]));
+      }
     }
-    
+
     return currentData
       // Filtrar por término de búsqueda
       .filter((item: any) => {
@@ -413,39 +424,10 @@ export default function ElementDataClient() {
                             <td className="p-3 text-sm">{(gene as any).locustag || (gene as any).Locustag || "-"}</td>
                             {isIntersectionElement ? (
                               <>
-                                {/* Debug solo para el primer gene */}
-                                {index === 0 && (() => {
-                                  console.log('🧬 Gene intersección completo:', gene);
-                                  console.log('🧬 Gene intersección debug:', {
-                                    section,
-                                    temperatures: getIntersectionTemperatures(section),
-                                    allKeys: Object.keys(gene),
-                                    log2FoldChange_16: (gene as any).log2FoldChange_16,
-                                    log2FoldChange_38: (gene as any).log2FoldChange_38,
-                                    log2FoldChange_41: (gene as any).log2FoldChange_41
-                                  });
-                                  return null;
-                                })()}
-                                
-                                {/* Renderizar columnas de temperaturas específicas */}
+                                {/* Render temperature-specific columns */}
                                 {getIntersectionTemperatures(section).map(temp => (
                                   <td key={temp} className="p-3 text-sm font-mono">
-                                    {(() => {
-                                      const value = (gene as any)[`log2FoldChange_${temp}`];
-                                      
-                                      // Debug para la primera fila
-                                      if (index === 0) {
-                                        console.log(`🔥 Temp ${temp}:`, {
-                                          fieldName: `log2FoldChange_${temp}`,
-                                          value: value,
-                                          valueType: typeof value,
-                                          allGeneKeys: Object.keys(gene)
-                                        });
-                                      }
-                                      
-                                      // Usar la función helper para aplicar colores
-                                      return renderLog2FoldChange(value);
-                                    })()}
+                                    {renderLog2FoldChange((gene as any)[`log2FoldChange_${temp}`])}
                                   </td>
                                 ))}
                               </>

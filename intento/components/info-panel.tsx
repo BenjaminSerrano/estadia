@@ -300,8 +300,8 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
       const text = `${info.title}: ${info.description}`
       navigator.clipboard.writeText(text).then(() => {
         toast({
-          title: "Copiado al portapapeles",
-          description: "La información ha sido copiada",
+          title: "Copied to clipboard",
+          description: "The information has been copied",
           duration: 3000,
         })
       })
@@ -316,7 +316,7 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
             <Info className="w-8 h-8 text-slate-400 dark:text-slate-300" />
           </div>
           <p className="text-slate-500 dark:text-slate-400 max-w-xs">
-            Selecciona una sección del diagrama de Venn para ver información detallada
+            Select a section of the Venn diagram to view detailed information
           </p>
         </div>
       </div>
@@ -333,16 +333,16 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
           <div className="space-y-4">
             <Tabs defaultValue="descripcion" className="w-full">
               <TabsList className="grid grid-cols-3 mb-4">
-                <TabsTrigger value="descripcion">Descripción</TabsTrigger>
-                <TabsTrigger value="propiedades">Propiedades</TabsTrigger>
-                <TabsTrigger value="aplicaciones">Aplicaciones</TabsTrigger>
+                <TabsTrigger value="descripcion">Description</TabsTrigger>
+                <TabsTrigger value="propiedades">Properties</TabsTrigger>
+                <TabsTrigger value="aplicaciones">Applications</TabsTrigger>
               </TabsList>
 
               <TabsContent value="descripcion" className="space-y-4">
                 <div className="bg-white/70 dark:bg-slate-800/70 p-4 rounded-xl">
                   <div className="flex items-center gap-2 mb-2">
                     <Info className="w-5 h-5 text-slate-500" />
-                    <h3 className="font-semibold">Descripción:</h3>
+                    <h3 className="font-semibold">Description:</h3>
                   </div>
                   <p className="text-slate-700 dark:text-slate-300">{info.description}</p>
                 </div>
@@ -350,7 +350,7 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
                 <div className="bg-white/70 dark:bg-slate-800/70 p-4 rounded-xl">
                   <div className="flex items-center gap-2 mb-2">
                     <List className="w-5 h-5 text-slate-500" />
-                    <h3 className="font-semibold">Ejemplos:</h3>
+                    <h3 className="font-semibold">Examples:</h3>
                   </div>
                   <ul className="space-y-2">
                     {info.examples.map((example, index) => (
@@ -367,7 +367,7 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
                 <div className="bg-white/70 dark:bg-slate-800/70 p-4 rounded-xl">
                   <div className="flex items-center gap-2 mb-2">
                     <CheckCircle className="w-5 h-5 text-slate-500" />
-                    <h3 className="font-semibold">Propiedades:</h3>
+                    <h3 className="font-semibold">Properties:</h3>
                   </div>
                   <ul className="space-y-2">
                     {info.properties.map((property, index) => (
@@ -383,11 +383,11 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
                   <div className="bg-white/70 dark:bg-slate-800/70 p-4 rounded-xl border border-slate-200 dark:border-slate-600">
                     <div className="flex items-center gap-2 mb-2">
                       <Lightbulb className="w-5 h-5 text-amber-500" />
-                      <h3 className="font-semibold text-amber-600 dark:text-amber-400">Dato interesante:</h3>
+                      <h3 className="font-semibold text-amber-600 dark:text-amber-400">Interesting fact:</h3>
                     </div>
                     <p className="text-slate-700 dark:text-slate-300">
-                      Esta es la intersección central donde los tres conjuntos se superponen, representando elementos
-                      que satisfacen simultáneamente las tres condiciones.
+                      This is the central intersection where all three sets overlap, representing elements
+                      that simultaneously satisfy all three conditions.
                     </p>
                   </div>
                 )}
@@ -397,7 +397,7 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
                 <div className="bg-white/70 dark:bg-slate-800/70 p-4 rounded-xl">
                   <div className="flex items-center gap-2 mb-2">
                     <ExternalLink className="w-5 h-5 text-slate-500" />
-                    <h3 className="font-semibold">Aplicaciones:</h3>
+                    <h3 className="font-semibold">Applications:</h3>
                   </div>
                   <ul className="space-y-2">
                     {info.applications.map((application, index) => (
@@ -419,12 +419,12 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
             <div className="bg-white/70 dark:bg-slate-800/70 p-4 rounded-xl">
               <div className="flex items-center gap-2 mb-4">
                 <BarChart className="w-5 h-5 text-slate-500" />
-                <h3 className="font-semibold">Estadísticas:</h3>
+                <h3 className="font-semibold">Statistics:</h3>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <h4 className="text-sm font-medium mb-2">Número de elementos</h4>
+                  <h4 className="text-sm font-medium mb-2">Number of elements</h4>
                   <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-4">
                     <div
                       className={`h-4 rounded-full ${
@@ -439,13 +439,13 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
                       style={{ width: `${(info.statistics.elements / 150) * 100}%` }}
                     ></div>
                   </div>
-                  <p className="text-right text-sm mt-1">{info.statistics.elements} elementos</p>
+                  <p className="text-right text-sm mt-1">{info.statistics.elements} elements</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-slate-100 dark:bg-slate-700/50 p-3 rounded-lg">
                     <h4 className="text-sm font-medium mb-2">
-                      {selectedSection.length > 1 ? "Propiedades compartidas" : "Propiedades únicas"}
+                      {selectedSection.length > 1 ? "Shared properties" : "Unique properties"}
                     </h4>
                     <p className="text-2xl font-bold">
                       {selectedSection.length > 1 ? info.statistics.sharedProperties : info.statistics.uniqueProperties}
@@ -453,7 +453,7 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
                   </div>
 
                   <div className="bg-slate-100 dark:bg-slate-700/50 p-3 rounded-lg">
-                    <h4 className="text-sm font-medium mb-1">Distribución</h4>
+                    <h4 className="text-sm font-medium mb-1">Distribution</h4>
                     <div className="flex items-end h-12 gap-1">
                       {[...Array(5)].map((_, i) => (
                         <div
@@ -478,7 +478,7 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium mb-2">Usos comunes</h4>
+                  <h4 className="text-sm font-medium mb-2">Common uses</h4>
                   <ul className="space-y-1">
                     {info.statistics.commonUses.map((use, index) => (
                       <li key={index} className="flex items-start gap-2 text-sm">
@@ -499,24 +499,24 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
             <div className="bg-white/70 dark:bg-slate-800/70 p-4 rounded-xl">
               <div className="flex items-center gap-2 mb-4">
                 <BookOpen className="w-5 h-5 text-slate-500" />
-                <h3 className="font-semibold">Documentación:</h3>
+                <h3 className="font-semibold">Documentation:</h3>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <h4 className="text-sm font-medium mb-2">Definición</h4>
+                  <h4 className="text-sm font-medium mb-2">Definition</h4>
                   <p className="text-slate-700 dark:text-slate-300 text-sm">{info.documentation.definition}</p>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium mb-2">Notación</h4>
+                  <h4 className="text-sm font-medium mb-2">Notation</h4>
                   <div className="bg-slate-100 dark:bg-slate-700/50 p-3 rounded-lg font-mono text-center">
                     {info.documentation.notation}
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium mb-2">Operaciones</h4>
+                  <h4 className="text-sm font-medium mb-2">Operations</h4>
                   <ul className="space-y-1">
                     {info.documentation.operations.map((operation, index) => (
                       <li key={index} className="flex items-start gap-2 text-sm">
@@ -528,7 +528,7 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium mb-2">Referencias</h4>
+                  <h4 className="text-sm font-medium mb-2">References</h4>
                   <ul className="space-y-2">
                     {info.references.map((ref, index) => (
                       <li
@@ -554,7 +554,7 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
             <div className="bg-white/70 dark:bg-slate-800/70 p-4 rounded-xl">
               <div className="flex items-center gap-2 mb-4">
                 <Database className="w-5 h-5 text-slate-500" />
-                <h3 className="font-semibold">Datos:</h3>
+                <h3 className="font-semibold">Data:</h3>
               </div>
 
               <div className="overflow-x-auto">
@@ -562,9 +562,9 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
                   <thead>
                     <tr className="bg-slate-100 dark:bg-slate-700">
                       <th className="p-2 text-left text-sm font-medium">ID</th>
-                      <th className="p-2 text-left text-sm font-medium">Nombre</th>
-                      <th className="p-2 text-left text-sm font-medium">Valor</th>
-                      <th className="p-2 text-left text-sm font-medium">Categoría</th>
+                      <th className="p-2 text-left text-sm font-medium">Name</th>
+                      <th className="p-2 text-left text-sm font-medium">Value</th>
+                      <th className="p-2 text-left text-sm font-medium">Category</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -602,16 +602,16 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
               </div>
 
               <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-600">
-                <h4 className="text-sm font-medium mb-2">Resumen de datos</h4>
+                <h4 className="text-sm font-medium mb-2">Data summary</h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-slate-500 dark:text-slate-400">Valor promedio:</p>
+                    <p className="text-slate-500 dark:text-slate-400">Average value:</p>
                     <p className="font-medium">
                       {Math.round(info.data.reduce((acc, item) => acc + item.value, 0) / info.data.length)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-slate-500 dark:text-slate-400">Valor máximo:</p>
+                    <p className="text-slate-500 dark:text-slate-400">Maximum value:</p>
                     <p className="font-medium">{Math.max(...info.data.map((item) => item.value))}</p>
                   </div>
                 </div>
@@ -623,7 +623,7 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
       default:
         return (
           <div className="p-4 text-center">
-            <p>Vista no disponible</p>
+            <p>View not available</p>
           </div>
         )
     }
@@ -650,7 +650,7 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
               size="icon"
               className="rounded-full h-8 w-8"
               onClick={handleShare}
-              aria-label="Compartir información"
+              aria-label="Share information"
             >
               <Share2 className="h-4 w-4" />
             </Button>
@@ -660,12 +660,12 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
               className="rounded-full h-8 w-8"
               onClick={() => {
                 toast({
-                  title: "Descarga iniciada",
-                  description: "La información se está descargando",
+                  title: "Download started",
+                  description: "The information is being downloaded",
                   duration: 3000,
                 })
               }}
-              aria-label="Descargar información"
+              aria-label="Download information"
             >
               <Download className="h-4 w-4" />
             </Button>
@@ -674,35 +674,35 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
 
         <div className="mb-6">
           <label htmlFor="view-selector" className="block text-sm font-medium mb-2">
-            Seleccionar vista:
+            Select view:
           </label>
           <Select value={selectedView} onValueChange={(value) => setSelectedView(value)}>
             <SelectTrigger id="view-selector" className="w-full">
-              <SelectValue placeholder="Seleccionar vista" />
+              <SelectValue placeholder="Select view" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="informacion">
                 <div className="flex items-center gap-2">
                   <Info className="h-4 w-4" />
-                  <span>Información general</span>
+                  <span>General information</span>
                 </div>
               </SelectItem>
               <SelectItem value="estadisticas">
                 <div className="flex items-center gap-2">
                   <BarChart className="h-4 w-4" />
-                  <span>Estadísticas</span>
+                  <span>Statistics</span>
                 </div>
               </SelectItem>
               <SelectItem value="documentacion">
                 <div className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
-                  <span>Documentación</span>
+                  <span>Documentation</span>
                 </div>
               </SelectItem>
               <SelectItem value="datos">
                 <div className="flex items-center gap-2">
                   <Database className="h-4 w-4" />
-                  <span>Datos</span>
+                  <span>Data</span>
                 </div>
               </SelectItem>
             </SelectContent>
@@ -713,7 +713,7 @@ export default function InfoPanel({ selectedSection }: InfoPanelProps) {
 
         <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
           <p className="text-sm text-slate-500 dark:text-slate-400 italic">
-            Puedes seleccionar otra sección del diagrama para comparar información
+            You can select another section of the diagram to compare information
           </p>
         </div>
       </motion.div>

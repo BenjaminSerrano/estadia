@@ -20,7 +20,7 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
       color: "rgba(147, 51, 234, 0.5)",
       hoverColor: "rgba(147, 51, 234, 0.75)",
       activeColor: "rgba(147, 51, 234, 0.9)",
-      description: "Genes expresados a 16°C",
+      description: "Genes expressed at 16°C",
       cx: 160,
       cy: 140,
       r: 80,
@@ -31,7 +31,7 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
       color: "rgba(59, 130, 246, 0.5)",
       hoverColor: "rgba(59, 130, 246, 0.75)",
       activeColor: "rgba(59, 130, 246, 0.9)",
-      description: "Genes expresados a 38°C",
+      description: "Genes expressed at 38°C",
       cx: 280,
       cy: 140,
       r: 80,
@@ -42,7 +42,7 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
       color: "rgba(236, 72, 153, 0.5)",
       hoverColor: "rgba(236, 72, 153, 0.75)",
       activeColor: "rgba(236, 72, 153, 0.9)",
-      description: "Genes expresados a 41°C",
+      description: "Genes expressed at 41°C",
       cx: 220,
       cy: 220,
       r: 80,
@@ -53,7 +53,7 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
       color: "rgba(139, 92, 246, 0.6)",
       hoverColor: "rgba(139, 92, 246, 0.8)",
       activeColor: "rgba(139, 92, 246, 0.95)",
-      description: "Genes comunes entre 16°C y 38°C",
+      description: "Common genes between 16°C and 38°C",
     },
     {
       id: "AC",
@@ -61,7 +61,7 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
       color: "rgba(190, 24, 185, 0.6)",
       hoverColor: "rgba(190, 24, 185, 0.8)",
       activeColor: "rgba(190, 24, 185, 0.95)",
-      description: "Genes comunes entre 16°C y 41°C",
+      description: "Common genes between 16°C and 41°C",
     },
     {
       id: "BC",
@@ -69,7 +69,7 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
       color: "rgba(79, 70, 229, 0.6)",
       hoverColor: "rgba(79, 70, 229, 0.8)",
       activeColor: "rgba(79, 70, 229, 0.95)",
-      description: "Genes comunes entre 38°C y 41°C",
+      description: "Common genes between 38°C and 41°C",
     },
     {
       id: "ABC",
@@ -77,7 +77,7 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
       color: "rgba(255, 255, 255, 0.9)",
       hoverColor: "rgba(248, 250, 252, 0.95)",
       activeColor: "rgba(241, 245, 249, 1)",
-      description: "Genes comunes en todas las temperaturas",
+      description: "Common genes across all temperatures",
       cx: 220,
       cy: 180,
       r: 25,
@@ -146,12 +146,12 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
           isAnimating ? 'scale-105' : 'scale-100'
         }`}
         role="img"
-        aria-label="Diagrama de Venn interactivo con tres temperaturas: 16°C, 38°C y 41°C"
+        aria-label="Interactive Venn diagram with three temperatures: 16°C, 38°C and 41°C"
       >
-        <title>Diagrama de Venn interactivo de genes expresados a diferentes temperaturas</title>
+        <title>Interactive Venn diagram of genes expressed at different temperatures</title>
         <desc>
-          Un diagrama de Venn que muestra genes expresados a diferentes temperaturas (16°C, 38°C, 41°C) y sus intersecciones.
-          Haz clic en cualquier sección para ver más información sobre los genes expresados en esas condiciones.
+          A Venn diagram showing genes expressed at different temperatures (16°C, 38°C, 41°C) and their intersections.
+          Click on any section to see more information about genes expressed under those conditions.
         </desc>
 
         <defs>
@@ -401,7 +401,7 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
               textAnchor="middle"
               className="select-none"
             >
-              Haz clic para explorar
+              Click to explore
             </text>
           </g>
         )}
@@ -410,10 +410,10 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
       <div className="mt-12 space-y-6">
         <div className="text-center">
           <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent mb-2">
-            Secciones Interactivas
+            Interactive Sections
           </h3>
           <p className="text-slate-600 dark:text-slate-400 text-sm max-w-2xl mx-auto">
-            Explora cada región haciendo clic en los botones o directamente en el diagrama
+            Explore each region by clicking the buttons or directly on the diagram
           </p>
         </div>
         
@@ -479,10 +479,10 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
       {/* Instrucciones de accesibilidad mejoradas */}
       <div className="sr-only">
         <p>
-          Este diagrama de Venn es completamente interactivo y accesible. Usa la tecla Tab para navegar entre las secciones y Enter para seleccionar.
+          This Venn diagram is fully interactive and accessible. Use the Tab key to navigate between sections and Enter to select.
         </p>
         <p>
-          Incluye siete regiones: tres conjuntos individuales (16°C, 38°C, 41°C), tres intersecciones de pares, y una intersección central de los tres conjuntos.
+          It includes seven regions: three individual sets (16°C, 38°C, 41°C), three pairwise intersections, and one central intersection of all three sets.
         </p>
       </div>
     </div>
