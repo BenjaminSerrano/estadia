@@ -3,7 +3,8 @@
  */
 
 // URL base de la API - dinámica para desarrollo y producción
-const API_BASE_URL = 'estadia-production.up.railway.app'
+// En Netlify, configurar la variable de entorno: NEXT_PUBLIC_API_BASE_URL
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://estadia-production.up.railway.app'
 
 // Default timeout for API requests (10 seconds)
 const DEFAULT_TIMEOUT = 10000;

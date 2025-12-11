@@ -142,7 +142,7 @@ export default function Home() {
               <p className="text-2xl font-bold">
                 {sectionStats?.elements !== undefined
                   ? sectionStats.elements
-                  : "Cargando..."}
+                  : "Loading..."}
               </p>
             )}
           </div>

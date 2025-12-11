@@ -176,7 +176,7 @@ export default function ElementDataClient() {
   }, [info, router])
 
   if (!info) {
-    return <div>Cargando...</div>
+    return <div>Loading...</div>
   }
 
 
@@ -234,13 +234,13 @@ export default function ElementDataClient() {
         <div className="flex items-center gap-4 mb-8">
           <Button variant="outline" onClick={() => router.push(`/data/${section}?refresh=true`)} className="flex items-center gap-2">
             <ChevronLeft className="h-4 w-4" />
-            Volver a datos de {info.title}
+            Back to {info.title} data
           </Button>
           <h1 className="text-3xl font-bold truncate">
             {element === "__TODOS_LOS_DATOS__" ? (
-              <>Todos los genes de: <span className="text-blue-600 dark:text-blue-400">{info?.title}</span></>
+              <>All genes from: <span className="text-blue-600 dark:text-blue-400">{info?.title}</span></>
             ) : (
-              <>Genes con ruta: <span className="text-blue-600 dark:text-blue-400">{element}</span></>
+              <>Genes with pathway: <span className="text-blue-600 dark:text-blue-400">{element}</span></>
             )}
           </h1>
         </div>
@@ -249,21 +249,21 @@ export default function ElementDataClient() {
           <CardHeader className={`${info.color} rounded-t-lg`}>
             <div className="flex items-center gap-3">
               {info.icon && typeof info.icon === "function" ? info.icon() : null}
-              <CardTitle>{info.title} - Genes filtrados por Pathway</CardTitle>
+              <CardTitle>{info.title} - Genes filtered by Pathway</CardTitle>
             </div>
             <CardDescription className="text-slate-700 dark:text-slate-300">
               {element === "__TODOS_LOS_DATOS__" ? (
                 <>
-                  Mostrando todos los genes de la tabla
+                  Showing all genes from the table
                   <div className="mt-2 text-xs text-blue-500">
-                    (Total de genes: {isIntersectionElement ? intersectionGenesData.length : genesData.length})
+                    (Total genes: {isIntersectionElement ? intersectionGenesData.length : genesData.length})
                   </div>
                 </>
               ) : (
                 <>
-                  Mostrando genes que contienen la ruta "{element}" en su campo Pathway
+                  Showing genes containing the pathway &quot;{element}&quot; in their Pathway field
                   <div className="mt-2 text-xs text-blue-500">
-                    (Total de genes: {isIntersectionElement ? intersectionGenesData.length : genesData.length})
+                    (Total genes: {isIntersectionElement ? intersectionGenesData.length : genesData.length})
                   </div>
                 </>
               )}
@@ -276,7 +276,7 @@ export default function ElementDataClient() {
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
                   <Input
                     type="text"
-                    placeholder="Buscar por nombre, KO_code o locustag..."
+                    placeholder="Search by name, KO_code or locustag..."
                     className="pl-9"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -289,10 +289,10 @@ export default function ElementDataClient() {
                   <ArrowUpDown className="h-4 w-4 text-slate-500" />
                   <Select value={sortField} onValueChange={setSortField}>
                     <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Ordenar por" />
+                      <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Name">Nombre</SelectItem>
+                      <SelectItem value="Name">Name</SelectItem>
                       <SelectItem value="KO_code">KO Code</SelectItem>
                       <SelectItem value="Protein_accession">Protein Accession</SelectItem>
                       <SelectItem value="locustag">Locus Tag</SelectItem>
@@ -323,7 +323,7 @@ export default function ElementDataClient() {
                   variant="outline"
                   size="icon"
                   onClick={() => setSortDirection(sortDirection === "asc" ? "desc" : "asc")}
-                  aria-label={sortDirection === "asc" ? "Ordenar descendente" : "Ordenar ascendente"}
+                  aria-label={sortDirection === "asc" ? "Sort descending" : "Sort ascending"}
                 >
                   <ArrowUpDown className="h-4 w-4" />
                 </Button>
@@ -334,21 +334,21 @@ export default function ElementDataClient() {
               <div className="flex flex-col justify-center items-center py-12 space-y-4">
                 <div className="w-12 h-12 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin"></div>
                 <p className="text-slate-600 dark:text-slate-300 animate-pulse">
-                  Cargando datos de la tabla {mapSectionToTable(section)}...
+                  Loading data from table {mapSectionToTable(section)}...
                 </p>
               </div>
             ) : error ? (
               <div className="p-8 text-center">
                 <div className="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 p-4 rounded-md mb-4">
-                  <h3 className="font-bold text-lg mb-2">Error al cargar datos</h3>
+                  <h3 className="font-bold text-lg mb-2">Error loading data</h3>
                   <p>{error}</p>
                 </div>
                 <div className="flex justify-center gap-4 mt-6">
                   <Button variant="default" onClick={() => router.push("/")}>
-                    Volver al diagrama
+                    Back to diagram
                   </Button>
                   <Button variant="outline" onClick={() => window.location.reload()}>
-                    Intentar de nuevo
+                    Try again
                   </Button>
                 </div>
               </div>
@@ -357,12 +357,12 @@ export default function ElementDataClient() {
                 
                 {/* Botón para recargar datos */}
                 <div className="flex justify-end gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => window.location.reload()}
                   >
-                    Recargar datos
+                    Reload data
                   </Button>
                 </div>
                 
@@ -502,15 +502,15 @@ export default function ElementDataClient() {
                             <div className="flex flex-col items-center justify-center space-y-2">
                               <Filter className="w-6 h-6 text-amber-500 mb-2" />
                               <p className="text-slate-600 dark:text-slate-300">
-                                No se encontraron genes que coincidan con el término de búsqueda: <span className="font-medium">{searchTerm}</span>
+                                No genes found matching the search term: <span className="font-medium">{searchTerm}</span>
                               </p>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
+                              <Button
+                                variant="outline"
+                                size="sm"
                                 className="mt-2"
                                 onClick={() => setSearchTerm("")}
                               >
-                                Limpiar filtro
+                                Clear filter
                               </Button>
                             </div>
                           </td>
@@ -524,10 +524,10 @@ export default function ElementDataClient() {
                                 <Database className="w-8 h-8 text-slate-400" />
                               </div>
                               <p className="text-slate-600 dark:text-slate-300 font-medium">
-                                No se encontraron genes para este pathway
+                                No genes found for this pathway
                               </p>
                               <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md">
-                                No hay genes en la tabla {mapSectionToTable(section)} que contengan el pathway "{element}"
+                                No genes in table {mapSectionToTable(section)} containing the pathway &quot;{element}&quot;
                               </p>
                             </div>
                           </td>
@@ -542,12 +542,12 @@ export default function ElementDataClient() {
             <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 flex flex-col gap-4">
               <div className="flex justify-between items-center">
                 <div className="text-sm text-slate-500 dark:text-slate-400">
-                  Mostrando {filteredAndSortedData.length} de {isIntersectionElement ? intersectionGenesData.length : genesData.length} genes
+                  Showing {filteredAndSortedData.length} of {isIntersectionElement ? intersectionGenesData.length : genesData.length} genes
                 </div>
 
                 <Button variant="outline" size="sm" className="flex items-center gap-2">
                   <Download className="h-4 w-4" />
-                  Exportar datos
+                  Export data
                 </Button>
               </div>
               
@@ -559,12 +559,12 @@ export default function ElementDataClient() {
         <div className="flex justify-center items-center mb-8">
           <Button variant="outline" onClick={() => router.push("/")} className="flex items-center gap-2">
             <ChevronLeft className="h-4 w-4" />
-            Volver al diagrama
+            Back to diagram
           </Button>
         </div>
 
         <footer className="text-center text-sm text-slate-500 dark:text-slate-400 pb-8">
-          <p>Diagrama de Venn Interactivo © {new Date().getFullYear()}</p>
+          <p>Interactive Venn Diagram © {new Date().getFullYear()}</p>
         </footer>
       </div>
     </div>

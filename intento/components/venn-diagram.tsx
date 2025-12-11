@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, type KeyboardEvent } from "react"
+import { useState, useEffect, useRef, useCallback, type KeyboardEvent } from "react"
 
 interface VennDiagramProps {
   onSectionClick: (section: string) => void | Promise<void>
@@ -95,11 +95,11 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
   }
 
   // Handle click with animation
-  const handleSectionClick = (sectionId: string) => {
+  const handleSectionClick = useCallback((sectionId: string) => {
     setIsAnimating(true)
     onSectionClick(sectionId)
     setTimeout(() => setIsAnimating(false), 300)
-  }
+  }, [onSectionClick])
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -113,7 +113,7 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [hoveredSection, onSectionClick])
+  }, [hoveredSection, handleSectionClick])
 
   // Focus trap for keyboard navigation
   useEffect(() => {
