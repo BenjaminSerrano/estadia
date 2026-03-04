@@ -1,0 +1,2336 @@
+<html class="scroll-smooth" lang="es"><head>
+
+<script class="injected-ffc2e83d85">
+(function(){'use strict';function q(b){var c=0;return function(){return c<b.length?{done:!1,value:b[c++]}:{done:!0}}}function t(b){var c=typeof Symbol!="undefined"&&Symbol.iterator&&b[Symbol.iterator];if(c)return c.call(b);if(typeof b.length=="number")return{next:q(b)};throw Error(String(b)+" is not an iterable or ArrayLike");}var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,c,g){if(b==Array.prototype||b==Object.prototype)return b;b[c]=g.value;return b};
+function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var c=0;c<b.length;++c){var g=b[c];if(g&&g.Math==Math)return g}throw Error("Cannot find global object");}var w=v(this);function x(b,c){if(c)a:{var g=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var l=b[h];if(!(l in g))break a;g=g[l]}b=b[b.length-1];h=g[b];c=c(h);c!=h&&c!=null&&u(g,b,{configurable:!0,writable:!0,value:c})}}
+function y(){this.j=!1;this.g=null;this.u=void 0;this.h=1;this.v=this.l=0;this.i=null}function z(b){if(b.j)throw new TypeError("Generator is already running");b.j=!0}y.prototype.o=function(b){this.u=b};function A(b,c){b.i={I:c,J:!0};b.h=b.l||b.v}y.prototype.return=function(b){this.i={return:b};this.h=this.v};function B(b){this.g=new y;this.h=b}function E(b,c){z(b.g);var g=b.g.g;if(g)return F(b,"return"in g?g["return"]:function(h){return{value:h,done:!0}},c,b.g.return);b.g.return(c);return G(b)}
+function F(b,c,g,h){try{var l=c.call(b.g.g,g);if(!(l instanceof Object))throw new TypeError("Iterator result "+l+" is not an object");if(!l.done)return b.g.j=!1,l;var m=l.value}catch(f){return b.g.g=null,A(b.g,f),G(b)}b.g.g=null;h.call(b.g,m);return G(b)}function G(b){for(;b.g.h;)try{var c=b.h(b.g);if(c)return b.g.j=!1,{value:c.value,done:!1}}catch(g){b.g.u=void 0,A(b.g,g)}b.g.j=!1;if(b.g.i){c=b.g.i;b.g.i=null;if(c.J)throw c.I;return{value:c.return,done:!0}}return{value:void 0,done:!0}}
+function H(b){this.next=function(c){z(b.g);b.g.g?c=F(b,b.g.g.next,c,b.g.o):(b.g.o(c),c=G(b));return c};this.throw=function(c){z(b.g);b.g.g?c=F(b,b.g.g["throw"],c,b.g.o):(A(b.g,c),c=G(b));return c};this.return=function(c){return E(b,c)};this[Symbol.iterator]=function(){return this}}function I(b){function c(h){return b.next(h)}function g(h){return b.throw(h)}return new Promise(function(h,l){function m(f){f.done?h(f.value):Promise.resolve(f.value).then(c,g).then(m,l)}m(b.next())})}
+x("Symbol",function(b){function c(m){if(this instanceof c)throw new TypeError("Symbol is not a constructor");return new g(h+(m||"")+"_"+l++,m)}function g(m,f){this.g=m;u(this,"description",{configurable:!0,writable:!0,value:f})}if(b)return b;g.prototype.toString=function(){return this.g};var h="jscomp_symbol_"+(Math.random()*1E9>>>0)+"_",l=0;return c});
+x("Symbol.iterator",function(b){if(b)return b;b=Symbol("Symbol.iterator");u(Array.prototype,b,{configurable:!0,writable:!0,value:function(){return J(q(this))}});return b});function J(b){b={next:b};b[Symbol.iterator]=function(){return this};return b}
+x("Promise",function(b){function c(f){this.h=0;this.i=void 0;this.g=[];this.u=!1;var a=this.j();try{f(a.resolve,a.reject)}catch(d){a.reject(d)}}function g(){this.g=null}function h(f){return f instanceof c?f:new c(function(a){a(f)})}if(b)return b;g.prototype.h=function(f){if(this.g==null){this.g=[];var a=this;this.i(function(){a.l()})}this.g.push(f)};var l=w.setTimeout;g.prototype.i=function(f){l(f,0)};g.prototype.l=function(){for(;this.g&&this.g.length;){var f=this.g;this.g=[];for(var a=0;a<f.length;++a){var d=
+f[a];f[a]=null;try{d()}catch(e){this.j(e)}}}this.g=null};g.prototype.j=function(f){this.i(function(){throw f;})};c.prototype.j=function(){function f(e){return function(k){d||(d=!0,e.call(a,k))}}var a=this,d=!1;return{resolve:f(this.D),reject:f(this.l)}};c.prototype.D=function(f){if(f===this)this.l(new TypeError("A Promise cannot resolve to itself"));else if(f instanceof c)this.G(f);else{a:switch(typeof f){case "object":var a=f!=null;break a;case "function":a=!0;break a;default:a=!1}a?this.C(f):this.o(f)}};
+c.prototype.C=function(f){var a=void 0;try{a=f.then}catch(d){this.l(d);return}typeof a=="function"?this.H(a,f):this.o(f)};c.prototype.l=function(f){this.v(2,f)};c.prototype.o=function(f){this.v(1,f)};c.prototype.v=function(f,a){if(this.h!=0)throw Error("Cannot settle("+f+", "+a+"): Promise already settled in state"+this.h);this.h=f;this.i=a;this.h===2&&this.F();this.K()};c.prototype.F=function(){var f=this;l(function(){if(f.B()){var a=w.console;typeof a!=="undefined"&&a.error(f.i)}},1)};c.prototype.B=
+function(){if(this.u)return!1;var f=w.CustomEvent,a=w.Event,d=w.dispatchEvent;if(typeof d==="undefined")return!0;typeof f==="function"?f=new f("unhandledrejection",{cancelable:!0}):typeof a==="function"?f=new a("unhandledrejection",{cancelable:!0}):(f=w.document.createEvent("CustomEvent"),f.initCustomEvent("unhandledrejection",!1,!0,f));f.promise=this;f.reason=this.i;return d(f)};c.prototype.K=function(){if(this.g!=null){for(var f=0;f<this.g.length;++f)m.h(this.g[f]);this.g=null}};var m=new g;c.prototype.G=
+function(f){var a=this.j();f.A(a.resolve,a.reject)};c.prototype.H=function(f,a){var d=this.j();try{f.call(a,d.resolve,d.reject)}catch(e){d.reject(e)}};c.prototype.then=function(f,a){function d(n,r){return typeof n=="function"?function(C){try{e(n(C))}catch(D){k(D)}}:r}var e,k,p=new c(function(n,r){e=n;k=r});this.A(d(f,e),d(a,k));return p};c.prototype.catch=function(f){return this.then(void 0,f)};c.prototype.A=function(f,a){function d(){switch(e.h){case 1:f(e.i);break;case 2:a(e.i);break;default:throw Error("Unexpected state: "+
+e.h);}}var e=this;this.g==null?m.h(d):this.g.push(d);this.u=!0};c.resolve=h;c.reject=function(f){return new c(function(a,d){d(f)})};c.race=function(f){return new c(function(a,d){for(var e=t(f),k=e.next();!k.done;k=e.next())h(k.value).A(a,d)})};c.all=function(f){var a=t(f),d=a.next();return d.done?h([]):new c(function(e,k){function p(C){return function(D){n[C]=D;r--;r==0&&e(n)}}var n=[],r=0;do n.push(void 0),r++,h(d.value).A(p(n.length-1),k),d=a.next();while(!d.done)})};return c});
+function K(b,c){return Object.prototype.hasOwnProperty.call(b,c)}x("Object.is",function(b){return b?b:function(c,g){return c===g?c!==0||1/c===1/g:c!==c&&g!==g}});x("Array.prototype.includes",function(b){return b?b:function(c,g){var h=this;h instanceof String&&(h=String(h));var l=h.length;g=g||0;for(g<0&&(g=Math.max(g+l,0));g<l;g++){var m=h[g];if(m===c||Object.is(m,c))return!0}return!1}});
+x("String.prototype.includes",function(b){return b?b:function(c,g){if(this==null)throw new TypeError("The 'this' value for String.prototype.includes must not be null or undefined");if(c instanceof RegExp)throw new TypeError("First argument to String.prototype.includes must not be a regular expression");return this.indexOf(c,g||0)!==-1}});
+x("WeakMap",function(b){function c(d){this.g=(a+=Math.random()+1).toString();if(d){d=t(d);for(var e;!(e=d.next()).done;)e=e.value,this.set(e[0],e[1])}}function g(){}function h(d){var e=typeof d;return e==="object"&&d!==null||e==="function"}function l(d){if(!K(d,f)){var e=new g;u(d,f,{value:e})}}function m(d){var e=Object[d];e&&(Object[d]=function(k){if(k instanceof g)return k;Object.isExtensible(k)&&l(k);return e(k)})}if(function(){if(!b||!Object.seal)return!1;try{var d=Object.seal({}),e=Object.seal({}),
+k=new b([[d,2],[e,3]]);if(k.get(d)!=2||k.get(e)!=3)return!1;k.delete(d);k.set(e,4);return!k.has(d)&&k.get(e)==4}catch(p){return!1}}())return b;var f="$jscomp_hidden_"+Math.random();m("freeze");m("preventExtensions");m("seal");var a=0;c.prototype.set=function(d,e){if(!h(d))throw Error("Invalid WeakMap key");l(d);if(!K(d,f))throw Error("WeakMap key fail: "+d);d[f][this.g]=e;return this};c.prototype.get=function(d){return h(d)&&K(d,f)?d[f][this.g]:void 0};c.prototype.has=function(d){return h(d)&&K(d,
+f)&&K(d[f],this.g)};c.prototype.delete=function(d){return h(d)&&K(d,f)&&K(d[f],this.g)?delete d[f][this.g]:!1};return c});
+x("Map",function(b){function c(){var a={};return a.m=a.next=a.head=a}function g(a,d){var e=a[1];return J(function(){if(e){for(;e.head!=a[1];)e=e.m;for(;e.next!=e.head;)return e=e.next,{done:!1,value:d(e)};e=null}return{done:!0,value:void 0}})}function h(a,d){var e=d&&typeof d;e=="object"||e=="function"?m.has(d)?e=m.get(d):(e=""+ ++f,m.set(d,e)):e="p_"+d;var k=a[0][e];if(k&&K(a[0],e))for(a=0;a<k.length;a++){var p=k[a];if(d!==d&&p.key!==p.key||d===p.key)return{id:e,list:k,index:a,entry:p}}return{id:e,
+list:k,index:-1,entry:void 0}}function l(a){this[0]={};this[1]=c();this.size=0;if(a){a=t(a);for(var d;!(d=a.next()).done;)d=d.value,this.set(d[0],d[1])}}if(function(){if(!b||typeof b!="function"||!b.prototype.entries||typeof Object.seal!="function")return!1;try{var a=Object.seal({x:4}),d=new b(t([[a,"s"]]));if(d.get(a)!="s"||d.size!=1||d.get({x:4})||d.set({x:4},"t")!=d||d.size!=2)return!1;var e=d.entries(),k=e.next();if(k.done||k.value[0]!=a||k.value[1]!="s")return!1;k=e.next();return k.done||k.value[0].x!=
+4||k.value[1]!="t"||!e.next().done?!1:!0}catch(p){return!1}}())return b;var m=new WeakMap;l.prototype.set=function(a,d){a=a===0?0:a;var e=h(this,a);e.list||(e.list=this[0][e.id]=[]);e.entry?e.entry.value=d:(e.entry={next:this[1],m:this[1].m,head:this[1],key:a,value:d},e.list.push(e.entry),this[1].m.next=e.entry,this[1].m=e.entry,this.size++);return this};l.prototype.delete=function(a){a=h(this,a);return a.entry&&a.list?(a.list.splice(a.index,1),a.list.length||delete this[0][a.id],a.entry.m.next=a.entry.next,
+a.entry.next.m=a.entry.m,a.entry.head=null,this.size--,!0):!1};l.prototype.clear=function(){this[0]={};this[1]=this[1].m=c();this.size=0};l.prototype.has=function(a){return!!h(this,a).entry};l.prototype.get=function(a){return(a=h(this,a).entry)&&a.value};l.prototype.entries=function(){return g(this,function(a){return[a.key,a.value]})};l.prototype.keys=function(){return g(this,function(a){return a.key})};l.prototype.values=function(){return g(this,function(a){return a.value})};l.prototype.forEach=
+function(a,d){for(var e=this.entries(),k;!(k=e.next()).done;)k=k.value,a.call(d,k[1],k[0],this)};l.prototype[Symbol.iterator]=l.prototype.entries;var f=0;return l});
+x("Set",function(b){function c(g){this.g=new Map;if(g){g=t(g);for(var h;!(h=g.next()).done;)this.add(h.value)}this.size=this.g.size}if(function(){if(!b||typeof b!="function"||!b.prototype.entries||typeof Object.seal!="function")return!1;try{var g=Object.seal({x:4}),h=new b(t([g]));if(!h.has(g)||h.size!=1||h.add(g)!=h||h.size!=1||h.add({x:4})!=h||h.size!=2)return!1;var l=h.entries(),m=l.next();if(m.done||m.value[0]!=g||m.value[1]!=g)return!1;m=l.next();return m.done||m.value[0]==g||m.value[0].x!=4||
+m.value[1]!=m.value[0]?!1:l.next().done}catch(f){return!1}}())return b;c.prototype.add=function(g){g=g===0?0:g;this.g.set(g,g);this.size=this.g.size;return this};c.prototype.delete=function(g){g=this.g.delete(g);this.size=this.g.size;return g};c.prototype.clear=function(){this.g.clear();this.size=0};c.prototype.has=function(g){return this.g.has(g)};c.prototype.entries=function(){return this.g.entries()};c.prototype.values=function(){return this.g.values()};c.prototype.keys=c.prototype.values;c.prototype[Symbol.iterator]=
+c.prototype.values;c.prototype.forEach=function(g,h){var l=this;this.g.forEach(function(m){return g.call(h,m,m,l)})};return c});(function(){function b(){return m?Promise.resolve(m):f?f:f=fetch("https://www.gstatic.com/bard-maui/resources/material-design-icon-names.804824289.json").then(function(a){if(!a.ok)throw Error("HTTP error! status: "+a.status+" fetching https://www.gstatic.com/bard-maui/resources/material-design-icon-names.804824289.json");return a.json()}).then(function(a){if(!Array.isArray(a))throw new TypeError("Fetched icon names from https://www.gstatic.com/bard-maui/resources/material-design-icon-names.804824289.json is not an array.");
+return m=a}).catch(function(a){console.error("IconChecker: Failed to load valid icon names from https://www.gstatic.com/bard-maui/resources/material-design-icon-names.804824289.json.",a);f=null;throw a;})}function c(a){var d,e,k,p;return I(new H(new B(function(n){switch(n.h){case 1:d=(a.textContent||"").trim();if(!d||a.classList.contains("js-replaced-missing-icon")&&d==="radio_button_unchecked")return n.return();e=window.getComputedStyle(a);if(e.display==="none"||e.visibility==="hidden")return n.return();
+n.l=2;var r=b();n.h=4;return{value:r};case 4:k=n.u;n.h=3;n.l=0;break;case 2:return n.l=0,n.i=null,console.warn('IconChecker: Skipping check for icon "'+d+'" as valid names could not be loaded.'),n.return();case 3:(p=k.includes(d))?a.classList.contains("js-replaced-missing-icon")&&a.classList.remove("js-replaced-missing-icon"):d==="radio_button_unchecked"&&a.classList.contains("js-replaced-missing-icon")||(a.textContent="radio_button_unchecked",a.classList.add("js-replaced-missing-icon")),n.h=0}})))}
+function g(a){a=a===void 0?document.body:a;a.querySelectorAll(l).forEach(function(d){c(d)})}function h(){b().catch(function(){});document.fonts.ready.then(function(){requestAnimationFrame(function(){g(document.body);(new MutationObserver(function(a){var d=new Set;a=t(a);for(var e=a.next();!e.done;e=a.next())if(e=e.value,e.type==="childList")e.addedNodes.forEach(function(p){p.nodeType===Node.ELEMENT_NODE&&(p.matches(l)&&d.add(p),p.querySelectorAll(l).forEach(function(n){d.add(n)}))});else if(e.type===
+"attributes"&&e.attributeName==="class"){var k=e.target;e.target.nodeType===Node.ELEMENT_NODE&&k.matches(l)&&d.add(k)}else e.type==="characterData"&&e.target.parentNode&&(e=e.target.parentNode,e.nodeType===Node.ELEMENT_NODE&&e.matches(l)&&d.add(e));d.size>0&&setTimeout(function(){d.forEach(function(p){c(p)})},500)})).observe(document.body,{childList:!0,subtree:!0,attributes:!0,attributeFilter:["class"],characterData:!0})})}).catch(function(a){console.error("IconChecker: Font loading error. Scanning icons anyway.",
+a);requestAnimationFrame(function(){g(document.body)})})}var l=["material-icons","material-symbols-outlined","material-symbols-rounded","material-symbols-sharp"].map(function(a){return"."+a}).join(","),m=null,f=null;document.readyState==="loading"?document.addEventListener("DOMContentLoaded",function(){h()}):h()})();}).call(this);
+
+</script>
+
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Cobetia Solver | Metaheurística Bioinspirada</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script async="" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        ocean: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                            950: '#082f49',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom Sliders */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px; width: 18px;
+            border-radius: 50%;
+            background: #0ea5e9;
+            cursor: pointer;
+            margin-top: -7px;
+            box-shadow: 0 0 0 2px white, 0 2px 4px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px;
+            cursor: pointer;
+            background: #cbd5e1;
+            border-radius: 2px;
+        }
+
+        /* Glass Effects */
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        /* Animations */
+        @keyframes pulse-soft {
+            0% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(14, 165, 233, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+        }
+        .animate-pulse-soft { animation: pulse-soft 2s infinite; }
+        
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:Inter, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:JetBrains Mono, monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0px}.bottom-4{bottom:1rem}.left-4{left:1rem}.right-4{right:1rem}.top-0{top:0px}.top-24{top:6rem}.top-4{top:1rem}.z-10{z-index:10}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-12{margin-bottom:3rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mr-2{margin-right:0.5rem}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-3{margin-top:0.75rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.ml-2{margin-left:0.5rem}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-1{height:0.25rem}.h-10{height:2.5rem}.h-12{height:3rem}.h-16{height:4rem}.h-2{height:0.5rem}.h-64{height:16rem}.h-\[500px\]{height:500px}.h-full{height:100%}.min-h-\[500px\]{min-height:500px}.min-h-screen{min-height:100vh}.w-10{width:2.5rem}.w-12{width:3rem}.w-2{width:0.5rem}.w-20{width:5rem}.w-60{width:15rem}.w-full{width:100%}.max-w-2xl{max-width:42rem}.max-w-4xl{max-width:56rem}.max-w-5xl{max-width:64rem}.max-w-7xl{max-width:80rem}.max-w-none{max-width:none}.max-w-xl{max-width:36rem}.flex-shrink-0{flex-shrink:0}.flex-grow{flex-grow:1}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}.cursor-crosshair{cursor:crosshair}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-16{gap:4rem}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-8{gap:2rem}.space-x-6 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(1.5rem * var(--tw-space-x-reverse));margin-left:calc(1.5rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.space-y-8 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(2rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(2rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.scroll-smooth{scroll-behavior:smooth}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-y{border-top-width:1px;border-bottom-width:1px}.border-b{border-bottom-width:1px}.border-l-4{border-left-width:4px}.border-t{border-top-width:1px}.border-r-2{border-right-width:2px}.border-amber-100{--tw-border-opacity:1;border-color:rgb(254 243 199 / var(--tw-border-opacity, 1))}.border-ocean-100{--tw-border-opacity:1;border-color:rgb(224 242 254 / var(--tw-border-opacity, 1))}.border-ocean-500{--tw-border-opacity:1;border-color:rgb(14 165 233 / var(--tw-border-opacity, 1))}.border-ocean-500\/30{border-color:rgb(14 165 233 / 0.3)}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249 / var(--tw-border-opacity, 1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-slate-600{--tw-border-opacity:1;border-color:rgb(71 85 105 / var(--tw-border-opacity, 1))}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-slate-700\/50{border-color:rgb(51 65 85 / 0.5)}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.border-slate-900{--tw-border-opacity:1;border-color:rgb(15 23 42 / var(--tw-border-opacity, 1))}.border-transparent{border-color:transparent}.border-amber-500{--tw-border-opacity:1;border-color:rgb(245 158 11 / var(--tw-border-opacity, 1))}.border-l-ocean-500{--tw-border-opacity:1;border-left-color:rgb(14 165 233 / var(--tw-border-opacity, 1))}.bg-amber-50{--tw-bg-opacity:1;background-color:rgb(255 251 235 / var(--tw-bg-opacity, 1))}.bg-ocean-50{--tw-bg-opacity:1;background-color:rgb(240 249 255 / var(--tw-bg-opacity, 1))}.bg-ocean-50\/50{background-color:rgb(240 249 255 / 0.5)}.bg-ocean-500{--tw-bg-opacity:1;background-color:rgb(14 165 233 / var(--tw-bg-opacity, 1))}.bg-ocean-600{--tw-bg-opacity:1;background-color:rgb(2 132 199 / var(--tw-bg-opacity, 1))}.bg-ocean-900\/50{background-color:rgb(12 74 110 / 0.5)}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-800\/50{background-color:rgb(30 41 59 / 0.5)}.bg-slate-800\/60{background-color:rgb(30 41 59 / 0.6)}.bg-slate-800\/80{background-color:rgb(30 41 59 / 0.8)}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/80{background-color:rgb(15 23 42 / 0.8)}.bg-slate-900\/90{background-color:rgb(15 23 42 / 0.9)}.bg-slate-950{--tw-bg-opacity:1;background-color:rgb(2 6 23 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-slate-800\/90{background-color:rgb(30 41 59 / 0.9)}.bg-\[linear-gradient\(rgba\(14\2c 165\2c 233\2c 0\.05\)_1px\2c transparent_1px\)\2c linear-gradient\(90deg\2c rgba\(14\2c 165\2c 233\2c 0\.05\)_1px\2c transparent_1px\)\]{background-image:linear-gradient(rgba(14,165,233,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(14,165,233,0.05) 1px,transparent 1px)}.bg-\[radial-gradient\(circle_at_30\%_30\%\2c rgba\(14\2c 165\2c 233\2c 0\.15\)\2c transparent_40\%\)\]{background-image:radial-gradient(circle at 30% 30%,rgba(14,165,233,0.15),transparent 40%)}.bg-\[radial-gradient\(circle_at_70\%_70\%\2c rgba\(51\2c 65\2c 85\2c 0\.3\)\2c transparent_40\%\)\]{background-image:radial-gradient(circle at 70% 70%,rgba(51,65,85,0.3),transparent 40%)}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-ocean-600{--tw-gradient-from:#0284c7 var(--tw-gradient-from-position);--tw-gradient-to:rgb(2 132 199 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.to-ocean-400{--tw-gradient-to:#38bdf8 var(--tw-gradient-to-position)}.bg-\[size\:40px_40px\]{background-size:40px 40px}.bg-clip-text{-webkit-background-clip:text;background-clip:text}.p-2{padding:0.5rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-12{padding-top:3rem;padding-bottom:3rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-20{padding-top:5rem;padding-bottom:5rem}.py-24{padding-top:6rem;padding-bottom:6rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-4{padding-top:1rem;padding-bottom:1rem}.pb-2{padding-bottom:0.5rem}.pb-20{padding-bottom:5rem}.pb-4{padding-bottom:1rem}.pb-6{padding-bottom:1.5rem}.pt-3{padding-top:0.75rem}.pt-32{padding-top:8rem}.text-center{text-align:center}.text-right{text-align:right}.text-justify{text-align:justify}.font-mono{font-family:JetBrains Mono, monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-\[10px\]{font-size:10px}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-light{font-weight:300}.font-medium{font-weight:500}.font-normal{font-weight:400}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.tracking-tight{letter-spacing:-0.025em}.tracking-wider{letter-spacing:0.05em}.tracking-widest{letter-spacing:0.1em}.text-amber-500{--tw-text-opacity:1;color:rgb(245 158 11 / var(--tw-text-opacity, 1))}.text-amber-600{--tw-text-opacity:1;color:rgb(217 119 6 / var(--tw-text-opacity, 1))}.text-amber-700{--tw-text-opacity:1;color:rgb(180 83 9 / var(--tw-text-opacity, 1))}.text-amber-800{--tw-text-opacity:1;color:rgb(146 64 14 / var(--tw-text-opacity, 1))}.text-amber-900{--tw-text-opacity:1;color:rgb(120 53 15 / var(--tw-text-opacity, 1))}.text-ocean-200{--tw-text-opacity:1;color:rgb(186 230 253 / var(--tw-text-opacity, 1))}.text-ocean-300{--tw-text-opacity:1;color:rgb(125 211 252 / var(--tw-text-opacity, 1))}.text-ocean-400{--tw-text-opacity:1;color:rgb(56 189 248 / var(--tw-text-opacity, 1))}.text-ocean-600{--tw-text-opacity:1;color:rgb(2 132 199 / var(--tw-text-opacity, 1))}.text-ocean-700{--tw-text-opacity:1;color:rgb(3 105 161 / var(--tw-text-opacity, 1))}.text-ocean-800{--tw-text-opacity:1;color:rgb(7 89 133 / var(--tw-text-opacity, 1))}.text-ocean-900{--tw-text-opacity:1;color:rgb(12 74 110 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.text-transparent{color:transparent}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.accent-ocean-600{accent-color:#0284c7}.opacity-0{opacity:0}.opacity-20{opacity:0.2}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_0_20px_rgba\(14\2c 165\2c 233\2c 0\.4\)\]{--tw-shadow:0 0 20px rgba(14,165,233,0.4);--tw-shadow-colored:0 0 20px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-ocean-200\/50{--tw-shadow-color:rgb(186 230 253 / 0.5);--tw-shadow:var(--tw-shadow-colored)}.shadow-ocean-900\/50{--tw-shadow-color:rgb(12 74 110 / 0.5);--tw-shadow:var(--tw-shadow-colored)}.shadow-slate-100\/50{--tw-shadow-color:rgb(241 245 249 / 0.5);--tw-shadow:var(--tw-shadow-colored)}.backdrop-blur{--tw-backdrop-blur:blur(8px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-shadow{transition-property:box-shadow;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-500{transition-duration:500ms}.selection\:bg-ocean-200 *::selection{--tw-bg-opacity:1;background-color:rgb(186 230 253 / var(--tw-bg-opacity, 1))}.selection\:text-ocean-900 *::selection{--tw-text-opacity:1;color:rgb(12 74 110 / var(--tw-text-opacity, 1))}.selection\:bg-ocean-200::selection{--tw-bg-opacity:1;background-color:rgb(186 230 253 / var(--tw-bg-opacity, 1))}.selection\:text-ocean-900::selection{--tw-text-opacity:1;color:rgb(12 74 110 / var(--tw-text-opacity, 1))}.hover\:bg-ocean-500:hover{--tw-bg-opacity:1;background-color:rgb(14 165 233 / var(--tw-bg-opacity, 1))}.hover\:bg-ocean-700:hover{--tw-bg-opacity:1;background-color:rgb(3 105 161 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-50:hover{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.hover\:text-ocean-600:hover{--tw-text-opacity:1;color:rgb(2 132 199 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:shadow-md:hover{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.group:hover .group-hover\:opacity-100{opacity:1}@media (min-width: 640px){.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}.sm\:text-4xl{font-size:2.25rem;line-height:2.5rem}.sm\:text-6xl{font-size:3.75rem;line-height:1}}@media (min-width: 768px){.md\:flex{display:flex}.md\:flex-row{flex-direction:row}.md\:text-base{font-size:1rem;line-height:1.5rem}}@media (min-width: 1024px){.lg\:col-span-4{grid-column:span 4 / span 4}.lg\:col-span-8{grid-column:span 8 / span 8}.lg\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.lg\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.lg\:px-8{padding-left:2rem;padding-right:2rem}}</style><style type="text/css">.CtxtMenu_InfoClose {  top:.2em; right:.2em;}
+.CtxtMenu_InfoContent {  overflow:auto; text-align:left; font-size:80%;  padding:.4em .6em; border:1px inset; margin:1em 0px;  max-height:20em; max-width:30em; background-color:#EEEEEE;  white-space:normal;}
+.CtxtMenu_Info.CtxtMenu_MousePost {outline:none;}
+.CtxtMenu_Info {  position:fixed; left:50%; width:auto; text-align:center;  border:3px outset; padding:1em 2em; background-color:#DDDDDD;  color:black;  cursor:default; font-family:message-box; font-size:120%;  font-style:normal; text-indent:0; text-transform:none;  line-height:normal; letter-spacing:normal; word-spacing:normal;  word-wrap:normal; white-space:nowrap; float:none; z-index:201;  border-radius: 15px;                     /* Opera 10.5 and IE9 */  -webkit-border-radius:15px;               /* Safari and Chrome */  -moz-border-radius:15px;                  /* Firefox */  -khtml-border-radius:15px;                /* Konqueror */  box-shadow:0px 10px 20px #808080;         /* Opera 10.5 and IE9 */  -webkit-box-shadow:0px 10px 20px #808080; /* Safari 3 & Chrome */  -moz-box-shadow:0px 10px 20px #808080;    /* Forefox 3.5 */  -khtml-box-shadow:0px 10px 20px #808080;  /* Konqueror */  filter:progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color="gray", Positive="true"); /* IE */}
+</style><style type="text/css">.CtxtMenu_MenuClose {  position:absolute;  cursor:pointer;  display:inline-block;  border:2px solid #AAA;  border-radius:18px;  -webkit-border-radius: 18px;             /* Safari and Chrome */  -moz-border-radius: 18px;                /* Firefox */  -khtml-border-radius: 18px;              /* Konqueror */  font-family: "Courier New", Courier;  font-size:24px;  color:#F0F0F0}
+.CtxtMenu_MenuClose span {  display:block; background-color:#AAA; border:1.5px solid;  border-radius:18px;  -webkit-border-radius: 18px;             /* Safari and Chrome */  -moz-border-radius: 18px;                /* Firefox */  -khtml-border-radius: 18px;              /* Konqueror */  line-height:0;  padding:8px 0 6px     /* may need to be browser-specific */}
+.CtxtMenu_MenuClose:hover {  color:white!important;  border:2px solid #CCC!important}
+.CtxtMenu_MenuClose:hover span {  background-color:#CCC!important}
+.CtxtMenu_MenuClose:hover:focus {  outline:none}
+</style><style type="text/css">.CtxtMenu_Menu {  position:absolute;  background-color:white;  color:black;  width:auto; padding:5px 0px;  border:1px solid #CCCCCC; margin:0; cursor:default;  font: menu; text-align:left; text-indent:0; text-transform:none;  line-height:normal; letter-spacing:normal; word-spacing:normal;  word-wrap:normal; white-space:nowrap; float:none; z-index:201;  border-radius: 5px;                     /* Opera 10.5 and IE9 */  -webkit-border-radius: 5px;             /* Safari and Chrome */  -moz-border-radius: 5px;                /* Firefox */  -khtml-border-radius: 5px;              /* Konqueror */  box-shadow:0px 10px 20px #808080;         /* Opera 10.5 and IE9 */  -webkit-box-shadow:0px 10px 20px #808080; /* Safari 3 & Chrome */  -moz-box-shadow:0px 10px 20px #808080;    /* Forefox 3.5 */  -khtml-box-shadow:0px 10px 20px #808080;  /* Konqueror */}
+.CtxtMenu_MenuItem {  padding: 1px 2em;  background:transparent;}
+.CtxtMenu_MenuArrow {  position:absolute; right:.5em; padding-top:.25em; color:#666666;  font-family: null; font-size: .75em}
+.CtxtMenu_MenuActive .CtxtMenu_MenuArrow {color:white}
+.CtxtMenu_MenuArrow.CtxtMenu_RTL {left:.5em; right:auto}
+.CtxtMenu_MenuCheck {  position:absolute; left:.7em;  font-family: null}
+.CtxtMenu_MenuCheck.CtxtMenu_RTL { right:.7em; left:auto }
+.CtxtMenu_MenuRadioCheck {  position:absolute; left: .7em;}
+.CtxtMenu_MenuRadioCheck.CtxtMenu_RTL {  right: .7em; left:auto}
+.CtxtMenu_MenuInputBox {  padding-left: 1em; right:.5em; color:#666666;  font-family: null;}
+.CtxtMenu_MenuInputBox.CtxtMenu_RTL {  left: .1em;}
+.CtxtMenu_MenuComboBox {  left:.1em; padding-bottom:.5em;}
+.CtxtMenu_MenuSlider {  left: .1em;}
+.CtxtMenu_SliderValue {  position:absolute; right:.1em; padding-top:.25em; color:#333333;  font-size: .75em}
+.CtxtMenu_SliderBar {  outline: none; background: #d3d3d3}
+.CtxtMenu_MenuLabel {  padding: 1px 2em 3px 1.33em;  font-style:italic}
+.CtxtMenu_MenuRule {  border-top: 1px solid #DDDDDD;  margin: 4px 3px;}
+.CtxtMenu_MenuDisabled {  color:GrayText}
+.CtxtMenu_MenuActive {  background-color: #606872;  color: white;}
+.CtxtMenu_MenuDisabled:focus {  background-color: #E8E8E8}
+.CtxtMenu_MenuLabel:focus {  background-color: #E8E8E8}
+.CtxtMenu_ContextMenu:focus {  outline:none}
+.CtxtMenu_ContextMenu .CtxtMenu_MenuItem:focus {  outline:none}
+.CtxtMenu_SelectionMenu {  position:relative; float:left;  border-bottom: none; -webkit-box-shadow:none; -webkit-border-radius:0px; }
+.CtxtMenu_SelectionItem {  padding-right: 1em;}
+.CtxtMenu_Selection {  right: 40%; width:50%; }
+.CtxtMenu_SelectionBox {  padding: 0em; max-height:20em; max-width: none;  background-color:#FFFFFF;}
+.CtxtMenu_SelectionDivider {  clear: both; border-top: 2px solid #000000;}
+.CtxtMenu_Menu .CtxtMenu_MenuClose {  top:-10px; left:-10px}
+</style><style id="MJX-CHTML-styles">
+mjx-container[jax="CHTML"] {
+  line-height: 0;
+}
+
+mjx-container [space="1"] {
+  margin-left: .111em;
+}
+
+mjx-container [space="2"] {
+  margin-left: .167em;
+}
+
+mjx-container [space="3"] {
+  margin-left: .222em;
+}
+
+mjx-container [space="4"] {
+  margin-left: .278em;
+}
+
+mjx-container [space="5"] {
+  margin-left: .333em;
+}
+
+mjx-container [rspace="1"] {
+  margin-right: .111em;
+}
+
+mjx-container [rspace="2"] {
+  margin-right: .167em;
+}
+
+mjx-container [rspace="3"] {
+  margin-right: .222em;
+}
+
+mjx-container [rspace="4"] {
+  margin-right: .278em;
+}
+
+mjx-container [rspace="5"] {
+  margin-right: .333em;
+}
+
+mjx-container [size="s"] {
+  font-size: 70.7%;
+}
+
+mjx-container [size="ss"] {
+  font-size: 50%;
+}
+
+mjx-container [size="Tn"] {
+  font-size: 60%;
+}
+
+mjx-container [size="sm"] {
+  font-size: 85%;
+}
+
+mjx-container [size="lg"] {
+  font-size: 120%;
+}
+
+mjx-container [size="Lg"] {
+  font-size: 144%;
+}
+
+mjx-container [size="LG"] {
+  font-size: 173%;
+}
+
+mjx-container [size="hg"] {
+  font-size: 207%;
+}
+
+mjx-container [size="HG"] {
+  font-size: 249%;
+}
+
+mjx-container [width="full"] {
+  width: 100%;
+}
+
+mjx-box {
+  display: inline-block;
+}
+
+mjx-block {
+  display: block;
+}
+
+mjx-itable {
+  display: inline-table;
+}
+
+mjx-row {
+  display: table-row;
+}
+
+mjx-row > * {
+  display: table-cell;
+}
+
+mjx-mtext {
+  display: inline-block;
+  text-align: left;
+}
+
+mjx-mstyle {
+  display: inline-block;
+}
+
+mjx-merror {
+  display: inline-block;
+  color: red;
+  background-color: yellow;
+}
+
+mjx-mphantom {
+  visibility: hidden;
+}
+
+_::-webkit-full-page-media, _:future, :root mjx-container {
+  will-change: opacity;
+}
+
+mjx-assistive-mml {
+  position: absolute !important;
+  top: 0px;
+  left: 0px;
+  clip: rect(1px, 1px, 1px, 1px);
+  padding: 1px 0px 0px 0px !important;
+  border: 0px !important;
+  display: block !important;
+  width: auto !important;
+  overflow: hidden !important;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+mjx-assistive-mml[display="block"] {
+  width: 100% !important;
+}
+
+mjx-math {
+  display: inline-block;
+  text-align: left;
+  line-height: 0;
+  text-indent: 0;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 100%;
+  font-size-adjust: none;
+  letter-spacing: normal;
+  border-collapse: collapse;
+  word-wrap: normal;
+  word-spacing: normal;
+  white-space: nowrap;
+  direction: ltr;
+  padding: 1px 0;
+}
+
+mjx-container[jax="CHTML"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="CHTML"][display="true"][width="full"] {
+  display: flex;
+}
+
+mjx-container[jax="CHTML"][display="true"] mjx-math {
+  padding: 0;
+}
+
+mjx-container[jax="CHTML"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="CHTML"][justify="right"] {
+  text-align: right;
+}
+
+mjx-TeXAtom {
+  display: inline-block;
+  text-align: left;
+}
+
+mjx-mover {
+  display: inline-block;
+  text-align: left;
+}
+
+mjx-mover:not([limits="false"]) {
+  padding-top: .1em;
+}
+
+mjx-mover:not([limits="false"]) > * {
+  display: block;
+  text-align: left;
+}
+
+mjx-mo {
+  display: inline-block;
+  text-align: left;
+}
+
+mjx-stretchy-h {
+  display: inline-table;
+  width: 100%;
+}
+
+mjx-stretchy-h > * {
+  display: table-cell;
+  width: 0;
+}
+
+mjx-stretchy-h > * > mjx-c {
+  display: inline-block;
+  transform: scalex(1.0000001);
+}
+
+mjx-stretchy-h > * > mjx-c::before {
+  display: inline-block;
+  width: initial;
+}
+
+mjx-stretchy-h > mjx-ext {
+  /* IE */ overflow: hidden;
+  /* others */ overflow: clip visible;
+  width: 100%;
+}
+
+mjx-stretchy-h > mjx-ext > mjx-c::before {
+  transform: scalex(500);
+}
+
+mjx-stretchy-h > mjx-ext > mjx-c {
+  width: 0;
+}
+
+mjx-stretchy-h > mjx-beg > mjx-c {
+  margin-right: -.1em;
+}
+
+mjx-stretchy-h > mjx-end > mjx-c {
+  margin-left: -.1em;
+}
+
+mjx-stretchy-v {
+  display: inline-block;
+}
+
+mjx-stretchy-v > * {
+  display: block;
+}
+
+mjx-stretchy-v > mjx-beg {
+  height: 0;
+}
+
+mjx-stretchy-v > mjx-end > mjx-c {
+  display: block;
+}
+
+mjx-stretchy-v > * > mjx-c {
+  transform: scaley(1.0000001);
+  transform-origin: left center;
+  overflow: hidden;
+}
+
+mjx-stretchy-v > mjx-ext {
+  display: block;
+  height: 100%;
+  box-sizing: border-box;
+  border: 0px solid transparent;
+  /* IE */ overflow: hidden;
+  /* others */ overflow: visible clip;
+}
+
+mjx-stretchy-v > mjx-ext > mjx-c::before {
+  width: initial;
+  box-sizing: border-box;
+}
+
+mjx-stretchy-v > mjx-ext > mjx-c {
+  transform: scaleY(500) translateY(.075em);
+  overflow: visible;
+}
+
+mjx-mark {
+  display: inline-block;
+  height: 0px;
+}
+
+mjx-c {
+  display: inline-block;
+}
+
+mjx-utext {
+  display: inline-block;
+  padding: .75em 0 .2em 0;
+}
+
+mjx-mi {
+  display: inline-block;
+  text-align: left;
+}
+
+mjx-msub {
+  display: inline-block;
+  text-align: left;
+}
+
+mjx-mn {
+  display: inline-block;
+  text-align: left;
+}
+
+mjx-msubsup {
+  display: inline-block;
+  text-align: left;
+}
+
+mjx-script {
+  display: inline-block;
+  padding-right: .05em;
+  padding-left: .033em;
+}
+
+mjx-script > mjx-spacer {
+  display: block;
+}
+
+mjx-mspace {
+  display: inline-block;
+  text-align: left;
+}
+
+mjx-msup {
+  display: inline-block;
+  text-align: left;
+}
+
+mjx-munder {
+  display: inline-block;
+  text-align: left;
+}
+
+mjx-over {
+  text-align: left;
+}
+
+mjx-munder:not([limits="false"]) {
+  display: inline-table;
+}
+
+mjx-munder > mjx-row {
+  text-align: left;
+}
+
+mjx-under {
+  padding-bottom: .1em;
+}
+
+mjx-mrow {
+  display: inline-block;
+  text-align: left;
+}
+
+mjx-mtable {
+  display: inline-block;
+  text-align: center;
+  vertical-align: .25em;
+  position: relative;
+  box-sizing: border-box;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+mjx-mstyle[size="s"] mjx-mtable {
+  vertical-align: .354em;
+}
+
+mjx-labels {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+mjx-table {
+  display: inline-block;
+  vertical-align: -.5ex;
+  box-sizing: border-box;
+}
+
+mjx-table > mjx-itable {
+  vertical-align: middle;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+mjx-labels > mjx-itable {
+  position: absolute;
+  top: 0;
+}
+
+mjx-mtable[justify="left"] {
+  text-align: left;
+}
+
+mjx-mtable[justify="right"] {
+  text-align: right;
+}
+
+mjx-mtable[justify="left"][side="left"] {
+  padding-right: 0 ! important;
+}
+
+mjx-mtable[justify="left"][side="right"] {
+  padding-left: 0 ! important;
+}
+
+mjx-mtable[justify="right"][side="left"] {
+  padding-right: 0 ! important;
+}
+
+mjx-mtable[justify="right"][side="right"] {
+  padding-left: 0 ! important;
+}
+
+mjx-mtable[align] {
+  vertical-align: baseline;
+}
+
+mjx-mtable[align="top"] > mjx-table {
+  vertical-align: top;
+}
+
+mjx-mtable[align="bottom"] > mjx-table {
+  vertical-align: bottom;
+}
+
+mjx-mtable[side="right"] mjx-labels {
+  min-width: 100%;
+}
+
+mjx-mtr {
+  display: table-row;
+  text-align: left;
+}
+
+mjx-mtr[rowalign="top"] > mjx-mtd {
+  vertical-align: top;
+}
+
+mjx-mtr[rowalign="center"] > mjx-mtd {
+  vertical-align: middle;
+}
+
+mjx-mtr[rowalign="bottom"] > mjx-mtd {
+  vertical-align: bottom;
+}
+
+mjx-mtr[rowalign="baseline"] > mjx-mtd {
+  vertical-align: baseline;
+}
+
+mjx-mtr[rowalign="axis"] > mjx-mtd {
+  vertical-align: .25em;
+}
+
+mjx-mtd {
+  display: table-cell;
+  text-align: center;
+  padding: .215em .4em;
+}
+
+mjx-mtd:first-child {
+  padding-left: 0;
+}
+
+mjx-mtd:last-child {
+  padding-right: 0;
+}
+
+mjx-mtable > * > mjx-itable > *:first-child > mjx-mtd {
+  padding-top: 0;
+}
+
+mjx-mtable > * > mjx-itable > *:last-child > mjx-mtd {
+  padding-bottom: 0;
+}
+
+mjx-tstrut {
+  display: inline-block;
+  height: 1em;
+  vertical-align: -.25em;
+}
+
+mjx-labels[align="left"] > mjx-mtr > mjx-mtd {
+  text-align: left;
+}
+
+mjx-labels[align="right"] > mjx-mtr > mjx-mtd {
+  text-align: right;
+}
+
+mjx-mtd[extra] {
+  padding: 0;
+}
+
+mjx-mtd[rowalign="top"] {
+  vertical-align: top;
+}
+
+mjx-mtd[rowalign="center"] {
+  vertical-align: middle;
+}
+
+mjx-mtd[rowalign="bottom"] {
+  vertical-align: bottom;
+}
+
+mjx-mtd[rowalign="baseline"] {
+  vertical-align: baseline;
+}
+
+mjx-mtd[rowalign="axis"] {
+  vertical-align: .25em;
+}
+
+mjx-c::before {
+  display: block;
+  width: 0;
+}
+
+.MJX-TEX {
+  font-family: MJXZERO, MJXTEX;
+}
+
+.TEX-B {
+  font-family: MJXZERO, MJXTEX-B;
+}
+
+.TEX-I {
+  font-family: MJXZERO, MJXTEX-I;
+}
+
+.TEX-MI {
+  font-family: MJXZERO, MJXTEX-MI;
+}
+
+.TEX-BI {
+  font-family: MJXZERO, MJXTEX-BI;
+}
+
+.TEX-S1 {
+  font-family: MJXZERO, MJXTEX-S1;
+}
+
+.TEX-S2 {
+  font-family: MJXZERO, MJXTEX-S2;
+}
+
+.TEX-S3 {
+  font-family: MJXZERO, MJXTEX-S3;
+}
+
+.TEX-S4 {
+  font-family: MJXZERO, MJXTEX-S4;
+}
+
+.TEX-A {
+  font-family: MJXZERO, MJXTEX-A;
+}
+
+.TEX-C {
+  font-family: MJXZERO, MJXTEX-C;
+}
+
+.TEX-CB {
+  font-family: MJXZERO, MJXTEX-CB;
+}
+
+.TEX-FR {
+  font-family: MJXZERO, MJXTEX-FR;
+}
+
+.TEX-FRB {
+  font-family: MJXZERO, MJXTEX-FRB;
+}
+
+.TEX-SS {
+  font-family: MJXZERO, MJXTEX-SS;
+}
+
+.TEX-SSB {
+  font-family: MJXZERO, MJXTEX-SSB;
+}
+
+.TEX-SSI {
+  font-family: MJXZERO, MJXTEX-SSI;
+}
+
+.TEX-SC {
+  font-family: MJXZERO, MJXTEX-SC;
+}
+
+.TEX-T {
+  font-family: MJXZERO, MJXTEX-T;
+}
+
+.TEX-V {
+  font-family: MJXZERO, MJXTEX-V;
+}
+
+.TEX-VB {
+  font-family: MJXZERO, MJXTEX-VB;
+}
+
+mjx-stretchy-v mjx-c, mjx-stretchy-h mjx-c {
+  font-family: MJXZERO, MJXTEX-S1, MJXTEX-S4, MJXTEX, MJXTEX-A ! important;
+}
+
+@font-face /* 0 */ {
+  font-family: MJXZERO;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Zero.woff") format("woff");
+}
+
+@font-face /* 1 */ {
+  font-family: MJXTEX;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Main-Regular.woff") format("woff");
+}
+
+@font-face /* 2 */ {
+  font-family: MJXTEX-B;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Main-Bold.woff") format("woff");
+}
+
+@font-face /* 3 */ {
+  font-family: MJXTEX-I;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Math-Italic.woff") format("woff");
+}
+
+@font-face /* 4 */ {
+  font-family: MJXTEX-MI;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Main-Italic.woff") format("woff");
+}
+
+@font-face /* 5 */ {
+  font-family: MJXTEX-BI;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Math-BoldItalic.woff") format("woff");
+}
+
+@font-face /* 6 */ {
+  font-family: MJXTEX-S1;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Size1-Regular.woff") format("woff");
+}
+
+@font-face /* 7 */ {
+  font-family: MJXTEX-S2;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Size2-Regular.woff") format("woff");
+}
+
+@font-face /* 8 */ {
+  font-family: MJXTEX-S3;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Size3-Regular.woff") format("woff");
+}
+
+@font-face /* 9 */ {
+  font-family: MJXTEX-S4;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Size4-Regular.woff") format("woff");
+}
+
+@font-face /* 10 */ {
+  font-family: MJXTEX-A;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_AMS-Regular.woff") format("woff");
+}
+
+@font-face /* 11 */ {
+  font-family: MJXTEX-C;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Calligraphic-Regular.woff") format("woff");
+}
+
+@font-face /* 12 */ {
+  font-family: MJXTEX-CB;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Calligraphic-Bold.woff") format("woff");
+}
+
+@font-face /* 13 */ {
+  font-family: MJXTEX-FR;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Fraktur-Regular.woff") format("woff");
+}
+
+@font-face /* 14 */ {
+  font-family: MJXTEX-FRB;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Fraktur-Bold.woff") format("woff");
+}
+
+@font-face /* 15 */ {
+  font-family: MJXTEX-SS;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_SansSerif-Regular.woff") format("woff");
+}
+
+@font-face /* 16 */ {
+  font-family: MJXTEX-SSB;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_SansSerif-Bold.woff") format("woff");
+}
+
+@font-face /* 17 */ {
+  font-family: MJXTEX-SSI;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_SansSerif-Italic.woff") format("woff");
+}
+
+@font-face /* 18 */ {
+  font-family: MJXTEX-SC;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Script-Regular.woff") format("woff");
+}
+
+@font-face /* 19 */ {
+  font-family: MJXTEX-T;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Typewriter-Regular.woff") format("woff");
+}
+
+@font-face /* 20 */ {
+  font-family: MJXTEX-V;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Vector-Regular.woff") format("woff");
+}
+
+@font-face /* 21 */ {
+  font-family: MJXTEX-VB;
+  src: url("https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2/MathJax_Vector-Bold.woff") format("woff");
+}
+
+mjx-c.mjx-c7E::before {
+  padding: 0.318em 0.5em 0 0;
+  content: "~";
+}
+
+mjx-c.mjx-c1D707.TEX-I::before {
+  padding: 0.442em 0.603em 0.216em 0;
+  content: "\3BC";
+}
+
+mjx-c.mjx-c1D435.TEX-I::before {
+  padding: 0.683em 0.759em 0 0;
+  content: "B";
+}
+
+mjx-c.mjx-c1D449.TEX-I::before {
+  padding: 0.683em 0.769em 0.022em 0;
+  content: "V";
+}
+
+mjx-c.mjx-c6D::before {
+  padding: 0.442em 0.833em 0 0;
+  content: "m";
+}
+
+mjx-c.mjx-c61::before {
+  padding: 0.448em 0.5em 0.011em 0;
+  content: "a";
+}
+
+mjx-c.mjx-c78::before {
+  padding: 0.431em 0.528em 0 0;
+  content: "x";
+}
+
+mjx-c.mjx-c1D465.TEX-I::before {
+  padding: 0.442em 0.572em 0.011em 0;
+  content: "x";
+}
+
+mjx-c.mjx-c1D456.TEX-I::before {
+  padding: 0.661em 0.345em 0.011em 0;
+  content: "i";
+}
+
+mjx-c.mjx-c1D461.TEX-I::before {
+  padding: 0.626em 0.361em 0.011em 0;
+  content: "t";
+}
+
+mjx-c.mjx-c2B::before {
+  padding: 0.583em 0.778em 0.082em 0;
+  content: "+";
+}
+
+mjx-c.mjx-c31::before {
+  padding: 0.666em 0.5em 0 0;
+  content: "1";
+}
+
+mjx-c.mjx-c3D::before {
+  padding: 0.583em 0.778em 0.082em 0;
+  content: "=";
+}
+
+mjx-c.mjx-c1D44E.TEX-I::before {
+  padding: 0.441em 0.529em 0.01em 0;
+  content: "a";
+}
+
+mjx-c.mjx-c28::before {
+  padding: 0.75em 0.389em 0.25em 0;
+  content: "(";
+}
+
+mjx-c.mjx-c1D454.TEX-I::before {
+  padding: 0.442em 0.477em 0.205em 0;
+  content: "g";
+}
+
+mjx-c.mjx-c2212::before {
+  padding: 0.583em 0.778em 0.082em 0;
+  content: "\2212";
+}
+
+mjx-c.mjx-c29::before {
+  padding: 0.75em 0.389em 0.25em 0;
+  content: ")";
+}
+
+mjx-c.mjx-c1D70E.TEX-I::before {
+  padding: 0.431em 0.571em 0.011em 0;
+  content: "\3C3";
+}
+
+mjx-c.mjx-c1D709.TEX-I::before {
+  padding: 0.704em 0.438em 0.205em 0;
+  content: "\3BE";
+}
+
+mjx-c.mjx-c32::before {
+  padding: 0.666em 0.5em 0 0;
+  content: "2";
+}
+
+mjx-c.mjx-c1D44F.TEX-I::before {
+  padding: 0.694em 0.429em 0.011em 0;
+  content: "b";
+}
+
+mjx-c.mjx-c1D450.TEX-I::before {
+  padding: 0.442em 0.433em 0.011em 0;
+  content: "c";
+}
+
+mjx-c.mjx-c2211.TEX-S2::before {
+  padding: 0.95em 1.444em 0.45em 0;
+  content: "\2211";
+}
+
+mjx-c.mjx-c1D457.TEX-I::before {
+  padding: 0.661em 0.412em 0.204em 0;
+  content: "j";
+}
+
+mjx-c.mjx-c2208::before {
+  padding: 0.54em 0.667em 0.04em 0;
+  content: "\2208";
+}
+
+mjx-c.mjx-c4E.TEX-C::before {
+  padding: 0.789em 0.979em 0.05em 0;
+  content: "N";
+}
+
+mjx-c.mjx-c1D464.TEX-I::before {
+  padding: 0.443em 0.716em 0.011em 0;
+  content: "w";
+}
+
+mjx-c.mjx-c7B.TEX-S3::before {
+  padding: 1.45em 0.75em 0.949em 0;
+  content: "{";
+}
+
+mjx-c.mjx-c1D702.TEX-I::before {
+  padding: 0.442em 0.497em 0.216em 0;
+  content: "\3B7";
+}
+
+mjx-c.mjx-c1D43F.TEX-I::before {
+  padding: 0.683em 0.681em 0 0;
+  content: "L";
+}
+
+mjx-c.mjx-c2C::before {
+  padding: 0.121em 0.278em 0.194em 0;
+  content: ",";
+}
+
+mjx-c.mjx-c73::before {
+  padding: 0.448em 0.394em 0.011em 0;
+  content: "s";
+}
+
+mjx-c.mjx-c69::before {
+  padding: 0.669em 0.278em 0 0;
+  content: "i";
+}
+
+mjx-c.mjx-cA0::before {
+  padding: 0 0.25em 0 0;
+  content: "\A0";
+}
+
+mjx-c.mjx-c1D45F.TEX-I::before {
+  padding: 0.442em 0.451em 0.011em 0;
+  content: "r";
+}
+
+mjx-c.mjx-c3C::before {
+  padding: 0.54em 0.778em 0.04em 0;
+  content: "<";
+}
+
+mjx-c.mjx-c1D45D.TEX-I::before {
+  padding: 0.442em 0.503em 0.194em 0;
+  content: "p";
+}
+
+mjx-c.mjx-c64::before {
+  padding: 0.694em 0.556em 0.011em 0;
+  content: "d";
+}
+
+mjx-c.mjx-c65::before {
+  padding: 0.448em 0.444em 0.011em 0;
+  content: "e";
+}
+
+mjx-c.mjx-c74::before {
+  padding: 0.615em 0.389em 0.01em 0;
+  content: "t";
+}
+
+mjx-c.mjx-c33::before {
+  padding: 0.665em 0.5em 0.022em 0;
+  content: "3";
+}
+
+mjx-c.mjx-c6E::before {
+  padding: 0.442em 0.556em 0 0;
+  content: "n";
+}
+
+mjx-c.mjx-c20::before {
+  padding: 0 0.25em 0 0;
+  content: " ";
+}
+
+mjx-c.mjx-c63::before {
+  padding: 0.448em 0.444em 0.011em 0;
+  content: "c";
+}
+
+mjx-c.mjx-c6F::before {
+  padding: 0.448em 0.5em 0.01em 0;
+  content: "o";
+}
+
+mjx-c.mjx-c72::before {
+  padding: 0.442em 0.392em 0 0;
+  content: "r";
+}
+
+mjx-c.mjx-c6C::before {
+  padding: 0.694em 0.278em 0 0;
+  content: "l";
+}
+
+mjx-c.mjx-c67::before {
+  padding: 0.453em 0.5em 0.206em 0;
+  content: "g";
+}
+
+mjx-c.mjx-c28.TEX-S2::before {
+  padding: 1.15em 0.597em 0.649em 0;
+  content: "(";
+}
+
+mjx-c.mjx-c29.TEX-S2::before {
+  padding: 1.15em 0.597em 0.649em 0;
+  content: ")";
+}
+
+mjx-c.mjx-c1D6FD.TEX-I::before {
+  padding: 0.705em 0.566em 0.194em 0;
+  content: "\3B2";
+}
+
+mjx-c.mjx-c30::before {
+  padding: 0.666em 0.5em 0.022em 0;
+  content: "0";
+}
+</style>
+
+<!-- ═══ THEME OVERRIDE — matches main app dark design system ═══ -->
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ── CSS tokens matching main app ─────────────────────────────────────────── */
+  :root {
+    --bg:          hsl(222, 47%, 7%);
+    --card:        hsl(222, 40%, 10%);
+    --card-hover:  hsl(222, 38%, 13%);
+    --border:      hsl(222, 30%, 18%);
+    --border-soft: hsl(222, 28%, 14%);
+    --fg:          hsl(210, 40%, 98%);
+    --fg-muted:    hsl(215, 20%, 55%);
+    --fg-subtle:   hsl(215, 20%, 38%);
+    --ocean:       hsl(199, 89%, 48%);
+    --ocean-dim:   hsl(199, 60%, 20%);
+    --ocean-glow:  hsla(199, 89%, 48%, 0.15);
+    --amber:       hsl(38, 92%, 50%);
+    --amber-dim:   hsl(38, 50%, 15%);
+    --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+    --font-mono:    'IBM Plex Mono', 'JetBrains Mono', monospace;
+  }
+
+  /* ── Base ──────────────────────────────────────────────────────────────────── */
+  html, body {
+    font-family: var(--font-display) !important;
+    background-color: var(--bg) !important;
+    color: var(--fg) !important;
+    background-image: radial-gradient(circle, hsl(222, 30%, 18%) 1px, transparent 1px) !important;
+    background-size: 24px 24px !important;
+  }
+  .font-mono, code, kbd, pre, samp, [class*="font-mono"] {
+    font-family: var(--font-mono) !important;
+  }
+
+  /* ── Light backgrounds → dark ──────────────────────────────────────────────── */
+  .bg-white          { background-color: var(--card) !important; }
+  .bg-slate-50       { background-color: var(--bg)   !important; }
+  .bg-slate-100      { background-color: var(--card-hover) !important; }
+  .bg-ocean-50,
+  .bg-ocean-50\/50   { background-color: var(--ocean-dim) !important; }
+  .bg-amber-50       { background-color: var(--amber-dim) !important; }
+  header             { background-color: transparent !important; }
+
+  /* ── Text colors ───────────────────────────────────────────────────────────── */
+  .text-slate-900,
+  .text-slate-800    { color: var(--fg)        !important; }
+  .text-slate-700    { color: hsl(215,25%,75%) !important; }
+  .text-slate-600    { color: var(--fg-muted)  !important; }
+  .text-slate-500    { color: var(--fg-subtle) !important; }
+  .text-slate-400    { color: hsl(215,18%,45%) !important; }
+  .text-ocean-900    { color: var(--ocean)     !important; }
+  .text-ocean-800    { color: hsl(199,70%,65%) !important; }
+  .text-ocean-700    { color: hsl(199,75%,60%) !important; }
+  .text-ocean-600    { color: var(--ocean)     !important; }
+  .text-amber-900    { color: var(--amber)     !important; }
+  .text-amber-800    { color: hsl(38,85%,65%)  !important; }
+
+  /* ── Borders ───────────────────────────────────────────────────────────────── */
+  .border-slate-100,
+  .border-slate-200  { border-color: var(--border-soft) !important; }
+  .border-ocean-100  { border-color: hsl(199,50%,25%)   !important; }
+  .border-amber-100  { border-color: hsl(38,40%,22%)    !important; }
+
+  /* ── Nav (dark glass) ──────────────────────────────────────────────────────── */
+  .glass-nav {
+    background: hsla(222, 47%, 8%, 0.92) !important;
+    backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+  nav .text-slate-500 { color: var(--fg-muted) !important; }
+
+  /* ── Cards and panels ──────────────────────────────────────────────────────── */
+  .shadow-xl,
+  .shadow-lg,
+  .shadow-sm { --tw-shadow-color: hsla(222,47%,4%,0.6); }
+
+  /* Phase cards */
+  .bg-ocean-50.border-ocean-100 {
+    background-color: var(--ocean-dim) !important;
+    border-color: hsl(199,50%,25%) !important;
+  }
+  .bg-amber-50.border-amber-100 {
+    background-color: var(--amber-dim) !important;
+    border-color: hsl(38,40%,22%) !important;
+  }
+  .bg-slate-50.border-slate-200 {
+    background-color: var(--card-hover) !important;
+    border-color: var(--border) !important;
+  }
+
+  /* Phase icon circles */
+  .w-10.h-10.rounded-full.bg-white {
+    background-color: var(--card) !important;
+    border: 1px solid var(--border) !important;
+  }
+
+  /* Chart container card */
+  .bg-white.p-6.rounded-2xl {
+    background-color: var(--card) !important;
+    border-color: var(--border) !important;
+  }
+  .border-b.border-slate-100 { border-color: var(--border-soft) !important; }
+
+  /* Mono chip (pH display) */
+  .text-xs.font-mono.bg-ocean-50.text-ocean-700 {
+    background-color: var(--ocean-dim)   !important;
+    color: var(--ocean)                  !important;
+    border-color: hsl(199,50%,25%)       !important;
+  }
+
+  /* Slider track */
+  input[type=range]::-webkit-slider-runnable-track {
+    background: var(--border) !important;
+  }
+
+  /* Math sections */
+  section.bg-white,
+  section.bg-white.py-20,
+  section.py-20.bg-white { background-color: var(--bg) !important; }
+
+  /* Math block boxes */
+  .bg-slate-50.rounded-xl,
+  .bg-ocean-50.rounded-xl { background-color: var(--card) !important; }
+
+  /* Inline code / formula wrappers */
+  .bg-slate-800 .bg-white { background-color: hsl(222,40%,14%) !important; }
+
+  /* Hero buttons */
+  a.border.border-slate-200.bg-white,
+  a.border-slate-200.bg-white {
+    background-color: var(--card) !important;
+    border-color: var(--border) !important;
+    color: var(--fg) !important;
+  }
+  a.border-slate-200.bg-white:hover,
+  .hover\:bg-slate-50:hover { background-color: var(--card-hover) !important; }
+
+  /* Hero badge pill */
+  .inline-flex.items-center.gap-2.bg-white.border.border-slate-200 {
+    background-color: var(--card) !important;
+    border-color: var(--border) !important;
+    color: var(--fg-muted) !important;
+  }
+
+  /* TSP section — already dark, just fine-tune */
+  section.bg-slate-900 { background-color: hsl(222,45%,6%) !important; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* ── Embedded mode (iframe) — hide internal nav ────────────────────────────── */
+  html.embedded .glass-nav { display: none !important; }
+  html.embedded header     { padding-top: 2rem !important; }
+</style>
+<script>
+  /* Mark <html> as embedded immediately when running inside an iframe */
+  (function () {
+    try { if (window.self !== window.top) document.documentElement.classList.add('embedded'); }
+    catch (_) {}
+  })();
+</script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-ocean-200 selection:text-ocean-900">
+
+<!-- NAVBAR -->
+<nav class="glass-nav fixed w-full z-50 top-0">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex items-center gap-3">
+                <div class="bg-ocean-50 p-2 rounded-lg text-ocean-600">
+                    <span class="material-symbols-outlined text-2xl">hub</span>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-none text-slate-900">Cobetia Solver</h1>
+                    <p class="text-[10px] uppercase tracking-wider font-semibold text-ocean-600 mt-1">Algoritmo Bioinspirado</p>
+                </div>
+            </div>
+            <div class="hidden md:flex space-x-6 text-sm font-medium">
+                <a class="text-slate-500 hover:text-ocean-600 transition-colors" href="#modelo">Teoría</a>
+                <a class="text-slate-500 hover:text-ocean-600 transition-colors" href="#simulador-bio">Simulación Bacteria</a>
+                <a class="text-slate-500 hover:text-ocean-600 transition-colors" href="#matematica">Ecuaciones</a>
+                <a class="text-slate-500 hover:text-ocean-600 transition-colors" href="#simulador-tsp">Simulador TSP</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<header class="pt-32 pb-20 px-4 max-w-5xl mx-auto text-center">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 text-xs font-medium text-slate-500 mb-6 shadow-sm">
+        <span class="material-symbols-outlined text-sm">science</span>
+        Metaheurística basada en <em>Cobetia sp.</em>
+    </div>
+    <h1 class="text-4xl sm:text-6xl font-bold tracking-tight text-slate-900 mb-6">
+        Del Crecimiento Planctónico<br>
+        <span class="text-ocean-600 bg-clip-text text-transparent bg-gradient-to-r from-ocean-600 to-ocean-400">a la Inteligencia de Enjambre</span>
+    </h1>
+    <p class="text-lg text-slate-600 mb-8 max-w-2xl mx-auto font-light leading-relaxed">
+        Un algoritmo de optimización que adapta sus operadores de búsqueda (explotación vs. exploración) mimetizando las fases biológicas de bacterias marinas ante cambios termodinámicos.
+    </p>
+    <div class="flex justify-center gap-4">
+        <a class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-ocean-600 hover:bg-ocean-700 shadow-lg shadow-ocean-200/50 transition-all" href="#simulador-bio">
+            <span class="material-symbols-outlined mr-2">microbiology</span>
+            Ver Comportamiento
+        </a>
+        <a class="inline-flex items-center px-6 py-3 border border-slate-200 text-sm font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 shadow-sm transition-all" href="#matematica">
+            Ver Formulación
+        </a>
+    </div>
+</header>
+
+<!-- SECTION 1: MODELO BIOLÓGICO -->
+<section class="py-20 bg-white border-y border-slate-100" id="modelo">
+    <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+        <div class="space-y-6">
+            <h2 class="text-3xl font-bold text-slate-900">Dinámica de Fases</h2>
+            <p class="text-slate-600 leading-relaxed text-justify">
+                Proponemos una metaheurística donde la bacteria presenta dos modos principales de vida, extendidos con una fase de dispersión. Estos estados se gobiernan por indicadores globales normalizados: <mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="0" style="font-size: 118.3%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.329em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D707 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow data-mjx-texclass="ORD"><mover><mi>μ</mi><mo stretchy="false">~</mo></mover></mrow></math></mjx-assistive-mml></mjx-container> (crecimiento), <mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="1" style="font-size: 118.3%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.463em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D435 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow data-mjx-texclass="ORD"><mover><mi>B</mi><mo stretchy="false">~</mo></mover></mrow></math></mjx-assistive-mml></mjx-container> (índice de biofilm) y <mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="2" style="font-size: 118.3%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.431em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D449 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow data-mjx-texclass="ORD"><mover><mi>V</mi><mo stretchy="false">~</mo></mover></mrow></math></mjx-assistive-mml></mjx-container> (entropía).
+            </p>
+            <div class="grid gap-4 mt-6">
+                <!-- Phase 1 -->
+                <div class="flex gap-4 p-5 rounded-xl bg-ocean-50 border border-ocean-100 transition-all hover:shadow-md">
+                    <div class="w-10 h-10 rounded-full bg-white text-ocean-600 flex items-center justify-center font-bold shadow-sm flex-shrink-0">I</div>
+                    <div>
+                        <h3 class="font-bold text-ocean-900">Fase Planctónica (Crecimiento)</h3>
+                        <p class="text-sm text-ocean-800 mt-1">
+                            Alta <mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="3" style="font-size: 118.2%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.329em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D707 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow data-mjx-texclass="ORD"><mover><mi>μ</mi><mo stretchy="false">~</mo></mover></mrow></math></mjx-assistive-mml></mjx-container>. Las bacterias nadan libremente. Equivale a <strong>Explotación Intensa</strong> (acercarse rápido al mejor global).
+                        </p>
+                    </div>
+                </div>
+                <!-- Phase 2 -->
+                <div class="flex gap-4 p-5 rounded-xl bg-slate-50 border border-slate-200 transition-all hover:shadow-md">
+                    <div class="w-10 h-10 rounded-full bg-white text-slate-600 flex items-center justify-center font-bold shadow-sm flex-shrink-0">II</div>
+                    <div>
+                        <h3 class="font-bold text-slate-900">Fase Biofilm (Estructura)</h3>
+                        <p class="text-sm text-slate-600 mt-1">
+                            Alto <mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="4" style="font-size: 118.2%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.463em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D435 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow data-mjx-texclass="ORD"><mover><mi>B</mi><mo stretchy="false">~</mo></mover></mrow></math></mjx-assistive-mml></mjx-container>. Formación de microcolonias adheridas. Equivale a <strong>Exploración Estructurada</strong> (mejora local y diversidad).
+                        </p>
+                    </div>
+                </div>
+                <!-- Phase 3 -->
+                <div class="flex gap-4 p-5 rounded-xl bg-amber-50 border border-amber-100 transition-all hover:shadow-md">
+                    <div class="w-10 h-10 rounded-full bg-white text-amber-600 flex items-center justify-center font-bold shadow-sm flex-shrink-0">III</div>
+                    <div>
+                        <h3 class="font-bold text-amber-900">Fase Desprendimiento</h3>
+                        <p class="text-sm text-amber-800 mt-1">
+                            Alta <mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="5" style="font-size: 118.2%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.431em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D449 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow data-mjx-texclass="ORD"><mover><mi>V</mi><mo stretchy="false">~</mo></mover></mrow></math></mjx-assistive-mml></mjx-container>. Dispersión por condiciones hostiles. Equivale a <strong>Reinicialización Adaptativa</strong> (saltos de Lévy).
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Interactive Chart -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xl shadow-slate-100/50 sticky top-24">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-4">
+                <h3 class="text-xs font-bold uppercase text-slate-500 tracking-wider">Modelo GAMLSS Conceptual</h3>
+                <div class="text-xs font-mono bg-ocean-50 text-ocean-700 px-2 py-1 rounded border border-ocean-100">
+                    pH: <span id="phValueDisplay">7.5</span>
+                </div>
+            </div>
+            <div class="h-64 w-full relative">
+                <canvas id="bioChart" width="423" height="256" style="display: block; box-sizing: border-box; height: 256px; width: 423px;"></canvas>
+            </div>
+            <div class="mt-6 space-y-2">
+                <label class="text-xs font-medium text-slate-500 flex justify-between">
+                    <span>Ajustar pH del Medio</span>
+                    <span class="text-slate-400 font-normal">Impacta <mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="6" style="font-size: 118.5%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-msub><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D707 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-texatom size="s" texclass="ORD"><mjx-mo class="mjx-n"><mjx-c class="mjx-c6D"></mjx-c><mjx-c class="mjx-c61"></mjx-c><mjx-c class="mjx-c78"></mjx-c></mjx-mo></mjx-texatom></mjx-script></mjx-msub></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>μ</mi><mrow data-mjx-texclass="ORD"><mo data-mjx-texclass="OP" movablelimits="true">max</mo></mrow></msub></math></mjx-assistive-mml></mjx-container> y <mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="7" style="font-size: 118.5%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D435 TEX-I"></mjx-c></mjx-mi></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>B</mi></math></mjx-assistive-mml></mjx-container></span>
+                </label>
+                <input class="w-full accent-ocean-600" id="phSlider" type="range" min="4.5" max="9.5" step="0.1" value="7.5">
+                <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+                    <span>4.5 (Ácido)</span>
+                    <span>7.5 (Neutro)</span>
+                    <span>9.5 (Alcalino)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 2: BACTERIAL SIMULATOR (FIXED PHASE SWITCHING) -->
+<section class="py-24 bg-slate-900 text-white relative overflow-hidden" id="simulador-bio">
+    <!-- Background Effects -->
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(14,165,233,0.15),transparent_40%)] pointer-events-none"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,rgba(51,65,85,0.3),transparent_40%)] pointer-events-none"></div>
+    
+    <div class="max-w-7xl mx-auto px-4 relative z-10">
+        <div class="text-center mb-12">
+            <span class="text-ocean-400 font-mono text-xs uppercase tracking-widest border border-ocean-500/30 px-2 py-1 rounded">Simulador 1</span>
+            <h2 class="text-3xl sm:text-4xl font-bold mt-4">Dinámica de Enjambre</h2>
+            <p class="text-slate-400 text-sm mt-3 max-w-xl mx-auto">
+                Visualización en tiempo real del cambio de comportamiento físico: de la dispersión caótica (Planctónica) a la agregación cohesiva (Biofilm) y el desprendimiento.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Controls Side -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="bg-slate-800/60 backdrop-blur-md p-6 rounded-2xl border border-slate-700/50 shadow-lg">
+                    <!-- Temp Control -->
+                    <div class="mb-6">
+                        <div class="flex justify-between mb-2">
+                            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Temperatura</label>
+                            <span class="font-mono text-ocean-300 text-xs bg-ocean-900/50 px-2 py-0.5 rounded" id="bacTempDisplay">37.0°C</span>
+                        </div>
+                        <input id="bacTempSlider" type="range" min="5" max="45" step="0.5" value="37">
+                        <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+                            <span>5°C</span>
+                            <span>37°C (Óptimo)</span>
+                            <span>45°C</span>
+                        </div>
+                    </div>
+                    <!-- pH Control -->
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">pH</label>
+                            <span class="font-mono text-ocean-300 text-xs bg-ocean-900/50 px-2 py-0.5 rounded" id="bacPhDisplay">7.5</span>
+                        </div>
+                        <input id="bacPhSlider" type="range" min="4.5" max="9.5" step="0.1" value="7.5">
+                    </div>
+                </div>
+
+                <!-- State Indicator -->
+                <div class="bg-slate-800/80 p-6 rounded-2xl border-l-4 border-ocean-500 transition-colors duration-500" id="bacStateCard">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-3">Estado Emergente</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-ocean-500 flex items-center justify-center animate-pulse-soft shadow-[0_0_20px_rgba(14,165,233,0.4)] transition-all duration-500" id="bacStateIcon"><span class="material-symbols-outlined text-white text-2xl">water_drop</span></div>
+                        <div>
+                            <div class="text-xl font-bold text-white transition-all" id="bacStateText">Fase Planctónica</div>
+                            <div class="text-xs text-ocean-200 font-mono mt-0.5" id="bacStateSub">Alta Movilidad / Crecimiento</div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-4 leading-relaxed border-t border-slate-700 pt-3" id="bacStateDesc">Dispersión activa. Las bacterias se mueven a alta velocidad y cambian de dirección frecuentemente para explorar el medio.</p>
+                </div>
+            </div>
+
+            <!-- Canvas Side -->
+            <div class="lg:col-span-8 h-[500px] bg-slate-950 rounded-2xl border border-slate-800 relative shadow-2xl overflow-hidden group">
+                <canvas id="bacterialCanvas" class="absolute inset-0 w-full h-full cursor-crosshair" width="663" height="500"></canvas>
+                
+                <!-- Overlay Info -->
+                <div class="absolute bottom-4 left-4 flex gap-4 pointer-events-none">
+                    <div class="flex items-center gap-2 bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-full border border-slate-700">
+                        <span class="w-2 h-2 rounded-full bg-ocean-500 animate-pulse" id="activeAgentDot"></span>
+                        <span class="text-[10px] font-mono text-slate-300">Agentes Activos</span>
+                    </div>
+                </div>
+                <div class="absolute top-4 right-4 text-right pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <p class="text-[10px] font-mono text-slate-500">Simulación basada en partículas</p>
+                    <p class="text-[10px] font-mono text-slate-600">Interacción: Cohesión/Separación/Alineación</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 3: MATEMÁTICAS (COMPLETED) -->
+<section class="py-20 bg-white" id="matematica">
+    <div class="max-w-4xl mx-auto px-4">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-slate-900">Formulación Matemática Detallada</h2>
+            <div class="h-1 w-20 bg-ocean-500 mx-auto mt-4 rounded-full"></div>
+        </div>
+        
+        <div class="prose prose-slate max-w-none text-slate-600 text-sm md:text-base">
+            <p class="mb-8">
+                Las ecuaciones de movimiento determinan cómo cambia la posición <mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="8" style="font-size: 118.3%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-msub><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D465 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msub></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>x</mi><mi>i</mi></msub></math></mjx-assistive-mml></mjx-container> de cada solución en la iteración <mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="9" style="font-size: 118.3%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-mo class="mjx-n" space="3"><mjx-c class="mjx-c2B"></mjx-c></mjx-mo><mjx-mn class="mjx-n" space="3"><mjx-c class="mjx-c31"></mjx-c></mjx-mn></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>t</mi><mo>+</mo><mn>1</mn></math></mjx-assistive-mml></mjx-container> dependiendo de la fase activa.
+            </p>
+
+            <div class="grid gap-8">
+                <!-- Fase 1 -->
+                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                    <h3 class="text-lg font-bold text-ocean-700 mb-2 border-b border-slate-200 pb-2">1. Fase Planctónica (Explotación)</h3>
+                    <div class="overflow-x-auto text-center py-4">
+                        <mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" display="true" tabindex="0" ctxtmenu_counter="10" style="font-size: 118.3%; position: relative;"><mjx-math display="true" class="MJX-TEX" aria-hidden="true" style="margin-left: 0px; margin-right: 0px;"><mjx-msubsup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D465 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.292em; margin-left: 0px;"><mjx-texatom size="s" texclass="ORD"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-mo class="mjx-n"><mjx-c class="mjx-c2B"></mjx-c></mjx-mo><mjx-mn class="mjx-n"><mjx-c class="mjx-c31"></mjx-c></mjx-mn></mjx-texatom><mjx-spacer style="margin-top: 0.18em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup><mjx-mo class="mjx-n" space="4"><mjx-c class="mjx-c3D"></mjx-c></mjx-mo><mjx-msubsup space="4"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D465 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.247em; margin-left: 0px;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-spacer style="margin-top: 0.185em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup><mjx-mo class="mjx-n" space="3"><mjx-c class="mjx-c2B"></mjx-c></mjx-mo><mjx-msub space="3"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D44E TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-mn class="mjx-n" size="s"><mjx-c class="mjx-c31"></mjx-c></mjx-mn></mjx-script></mjx-msub><mjx-mstyle><mjx-mspace style="width: 0.167em;"></mjx-mspace></mjx-mstyle><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.329em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D707 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom><mjx-mstyle><mjx-mspace style="width: 0.167em;"></mjx-mspace></mjx-mstyle><mjx-mo class="mjx-n"><mjx-c class="mjx-c28"></mjx-c></mjx-mo><mjx-msup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D454 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: 0.413em;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msup><mjx-mo class="mjx-n" space="3"><mjx-c class="mjx-c2212"></mjx-c></mjx-mo><mjx-msubsup space="3"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D465 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.247em; margin-left: 0px;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-spacer style="margin-top: 0.185em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup><mjx-mo class="mjx-n"><mjx-c class="mjx-c29"></mjx-c></mjx-mo><mjx-mo class="mjx-n" space="3"><mjx-c class="mjx-c2B"></mjx-c></mjx-mo><mjx-msub space="3"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D70E TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-mn class="mjx-n" size="s"><mjx-c class="mjx-c31"></mjx-c></mjx-mn></mjx-script></mjx-msub><mjx-mo class="mjx-n"><mjx-c class="mjx-c28"></mjx-c></mjx-mo><mjx-mn class="mjx-n"><mjx-c class="mjx-c31"></mjx-c></mjx-mn><mjx-mo class="mjx-n" space="3"><mjx-c class="mjx-c2212"></mjx-c></mjx-mo><mjx-texatom space="3" texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.463em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D435 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom><mjx-mo class="mjx-n"><mjx-c class="mjx-c29"></mjx-c></mjx-mo><mjx-mstyle><mjx-mspace style="width: 0.167em;"></mjx-mspace></mjx-mstyle><mjx-msubsup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D709 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.247em; margin-left: 0px;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-spacer style="margin-top: 0.185em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup></mjx-math><mjx-assistive-mml unselectable="on" display="block"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><msubsup><mi>x</mi><mi>i</mi><mrow data-mjx-texclass="ORD"><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msubsup><mo>=</mo><msubsup><mi>x</mi><mi>i</mi><mi>t</mi></msubsup><mo>+</mo><msub><mi>a</mi><mn>1</mn></msub><mstyle scriptlevel="0"><mspace width="0.167em"></mspace></mstyle><mrow data-mjx-texclass="ORD"><mover><mi>μ</mi><mo stretchy="false">~</mo></mover></mrow><mstyle scriptlevel="0"><mspace width="0.167em"></mspace></mstyle><mo stretchy="false">(</mo><msup><mi>g</mi><mi>t</mi></msup><mo>−</mo><msubsup><mi>x</mi><mi>i</mi><mi>t</mi></msubsup><mo stretchy="false">)</mo><mo>+</mo><msub><mi>σ</mi><mn>1</mn></msub><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mrow data-mjx-texclass="ORD"><mover><mi>B</mi><mo stretchy="false">~</mo></mover></mrow><mo stretchy="false">)</mo><mstyle scriptlevel="0"><mspace width="0.167em"></mspace></mstyle><msubsup><mi>ξ</mi><mi>i</mi><mi>t</mi></msubsup></math></mjx-assistive-mml></mjx-container>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-xs mt-4 text-slate-500 bg-white p-4 rounded-lg border border-slate-100">
+                        <div><strong><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="11" style="font-size: 118.5%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-msubsup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D465 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.292em; margin-left: 0px;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-spacer style="margin-top: 0.18em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><msubsup><mi>x</mi><mi>i</mi><mi>t</mi></msubsup></math></mjx-assistive-mml></mjx-container></strong>: Posición actual.</div>
+                        <div><strong><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="12" style="font-size: 118.5%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-msup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D454 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: 0.363em;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msup></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><msup><mi>g</mi><mi>t</mi></msup></math></mjx-assistive-mml></mjx-container></strong>: Mejor global.</div>
+                        <div><strong><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="13" style="font-size: 118.5%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.329em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D707 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow data-mjx-texclass="ORD"><mover><mi>μ</mi><mo stretchy="false">~</mo></mover></mrow></math></mjx-assistive-mml></mjx-container></strong>: Crecimiento normalizado.</div>
+                        <div><strong><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="14" style="font-size: 118.5%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-msub><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D44E TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-mn class="mjx-n" size="s"><mjx-c class="mjx-c31"></mjx-c></mjx-mn></mjx-script></mjx-msub></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>a</mi><mn>1</mn></msub></math></mjx-assistive-mml></mjx-container></strong>: Coeficiente de atracción.</div>
+                        <div><strong><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="15" style="font-size: 118.5%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.463em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D435 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow data-mjx-texclass="ORD"><mover><mi>B</mi><mo stretchy="false">~</mo></mover></mrow></math></mjx-assistive-mml></mjx-container></strong>: Índice de biofilm (inhibe ruido).</div>
+                        <div><strong><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="16" style="font-size: 118.5%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-msubsup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D709 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.292em; margin-left: 0px;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-spacer style="margin-top: 0.18em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><msubsup><mi>ξ</mi><mi>i</mi><mi>t</mi></msubsup></math></mjx-assistive-mml></mjx-container></strong>: Ruido aleatorio.</div>
+                    </div>
+                </div>
+
+                <!-- Fase 2 -->
+                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                    <h3 class="text-lg font-bold text-slate-700 mb-2 border-b border-slate-200 pb-2">2. Fase Biofilm (Exploración Estructurada)</h3>
+                    <div class="overflow-x-auto text-center py-4">
+                        <mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" display="true" tabindex="0" ctxtmenu_counter="17" style="font-size: 118.3%; position: relative;"><mjx-math display="true" class="MJX-TEX" aria-hidden="true" style="margin-left: 0px; margin-right: 0px;"><mjx-msubsup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D465 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.292em; margin-left: 0px;"><mjx-texatom size="s" texclass="ORD"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-mo class="mjx-n"><mjx-c class="mjx-c2B"></mjx-c></mjx-mo><mjx-mn class="mjx-n"><mjx-c class="mjx-c31"></mjx-c></mjx-mn></mjx-texatom><mjx-spacer style="margin-top: 0.18em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup><mjx-mo class="mjx-n" space="4"><mjx-c class="mjx-c3D"></mjx-c></mjx-mo><mjx-msubsup space="4"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D465 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.247em; margin-left: 0px;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-spacer style="margin-top: 0.185em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup><mjx-mo class="mjx-n" space="3"><mjx-c class="mjx-c2B"></mjx-c></mjx-mo><mjx-msub space="3"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D44E TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-mn class="mjx-n" size="s"><mjx-c class="mjx-c32"></mjx-c></mjx-mn></mjx-script></mjx-msub><mjx-mstyle><mjx-mspace style="width: 0.167em;"></mjx-mspace></mjx-mstyle><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.463em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D435 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom><mjx-mstyle><mjx-mspace style="width: 0.167em;"></mjx-mspace></mjx-mstyle><mjx-mo class="mjx-n"><mjx-c class="mjx-c28"></mjx-c></mjx-mo><mjx-msubsup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D44F TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.247em; margin-left: 0px;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-spacer style="margin-top: 0.185em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup><mjx-mo class="mjx-n" space="3"><mjx-c class="mjx-c2212"></mjx-c></mjx-mo><mjx-msubsup space="3"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D465 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.247em; margin-left: 0px;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-spacer style="margin-top: 0.185em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup><mjx-mo class="mjx-n"><mjx-c class="mjx-c29"></mjx-c></mjx-mo><mjx-mo class="mjx-n" space="3"><mjx-c class="mjx-c2B"></mjx-c></mjx-mo><mjx-msub space="3"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D450 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-mn class="mjx-n" size="s"><mjx-c class="mjx-c32"></mjx-c></mjx-mn></mjx-script></mjx-msub><mjx-mstyle><mjx-mspace style="width: 0.167em;"></mjx-mspace></mjx-mstyle><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.431em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D449 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom><mjx-munder space="2"><mjx-row><mjx-base style="padding-left: 0.403em;"><mjx-mo class="mjx-lop"><mjx-c class="mjx-c2211 TEX-S2"></mjx-c></mjx-mo></mjx-base></mjx-row><mjx-row><mjx-under style="padding-top: 0.167em;"><mjx-texatom size="s" texclass="ORD"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D457 TEX-I"></mjx-c></mjx-mi><mjx-mo class="mjx-n"><mjx-c class="mjx-c2208"></mjx-c></mjx-mo><mjx-texatom texclass="ORD"><mjx-mi class="mjx-cal mjx-i"><mjx-c class="mjx-c4E TEX-C"></mjx-c></mjx-mi></mjx-texatom><mjx-mo class="mjx-n"><mjx-c class="mjx-c28"></mjx-c></mjx-mo><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi><mjx-mo class="mjx-n"><mjx-c class="mjx-c29"></mjx-c></mjx-mo></mjx-texatom></mjx-under></mjx-row></mjx-munder><mjx-msub space="2"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D464 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-texatom size="s" texclass="ORD"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D457 TEX-I"></mjx-c></mjx-mi></mjx-texatom></mjx-script></mjx-msub><mjx-mo class="mjx-n"><mjx-c class="mjx-c28"></mjx-c></mjx-mo><mjx-msubsup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D465 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.247em; margin-left: 0px;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-spacer style="margin-top: 0.185em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D457 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup><mjx-mo class="mjx-n" space="3"><mjx-c class="mjx-c2212"></mjx-c></mjx-mo><mjx-msubsup space="3"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D465 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.247em; margin-left: 0px;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-spacer style="margin-top: 0.185em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup><mjx-mo class="mjx-n"><mjx-c class="mjx-c29"></mjx-c></mjx-mo><mjx-mo class="mjx-n" space="3"><mjx-c class="mjx-c2B"></mjx-c></mjx-mo><mjx-msub space="3"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D70E TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-mn class="mjx-n" size="s"><mjx-c class="mjx-c32"></mjx-c></mjx-mn></mjx-script></mjx-msub><mjx-mstyle><mjx-mspace style="width: 0.167em;"></mjx-mspace></mjx-mstyle><mjx-msubsup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D709 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.247em; margin-left: 0px;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-spacer style="margin-top: 0.185em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup></mjx-math><mjx-assistive-mml unselectable="on" display="block"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><msubsup><mi>x</mi><mi>i</mi><mrow data-mjx-texclass="ORD"><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msubsup><mo>=</mo><msubsup><mi>x</mi><mi>i</mi><mi>t</mi></msubsup><mo>+</mo><msub><mi>a</mi><mn>2</mn></msub><mstyle scriptlevel="0"><mspace width="0.167em"></mspace></mstyle><mrow data-mjx-texclass="ORD"><mover><mi>B</mi><mo stretchy="false">~</mo></mover></mrow><mstyle scriptlevel="0"><mspace width="0.167em"></mspace></mstyle><mo stretchy="false">(</mo><msubsup><mi>b</mi><mi>i</mi><mi>t</mi></msubsup><mo>−</mo><msubsup><mi>x</mi><mi>i</mi><mi>t</mi></msubsup><mo stretchy="false">)</mo><mo>+</mo><msub><mi>c</mi><mn>2</mn></msub><mstyle scriptlevel="0"><mspace width="0.167em"></mspace></mstyle><mrow data-mjx-texclass="ORD"><mover><mi>V</mi><mo stretchy="false">~</mo></mover></mrow><munder><mo data-mjx-texclass="OP">∑</mo><mrow data-mjx-texclass="ORD"><mi>j</mi><mo>∈</mo><mrow data-mjx-texclass="ORD"><mi data-mjx-variant="-tex-calligraphic" mathvariant="script">N</mi></mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></munder><msub><mi>w</mi><mrow data-mjx-texclass="ORD"><mi>i</mi><mi>j</mi></mrow></msub><mo stretchy="false">(</mo><msubsup><mi>x</mi><mi>j</mi><mi>t</mi></msubsup><mo>−</mo><msubsup><mi>x</mi><mi>i</mi><mi>t</mi></msubsup><mo stretchy="false">)</mo><mo>+</mo><msub><mi>σ</mi><mn>2</mn></msub><mstyle scriptlevel="0"><mspace width="0.167em"></mspace></mstyle><msubsup><mi>ξ</mi><mi>i</mi><mi>t</mi></msubsup></math></mjx-assistive-mml></mjx-container>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-xs mt-4 text-slate-500 bg-white p-4 rounded-lg border border-slate-100">
+                        <div><strong><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="18" style="font-size: 118.5%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-msubsup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D44F TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.292em; margin-left: 0px;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-spacer style="margin-top: 0.18em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><msubsup><mi>b</mi><mi>i</mi><mi>t</mi></msubsup></math></mjx-assistive-mml></mjx-container></strong>: Mejor local (microcolonia).</div>
+                        <div><strong><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="19" style="font-size: 118.5%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-texatom texclass="ORD"><mjx-mi class="mjx-cal mjx-i"><mjx-c class="mjx-c4E TEX-C"></mjx-c></mjx-mi></mjx-texatom><mjx-mo class="mjx-n"><mjx-c class="mjx-c28"></mjx-c></mjx-mo><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi><mjx-mo class="mjx-n"><mjx-c class="mjx-c29"></mjx-c></mjx-mo></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow data-mjx-texclass="ORD"><mi data-mjx-variant="-tex-calligraphic" mathvariant="script">N</mi></mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></math></mjx-assistive-mml></mjx-container></strong>: Vecindad de <mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="20" style="font-size: 118.5%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>i</mi></math></mjx-assistive-mml></mjx-container>.</div>
+                        <div><strong><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="21" style="font-size: 118.5%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-msub><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D464 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-texatom size="s" texclass="ORD"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D457 TEX-I"></mjx-c></mjx-mi></mjx-texatom></mjx-script></mjx-msub></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>w</mi><mrow data-mjx-texclass="ORD"><mi>i</mi><mi>j</mi></mrow></msub></math></mjx-assistive-mml></mjx-container></strong>: Peso de interacción.</div>
+                        <div><strong><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="22" style="font-size: 118.5%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.431em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D449 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow data-mjx-texclass="ORD"><mover><mi>V</mi><mo stretchy="false">~</mo></mover></mrow></math></mjx-assistive-mml></mjx-container></strong>: Entropía del sistema.</div>
+                    </div>
+                </div>
+
+                <!-- Fase 3 -->
+                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                    <h3 class="text-lg font-bold text-amber-700 mb-2 border-b border-slate-200 pb-2">3. Fase Desprendimiento (Reinicio)</h3>
+                    <div class="overflow-x-auto text-center py-4">
+                        <mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" display="true" tabindex="0" ctxtmenu_counter="23" style="font-size: 118.3%; position: relative;"><mjx-math display="true" class="MJX-TEX" aria-hidden="true" style="margin-left: 0px; margin-right: 0px;"><mjx-msubsup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D465 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.292em; margin-left: 0px;"><mjx-texatom size="s" texclass="ORD"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-mo class="mjx-n"><mjx-c class="mjx-c2B"></mjx-c></mjx-mo><mjx-mn class="mjx-n"><mjx-c class="mjx-c31"></mjx-c></mjx-mn></mjx-texatom><mjx-spacer style="margin-top: 0.18em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup><mjx-mo class="mjx-n" space="4"><mjx-c class="mjx-c3D"></mjx-c></mjx-mo><mjx-mrow space="4"><mjx-mo class="mjx-s3"><mjx-c class="mjx-c7B TEX-S3"></mjx-c></mjx-mo><mjx-mtable style="min-width: 18.398em;"><mjx-table><mjx-itable><mjx-mtr><mjx-mtd style="text-align: left; padding-right: 0.5em; padding-bottom: 0.1em;"><mjx-msup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D454 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: 0.363em;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msup><mjx-mo class="mjx-n" space="3"><mjx-c class="mjx-c2B"></mjx-c></mjx-mo><mjx-mi class="mjx-i" space="3"><mjx-c class="mjx-c1D702 TEX-I"></mjx-c></mjx-mi><mjx-mstyle><mjx-mspace style="width: 0.167em;"></mjx-mspace></mjx-mstyle><mjx-msubsup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D43F TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.292em; margin-left: 0px;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-spacer style="margin-top: 0.18em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup><mjx-mo class="mjx-n"><mjx-c class="mjx-c2C"></mjx-c></mjx-mo><mjx-tstrut></mjx-tstrut></mjx-mtd><mjx-mtd style="text-align: left; padding-left: 0.5em; padding-bottom: 0.1em;"><mjx-mtext class="mjx-n"><mjx-c class="mjx-c73"></mjx-c><mjx-c class="mjx-c69"></mjx-c><mjx-c class="mjx-cA0"></mjx-c></mjx-mtext><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D45F TEX-I"></mjx-c></mjx-mi><mjx-mo class="mjx-n" space="4"><mjx-c class="mjx-c3C"></mjx-c></mjx-mo><mjx-msub space="4"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D45D TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-texatom size="s" texclass="ORD"><mjx-mtext class="mjx-n"><mjx-c class="mjx-c64"></mjx-c><mjx-c class="mjx-c65"></mjx-c><mjx-c class="mjx-c74"></mjx-c></mjx-mtext></mjx-texatom></mjx-script></mjx-msub><mjx-mo class="mjx-n"><mjx-c class="mjx-c28"></mjx-c></mjx-mo><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.431em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D449 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom><mjx-mo class="mjx-n"><mjx-c class="mjx-c2C"></mjx-c></mjx-mo><mjx-texatom space="2" texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.463em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D435 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom><mjx-mo class="mjx-n"><mjx-c class="mjx-c29"></mjx-c></mjx-mo><mjx-tstrut></mjx-tstrut></mjx-mtd></mjx-mtr><mjx-mtr><mjx-mtd style="text-align: left; padding-right: 0.5em; padding-top: 0.1em;"><mjx-msubsup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D465 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.292em; margin-left: 0px;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-spacer style="margin-top: 0.18em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup><mjx-mo class="mjx-n" space="3"><mjx-c class="mjx-c2B"></mjx-c></mjx-mo><mjx-msub space="3"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D44E TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-mn class="mjx-n" size="s"><mjx-c class="mjx-c33"></mjx-c></mjx-mn></mjx-script></mjx-msub><mjx-mo class="mjx-n"><mjx-c class="mjx-c28"></mjx-c></mjx-mo><mjx-msup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D454 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: 0.363em;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msup><mjx-mo class="mjx-n" space="3"><mjx-c class="mjx-c2212"></mjx-c></mjx-mo><mjx-msubsup space="3"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D465 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.292em; margin-left: 0px;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-spacer style="margin-top: 0.18em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup><mjx-mo class="mjx-n"><mjx-c class="mjx-c29"></mjx-c></mjx-mo><mjx-mo class="mjx-n" space="3"><mjx-c class="mjx-c2B"></mjx-c></mjx-mo><mjx-msub space="3"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D70E TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-mn class="mjx-n" size="s"><mjx-c class="mjx-c33"></mjx-c></mjx-mn></mjx-script></mjx-msub><mjx-msubsup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D709 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.292em; margin-left: 0px;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-spacer style="margin-top: 0.18em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup><mjx-mo class="mjx-n"><mjx-c class="mjx-c2C"></mjx-c></mjx-mo><mjx-tstrut></mjx-tstrut></mjx-mtd><mjx-mtd style="text-align: left; padding-left: 0.5em; padding-top: 0.1em;"><mjx-mtext class="mjx-n"><mjx-c class="mjx-c65"></mjx-c><mjx-c class="mjx-c6E"></mjx-c><mjx-c class="mjx-c20"></mjx-c><mjx-c class="mjx-c63"></mjx-c><mjx-c class="mjx-c61"></mjx-c><mjx-c class="mjx-c73"></mjx-c><mjx-c class="mjx-c6F"></mjx-c><mjx-c class="mjx-c20"></mjx-c><mjx-c class="mjx-c63"></mjx-c><mjx-c class="mjx-c6F"></mjx-c><mjx-c class="mjx-c6E"></mjx-c><mjx-c class="mjx-c74"></mjx-c><mjx-c class="mjx-c72"></mjx-c><mjx-c class="mjx-c61"></mjx-c><mjx-c class="mjx-c72"></mjx-c><mjx-c class="mjx-c69"></mjx-c><mjx-c class="mjx-c6F"></mjx-c></mjx-mtext><mjx-tstrut></mjx-tstrut></mjx-mtd></mjx-mtr></mjx-itable></mjx-table></mjx-mtable><mjx-mo class="mjx-n" style="vertical-align: 0.25em;"></mjx-mo></mjx-mrow></mjx-math><mjx-assistive-mml unselectable="on" display="block"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><msubsup><mi>x</mi><mi>i</mi><mrow data-mjx-texclass="ORD"><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msubsup><mo>=</mo><mrow data-mjx-texclass="INNER"><mo data-mjx-texclass="OPEN">{</mo><mtable columnalign="left left" columnspacing="1em" rowspacing=".2em"><mtr><mtd><msup><mi>g</mi><mi>t</mi></msup><mo>+</mo><mi>η</mi><mstyle scriptlevel="0"><mspace width="0.167em"></mspace></mstyle><msubsup><mi>L</mi><mi>i</mi><mi>t</mi></msubsup><mo>,</mo></mtd><mtd><mtext>si&nbsp;</mtext><mi>r</mi><mo>&lt;</mo><msub><mi>p</mi><mrow data-mjx-texclass="ORD"><mtext>det</mtext></mrow></msub><mo stretchy="false">(</mo><mrow data-mjx-texclass="ORD"><mover><mi>V</mi><mo stretchy="false">~</mo></mover></mrow><mo>,</mo><mrow data-mjx-texclass="ORD"><mover><mi>B</mi><mo stretchy="false">~</mo></mover></mrow><mo stretchy="false">)</mo></mtd></mtr><mtr><mtd><msubsup><mi>x</mi><mi>i</mi><mi>t</mi></msubsup><mo>+</mo><msub><mi>a</mi><mn>3</mn></msub><mo stretchy="false">(</mo><msup><mi>g</mi><mi>t</mi></msup><mo>−</mo><msubsup><mi>x</mi><mi>i</mi><mi>t</mi></msubsup><mo stretchy="false">)</mo><mo>+</mo><msub><mi>σ</mi><mn>3</mn></msub><msubsup><mi>ξ</mi><mi>i</mi><mi>t</mi></msubsup><mo>,</mo></mtd><mtd><mtext>en caso contrario</mtext></mtd></mtr></mtable><mo data-mjx-texclass="CLOSE" fence="true" stretchy="true" symmetric="true"></mo></mrow></math></mjx-assistive-mml></mjx-container>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-xs mt-4 text-slate-500 bg-white p-4 rounded-lg border border-slate-100">
+                        <div><strong><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="24" style="font-size: 118.5%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-msub><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D45D TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-texatom size="s" texclass="ORD"><mjx-mtext class="mjx-n"><mjx-c class="mjx-c64"></mjx-c><mjx-c class="mjx-c65"></mjx-c><mjx-c class="mjx-c74"></mjx-c></mjx-mtext></mjx-texatom></mjx-script></mjx-msub></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>p</mi><mrow data-mjx-texclass="ORD"><mtext>det</mtext></mrow></msub></math></mjx-assistive-mml></mjx-container></strong>: Probabilidad de desprendimiento.</div>
+                        <div><strong><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="25" style="font-size: 118.5%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-msubsup><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D43F TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.292em; margin-left: 0px;"><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D461 TEX-I"></mjx-c></mjx-mi><mjx-spacer style="margin-top: 0.18em;"></mjx-spacer><mjx-mi class="mjx-i" size="s"><mjx-c class="mjx-c1D456 TEX-I"></mjx-c></mjx-mi></mjx-script></mjx-msubsup></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><msubsup><mi>L</mi><mi>i</mi><mi>t</mi></msubsup></math></mjx-assistive-mml></mjx-container></strong>: Vector de vuelo de Lévy.</div>
+                        <div><strong><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="26" style="font-size: 118.5%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D702 TEX-I"></mjx-c></mjx-mi></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>η</mi></math></mjx-assistive-mml></mjx-container></strong>: Escala del salto.</div>
+                        <div><strong><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="27" style="font-size: 118.5%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-msub><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D44E TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-mn class="mjx-n" size="s"><mjx-c class="mjx-c33"></mjx-c></mjx-mn></mjx-script></mjx-msub><mjx-mo class="mjx-n"><mjx-c class="mjx-c2C"></mjx-c></mjx-mo><mjx-msub space="2"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D70E TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-mn class="mjx-n" size="s"><mjx-c class="mjx-c33"></mjx-c></mjx-mn></mjx-script></mjx-msub></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>a</mi><mn>3</mn></msub><mo>,</mo><msub><mi>σ</mi><mn>3</mn></msub></math></mjx-assistive-mml></mjx-container></strong>: Parámetros de movimiento residual.</div>
+                    </div>
+                </div>
+
+                <!-- GAMLSS -->
+                <div class="bg-ocean-50/50 p-6 rounded-xl border border-ocean-100 border-l-4 border-l-ocean-500">
+                    <h3 class="text-lg font-bold text-slate-800 mb-2">Modelo Conceptual GAMLSS</h3>
+                    <p class="text-slate-600 mb-4 text-sm">
+                        Esta ecuación calcula <strong><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="28" style="font-size: 118.2%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.463em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D435 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow data-mjx-texclass="ORD"><mover><mi>B</mi><mo stretchy="false">~</mo></mover></mrow></math></mjx-assistive-mml></mjx-container></strong> (Índice de Biofilm) usado en todas las fases.
+                    </p>
+                    <div class="overflow-x-auto text-center py-2 bg-white rounded border border-ocean-100">
+                        <mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" display="true" tabindex="0" ctxtmenu_counter="29" style="font-size: 118.3%; position: relative;"><mjx-math display="true" class="MJX-TEX" aria-hidden="true" style="margin-left: 0px; margin-right: 0px;"><mjx-mi class="mjx-n"><mjx-c class="mjx-c6C"></mjx-c><mjx-c class="mjx-c6F"></mjx-c><mjx-c class="mjx-c67"></mjx-c><mjx-c class="mjx-c69"></mjx-c><mjx-c class="mjx-c74"></mjx-c></mjx-mi><mjx-mrow space="2"><mjx-mo class="mjx-lop"><mjx-c class="mjx-c28 TEX-S2"></mjx-c></mjx-mo><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.463em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D435 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom><mjx-mo class="mjx-lop"><mjx-c class="mjx-c29 TEX-S2"></mjx-c></mjx-mo></mjx-mrow><mjx-mo class="mjx-n" space="4"><mjx-c class="mjx-c3D"></mjx-c></mjx-mo><mjx-msub space="4"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D6FD TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-mn class="mjx-n" size="s"><mjx-c class="mjx-c30"></mjx-c></mjx-mn></mjx-script></mjx-msub><mjx-mo class="mjx-n" space="3"><mjx-c class="mjx-c2B"></mjx-c></mjx-mo><mjx-msub space="3"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D6FD TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-mn class="mjx-n" size="s"><mjx-c class="mjx-c31"></mjx-c></mjx-mn></mjx-script></mjx-msub><mjx-msub><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D707 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-texatom size="s" texclass="ORD"><mjx-mo class="mjx-n"><mjx-c class="mjx-c6D"></mjx-c><mjx-c class="mjx-c61"></mjx-c><mjx-c class="mjx-c78"></mjx-c></mjx-mo></mjx-texatom></mjx-script></mjx-msub><mjx-mo class="mjx-n" space="3"><mjx-c class="mjx-c2B"></mjx-c></mjx-mo><mjx-msub space="3"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D6FD TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-mn class="mjx-n" size="s"><mjx-c class="mjx-c32"></mjx-c></mjx-mn></mjx-script></mjx-msub><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D449 TEX-I"></mjx-c></mjx-mi><mjx-mo class="mjx-n" space="3"><mjx-c class="mjx-c2B"></mjx-c></mjx-mo><mjx-msub space="3"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D6FD TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-mn class="mjx-n" size="s"><mjx-c class="mjx-c33"></mjx-c></mjx-mn></mjx-script></mjx-msub><mjx-msub><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D707 TEX-I"></mjx-c></mjx-mi><mjx-script style="vertical-align: -0.15em;"><mjx-texatom size="s" texclass="ORD"><mjx-mo class="mjx-n"><mjx-c class="mjx-c6D"></mjx-c><mjx-c class="mjx-c61"></mjx-c><mjx-c class="mjx-c78"></mjx-c></mjx-mo></mjx-texatom></mjx-script></mjx-msub><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D449 TEX-I"></mjx-c></mjx-mi></mjx-math><mjx-assistive-mml unselectable="on" display="block"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mi>logit</mi><mrow data-mjx-texclass="INNER"><mo data-mjx-texclass="OPEN">(</mo><mrow data-mjx-texclass="ORD"><mover><mi>B</mi><mo stretchy="false">~</mo></mover></mrow><mo data-mjx-texclass="CLOSE">)</mo></mrow><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mi>μ</mi><mrow data-mjx-texclass="ORD"><mo data-mjx-texclass="OP" movablelimits="true">max</mo></mrow></msub><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><mi>V</mi><mo>+</mo><msub><mi>β</mi><mn>3</mn></msub><msub><mi>μ</mi><mrow data-mjx-texclass="ORD"><mo data-mjx-texclass="OP" movablelimits="true">max</mo></mrow></msub><mi>V</mi></math></mjx-assistive-mml></mjx-container>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 4: SIMULADOR TSP (STYLED DARK LIKE SIM 1 + MAP) -->
+<section class="py-24 bg-slate-900 text-white border-t border-slate-800 min-h-screen flex flex-col relative" id="simulador-tsp">
+    <!-- Background Grid -->
+    <div class="absolute inset-0 bg-[linear-gradient(rgba(14,165,233,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(14,165,233,0.05)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none opacity-20"></div>
+    
+    <div class="max-w-7xl mx-auto px-4 w-full relative z-10 flex-grow flex flex-col">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-6 border-b border-slate-700 pb-6">
+            <div>
+                <span class="text-ocean-400 font-mono text-xs uppercase tracking-widest font-bold border border-ocean-500/30 px-2 py-1 rounded">Simulador 2.0</span>
+                <h2 class="text-3xl font-bold text-white mt-4">Solver TSP en Tiempo Real</h2>
+                <p class="text-slate-400 text-sm mt-2 max-w-xl">
+                    Resolución del TSP aplicando los operadores definidos. Ajusta la temperatura y pH para ver el cambio de fase en tiempo real.
+                </p>
+            </div>
+            <div class="flex gap-3">
+                <button class="flex items-center gap-2 px-4 py-2 bg-slate-800 border border-slate-600 text-slate-300 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-slate-700 hover:text-white transition-all shadow-sm" id="resetTspBtn">
+                    <span class="material-symbols-outlined text-sm">refresh</span> Reiniciar
+                </button>
+                <button class="flex items-center gap-2 px-4 py-2 bg-ocean-600 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-ocean-500 transition-all shadow-lg shadow-ocean-900/50" id="toggleTspBtn">
+                    <span class="material-symbols-outlined text-sm" id="tspIcon">pause</span>
+                    <span id="tspBtnText">Pausar</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 flex-grow">
+            <!-- Controls -->
+            <div class="lg:col-span-4 flex flex-col gap-6">
+                <!-- Metrics Cards -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700 text-center backdrop-blur-sm">
+                        <div class="text-[10px] font-bold text-ocean-400 uppercase">Growth</div>
+                        <div class="text-xl font-bold text-white font-mono" id="metricMu">1.00</div>
+                        <div class="text-[10px] text-slate-500"><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="30" style="font-size: 118.4%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.329em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D707 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow data-mjx-texclass="ORD"><mover><mi>μ</mi><mo stretchy="false">~</mo></mover></mrow></math></mjx-assistive-mml></mjx-container></div>
+                    </div>
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700 text-center backdrop-blur-sm">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase">Biofilm</div>
+                        <div class="text-xl font-bold text-white font-mono" id="metricB">NaN</div>
+                        <div class="text-[10px] text-slate-500"><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="31" style="font-size: 118.4%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.463em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D435 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow data-mjx-texclass="ORD"><mover><mi>B</mi><mo stretchy="false">~</mo></mover></mrow></math></mjx-assistive-mml></mjx-container></div>
+                    </div>
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700 text-center backdrop-blur-sm">
+                        <div class="text-[10px] font-bold text-amber-500 uppercase">Entropy</div>
+                        <div class="text-xl font-bold text-white font-mono" id="metricV">NaN</div>
+                        <div class="text-[10px] text-slate-500"><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" tabindex="0" ctxtmenu_counter="32" style="font-size: 118.4%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-texatom texclass="ORD"><mjx-mover><mjx-over style="padding-bottom: 0.105em; padding-left: 0.431em; margin-bottom: -0.215em;"><mjx-mo class="mjx-n" style="width: 0px; margin-left: -0.25em;"><mjx-c class="mjx-c7E"></mjx-c></mjx-mo></mjx-over><mjx-base><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D449 TEX-I"></mjx-c></mjx-mi></mjx-base></mjx-mover></mjx-texatom></mjx-math><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mrow data-mjx-texclass="ORD"><mover><mi>V</mi><mo stretchy="false">~</mo></mover></mrow></math></mjx-assistive-mml></mjx-container></div>
+                    </div>
+                </div>
+
+                <!-- Sliders -->
+                <div class="bg-slate-800/60 backdrop-blur-md p-6 rounded-2xl border border-slate-700/50 shadow-lg flex-grow flex flex-col justify-center space-y-8">
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-xs font-bold text-slate-300 uppercase">Temperatura</label>
+                            <span class="text-xs font-mono bg-slate-900 px-2 py-0.5 rounded text-ocean-300" id="valTspTemp">37.0°C</span>
+                        </div>
+                        <input id="simTemp" type="range" min="4" max="45" step="0.5" value="37">
+                        <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+                            <span>Frío</span><span>Óptimo</span><span>Calor</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-xs font-bold text-slate-300 uppercase">pH</label>
+                            <span class="text-xs font-mono bg-slate-900 px-2 py-0.5 rounded text-ocean-300" id="valTspPh">7.5</span>
+                        </div>
+                        <input id="simTspPh" type="range" min="4.5" max="9.5" step="0.1" value="7.5">
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-xs font-bold text-slate-300 uppercase">Entropía Base (V)</label>
+                            <span class="text-xs font-mono bg-slate-900 px-2 py-0.5 rounded text-ocean-300" id="valTspNoise">0.1</span>
+                        </div>
+                        <input id="simNoise" type="range" min="0" max="1" step="0.05" value="0.1">
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <label class="text-xs font-bold text-slate-300 uppercase">Población (N)</label>
+                            <span class="text-xs font-mono bg-slate-900 px-2 py-0.5 rounded text-ocean-300" id="valTspPop">50</span>
+                        </div>
+                        <input id="simPop" type="range" min="20" max="200" step="10" value="50">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualizer -->
+            <div class="lg:col-span-8 flex flex-col gap-4">
+                <!-- Phase Bar -->
+                <div class="bg-slate-800 border-l-4 border-amber-500 p-4 rounded-xl flex items-center justify-between shadow-lg transition-all" id="tspPhaseCard">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2 bg-white rounded-lg" id="tspPhaseIconBg">
+                            <span class="text-amber-600" id="tspPhaseIcon">explore</span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Estrategia Activa</p>
+                            <p class="text-sm font-bold text-amber-500" id="tspPhaseText">Fase III: Desprendimiento</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Iteraciones</p>
+                        <p class="text-lg font-mono font-bold text-white" id="iterDisplay">1826</p>
+                    </div>
+                </div>
+
+                <!-- Canvas -->
+                <div class="flex-grow bg-slate-950 rounded-2xl border border-slate-800 relative shadow-2xl overflow-hidden min-h-[500px]">
+                    <canvas id="tspCanvas" class="absolute inset-0 w-full h-full" width="663" height="500"></canvas>
+                    
+                    <!-- Overlay -->
+                    <div class="absolute top-4 left-4 bg-slate-900/90 backdrop-blur px-4 py-2 rounded-lg border border-slate-700 shadow-sm">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Mejor Distancia</p>
+                        <p class="text-2xl font-mono font-bold text-white" id="bestDistDisplay">2592</p>
+                    </div>
+                    
+                    <!-- Log -->
+                    <div class="absolute bottom-4 right-4 w-60 text-right pointer-events-none">
+                        <div class="text-[10px] font-bold uppercase text-slate-500 mb-2">Historial de Fases</div>
+                        <div class="space-y-1 flex flex-col items-end" id="solutionLog"><div class="bg-slate-800/90 px-3 py-1 rounded text-[10px] font-mono shadow-sm animate-fade-in border-r-2 text-slate-300" style="border-color: rgb(251, 191, 36);"><span style="color:#fbbf24" class="font-bold">III</span> <span class="text-white ml-2">2592</span></div><div class="bg-slate-800/90 px-3 py-1 rounded text-[10px] font-mono shadow-sm animate-fade-in border-r-2 text-slate-300" style="border-color: rgb(56, 189, 248);"><span style="color:#38bdf8" class="font-bold">I</span> <span class="text-white ml-2">2596</span></div><div class="bg-slate-800/90 px-3 py-1 rounded text-[10px] font-mono shadow-sm animate-fade-in border-r-2 text-slate-300" style="border-color: rgb(56, 189, 248);"><span style="color:#38bdf8" class="font-bold">I</span> <span class="text-white ml-2">2600</span></div><div class="bg-slate-800/90 px-3 py-1 rounded text-[10px] font-mono shadow-sm animate-fade-in border-r-2 text-slate-300" style="border-color: rgb(56, 189, 248);"><span style="color:#38bdf8" class="font-bold">I</span> <span class="text-white ml-2">2609</span></div><div class="bg-slate-800/90 px-3 py-1 rounded text-[10px] font-mono shadow-sm animate-fade-in border-r-2 text-slate-300" style="border-color: rgb(56, 189, 248);"><span style="color:#38bdf8" class="font-bold">I</span> <span class="text-white ml-2">2609</span></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-slate-950 text-slate-500 py-12 text-center text-sm border-t border-slate-900">
+    <div class="max-w-7xl mx-auto px-4">
+        <p class="mb-2 font-semibold text-slate-400">Cobetia Solver Project</p>
+        <p class="text-xs text-slate-600">
+            Implementación conceptual para fines educativos.<br>
+            © 2025 Cobetia Research Team.
+        </p>
+    </div>
+</footer>
+
+<!-- JAVASCRIPT LOGIC -->
+<script>
+    // ==========================================
+    // 1. MODELO MATEMÁTICO CORE
+    // ==========================================
+    const T_OPT = 37.0;
+    const PH_OPT = 7.5;
+
+    function gaussian(x, mean, sigma) {
+        return Math.exp(-0.5 * Math.pow((x - mean) / sigma, 2));
+    }
+
+    function calculateMuMax(temp, ph) {
+        let tFactor = (temp < T_OPT) ? gaussian(temp, T_OPT, 10) : gaussian(temp, T_OPT, 4);
+        let phFactor = 1 - 0.15 * Math.pow(ph - PH_OPT, 2);
+        if (phFactor < 0) phFactor = 0;
+        return Math.max(0, 1.0 * tFactor * phFactor);
+    }
+
+    function calculateBiofilm(mu, temp, ph, entropy) {
+        // Cold stress or Heat stress increases Biofilm
+        let coldStress = (temp < 20) ? (20 - temp) / 20 : 0; 
+        let heatStress = (temp > 42) ? (temp - 42) / 3 : 0;
+        let phStress = Math.abs(ph - PH_OPT) * 0.4;
+
+        const b0 = -3.0; 
+        const b1 = -2.0; 
+        const b2 = 6.0; 
+        const b3 = 1.0; 
+
+        let linear = b0 + (b1 * mu) + (b2 * entropy) + (b3 * mu * entropy);
+        linear += (coldStress * 4.0) + (heatStress * 3.0) + (phStress * 1.5);
+
+        return 1 / (1 + Math.exp(-linear));
+    }
+
+    // ==========================================
+    // 2. CHART.JS VISUALIZATION
+    // ==========================================
+    const ctxBio = document.getElementById('bioChart').getContext('2d');
+    
+    const gradMu = ctxBio.createLinearGradient(0,0,0,300);
+    gradMu.addColorStop(0, 'rgba(14, 165, 233, 0.4)');
+    gradMu.addColorStop(1, 'rgba(14, 165, 233, 0.0)');
+    
+    const gradB = ctxBio.createLinearGradient(0,0,0,300);
+    gradB.addColorStop(0, 'rgba(71, 85, 105, 0.4)');
+    gradB.addColorStop(1, 'rgba(71, 85, 105, 0.0)');
+
+    const bioChart = new Chart(ctxBio, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Crecimiento (μ)',
+                    borderColor: '#0ea5e9',
+                    backgroundColor: gradMu,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    data: []
+                },
+                {
+                    label: 'Biofilm (B)',
+                    borderColor: '#475569',
+                    backgroundColor: gradB,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    data: []
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { labels: { usePointStyle: true, font: {family:'Inter'} } } },
+            scales: {
+                x: { display: true, grid: { display: false } },
+                y: { display: true, min: 0, max: 1.2 }
+            }
+        }
+    });
+
+    function updateChart(ph) {
+        const labels = [], mus = [], bs = [];
+        for(let t=5; t<=45; t++) {
+            labels.push(t);
+            const mu = calculateMuMax(t, ph);
+            const b = calculateBiofilm(mu, t, ph, 0.2); 
+            mus.push(mu);
+            bs.push(b);
+        }
+        bioChart.data.labels = labels;
+        bioChart.data.datasets[0].data = mus;
+        bioChart.data.datasets[1].data = bs;
+        bioChart.update();
+    }
+
+    document.getElementById('phSlider').addEventListener('input', (e) => {
+        const ph = parseFloat(e.target.value);
+        document.getElementById('phValueDisplay').innerText = ph.toFixed(1);
+        updateChart(ph);
+    });
+    updateChart(7.5);
+
+    // ==========================================
+    // 3. SIMULADOR 1: BACTERIAS (WITH FIXED PHASE LOGIC)
+    // ==========================================
+    const bacCanvas = document.getElementById('bacterialCanvas');
+    const bacCtx = bacCanvas.getContext('2d');
+    let bacW, bacH;
+    let bacState = { temp: 37, ph: 7.5, particles: [] };
+
+    class Bacterium {
+        constructor() {
+            this.x = Math.random() * bacW;
+            this.y = Math.random() * bacH;
+            this.angle = Math.random() * Math.PI * 2;
+            this.speed = 0;
+            this.radius = 2;
+            this.color = '#38bdf8';
+            this.tumbleTimer = 0;
+        }
+
+        update(mu, b, phase) {
+            // PHASE 1: PLANKTONIC (High Mu, Low B)
+            if (phase === 'PLANCTONIC') {
+                let baseSpeed = (mu * 4) + 1.5; 
+                this.tumbleTimer--;
+                if (this.tumbleTimer <= 0) {
+                    this.angle += (Math.random() - 0.5) * 2;
+                    this.tumbleTimer = Math.random() * 20 + 10;
+                }
+                this.speed = baseSpeed;
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+                this.color = `rgba(14, 165, 233, 0.9)`;
+                this.radius = 2.5;
+            } 
+            // PHASE 3: DETACHMENT (Extreme B/Stress)
+            // Particles break away fast (Lévy-like visual)
+            else if (phase === 'DETACHMENT') {
+                this.speed = 5.0; // Very fast
+                // Occasional huge jumps
+                if (Math.random() < 0.05) {
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.x += Math.cos(this.angle) * 50;
+                    this.y += Math.sin(this.angle) * 50;
+                } else {
+                    this.x += Math.cos(this.angle) * this.speed;
+                    this.y += Math.sin(this.angle) * this.speed;
+                }
+                this.color = `rgba(245, 158, 11, 0.9)`; // Amber
+                this.radius = 3;
+            }
+            // PHASE 2: BIOFILM (High B)
+            else {
+                this.speed = 0.2; 
+                this.x += (Math.random() - 0.5) * 0.5;
+                this.y += (Math.random() - 0.5) * 0.5;
+                // Strong cohesion
+                let dx = (bacW/2) - this.x;
+                let dy = (bacH/2) - this.y;
+                this.x += dx * 0.01 * b;
+                this.y += dy * 0.01 * b;
+                this.color = `rgba(71, 85, 105, ${0.4 + b * 0.6})`;
+                this.radius = 4;
+            }
+
+            if(this.x < 0) this.x = bacW;
+            if(this.x > bacW) this.x = 0;
+            if(this.y < 0) this.y = bacH;
+            if(this.y > bacH) this.y = 0;
+        }
+
+        draw() {
+            bacCtx.beginPath();
+            bacCtx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+            bacCtx.fillStyle = this.color;
+            bacCtx.fill();
+        }
+    }
+
+    function initBac() {
+        bacW = bacCanvas.parentElement.offsetWidth;
+        bacH = bacCanvas.parentElement.offsetHeight;
+        bacCanvas.width = bacW; bacCanvas.height = bacH;
+        bacState.particles = Array.from({length: 100}, () => new Bacterium());
+    }
+
+    function loopBac() {
+        const mu = calculateMuMax(bacState.temp, bacState.ph);
+        const b = calculateBiofilm(mu, bacState.temp, bacState.ph, 0.1);
+
+        // Determine Phase Logic
+        let phase = 'PLANCTONIC';
+        if (b > 0.85) phase = 'DETACHMENT'; // Extreme biofilm/stress triggers detachment
+        else if (b > 0.5) phase = 'BIOFILM';
+        
+        // UI Update
+        const txt = document.getElementById('bacStateText');
+        const sub = document.getElementById('bacStateSub');
+        const desc = document.getElementById('bacStateDesc');
+        const card = document.getElementById('bacStateCard');
+        const icon = document.getElementById('bacStateIcon');
+        const dot = document.getElementById('activeAgentDot');
+
+        if(phase === 'BIOFILM') {
+            txt.innerText = "Fase Biofilm";
+            sub.innerText = "Baja Movilidad / Adhesión";
+            desc.innerText = "Agrupación defensiva. Las células reducen su movilidad, se adhieren entre sí y forman microcolonias resistentes.";
+            
+            card.className = "bg-slate-800/80 p-6 rounded-2xl border-l-4 border-slate-500 transition-colors duration-500";
+            icon.className = "w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center shadow-lg transition-all duration-500";
+            icon.innerHTML = '<span class="material-symbols-outlined text-white text-2xl">grid_view</span>';
+            dot.className = "w-2 h-2 rounded-full bg-slate-500 animate-pulse";
+        } 
+        else if (phase === 'DETACHMENT') {
+            txt.innerText = "Fase Desprendimiento";
+            sub.innerText = "Dispersión / Saltos Largos";
+            desc.innerText = "Condiciones extremas o saturación. Parte del biofilm se desprende para colonizar nuevas áreas (Vuelos de Lévy).";
+            
+            card.className = "bg-slate-800/80 p-6 rounded-2xl border-l-4 border-amber-500 transition-colors duration-500";
+            icon.className = "w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center shadow-lg transition-all duration-500";
+            icon.innerHTML = '<span class="material-symbols-outlined text-white text-2xl">flight_takeoff</span>';
+            dot.className = "w-2 h-2 rounded-full bg-amber-500 animate-ping";
+        }
+        else {
+            txt.innerText = "Fase Planctónica";
+            sub.innerText = "Alta Movilidad / Crecimiento";
+            desc.innerText = "Dispersión activa. Las bacterias se mueven a alta velocidad y cambian de dirección frecuentemente para explorar el medio.";
+            
+            card.className = "bg-slate-800/80 p-6 rounded-2xl border-l-4 border-ocean-500 transition-colors duration-500";
+            icon.className = "w-12 h-12 rounded-full bg-ocean-500 flex items-center justify-center animate-pulse-soft shadow-[0_0_20px_rgba(14,165,233,0.4)] transition-all duration-500";
+            icon.innerHTML = '<span class="material-symbols-outlined text-white text-2xl">water_drop</span>';
+            dot.className = "w-2 h-2 rounded-full bg-ocean-500 animate-pulse";
+        }
+
+        // Draw
+        bacCtx.fillStyle = (phase === 'BIOFILM') ? 'rgba(2, 6, 23, 0.3)' : 'rgba(2, 6, 23, 0.15)'; 
+        bacCtx.fillRect(0, 0, bacW, bacH);
+
+        if (phase === 'BIOFILM') {
+            bacCtx.strokeStyle = `rgba(148, 163, 184, ${b * 0.3})`;
+            bacCtx.beginPath();
+            for(let i=0; i<bacState.particles.length; i++) {
+                let p1 = bacState.particles[i];
+                for(let k=1; k<3; k++) {
+                    let idx = (i+k) % bacState.particles.length;
+                    let p2 = bacState.particles[idx];
+                    let d = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                    if (d < 60 * b) {
+                        bacCtx.moveTo(p1.x, p1.y);
+                        bacCtx.lineTo(p2.x, p2.y);
+                    }
+                }
+            }
+            bacCtx.stroke();
+        }
+
+        bacState.particles.forEach(p => {
+            p.update(mu, b, phase);
+            p.draw();
+        });
+
+        requestAnimationFrame(loopBac);
+    }
+
+    document.getElementById('bacTempSlider').addEventListener('input', e => {
+        bacState.temp = parseFloat(e.target.value);
+        document.getElementById('bacTempDisplay').innerText = bacState.temp + "°C";
+    });
+    document.getElementById('bacPhSlider').addEventListener('input', e => {
+        bacState.ph = parseFloat(e.target.value);
+        document.getElementById('bacPhDisplay').innerText = bacState.ph;
+    });
+
+    initBac();
+    loopBac();
+    window.addEventListener('resize', initBac);
+
+    // ==========================================
+    // 4. SIMULADOR TSP (FIXED LOGIC)
+    // ==========================================
+    const tspCanvas = document.getElementById('tspCanvas');
+    const tspCtx = tspCanvas.getContext('2d');
+    let tspW, tspH;
+
+    let tspState = {
+        running: true,
+        nodes: [],
+        population: [],
+        fitnesses: [],
+        bestRoute: [],
+        bestDist: Infinity,
+        temp: 37, ph: 7.5, noise: 0.1, popSize: 50,
+        iteration: 0, stagnation: 0
+    };
+
+    function initTsp() {
+        tspW = tspCanvas.parentElement.offsetWidth;
+        tspH = tspCanvas.parentElement.offsetHeight;
+        tspCanvas.width = tspW; tspCanvas.height = tspH;
+
+        tspState.nodes = [];
+        for(let i=0; i<30; i++) {
+            tspState.nodes.push({
+                x: Math.random()*(tspW-60)+30,
+                y: Math.random()*(tspH-60)+30
+            });
+        }
+
+        tspState.population = [];
+        tspState.fitnesses = [];
+        const base = tspState.nodes.map((_,i)=>i);
+        
+        for(let i=0; i<tspState.popSize; i++) {
+            let r = [...base];
+            for(let k=r.length-1; k>0; k--) {
+                const j = Math.floor(Math.random()*(k+1));
+                [r[k], r[j]] = [r[j], r[k]];
+            }
+            tspState.population.push(r);
+            tspState.fitnesses.push(calcDist(r));
+        }
+
+        updateBest();
+        tspState.iteration = 0;
+        tspState.stagnation = 0;
+        document.getElementById('solutionLog').innerHTML = '';
+        logTsp("Inicio", tspState.bestDist, '#94a3b8');
+    }
+
+    function calcDist(r) {
+        let d = 0;
+        for(let i=0; i<r.length-1; i++) {
+            let n1=tspState.nodes[r[i]], n2=tspState.nodes[r[i+1]];
+            d += Math.hypot(n1.x-n2.x, n1.y-n2.y);
+        }
+        let l=tspState.nodes[r[r.length-1]], f=tspState.nodes[r[0]];
+        d += Math.hypot(l.x-f.x, l.y-f.y);
+        return d;
+    }
+
+    function updateBest() {
+        let idx = 0, minF = tspState.fitnesses[0];
+        for(let i=1; i<tspState.fitnesses.length; i++) {
+            if(tspState.fitnesses[i] < minF) {
+                minF = tspState.fitnesses[i];
+                idx = i;
+            }
+        }
+        if(minF < tspState.bestDist) {
+            tspState.bestDist = minF;
+            tspState.bestRoute = [...tspState.population[idx]];
+            tspState.stagnation = 0;
+            return true;
+        }
+        return false;
+    }
+
+    function op2Opt(r) {
+        const nr = [...r];
+        const i = Math.floor(Math.random()*nr.length);
+        const j = Math.floor(Math.random()*nr.length);
+        const min=Math.min(i,j), max=Math.max(i,j);
+        const seg = nr.slice(min, max+1).reverse();
+        nr.splice(min, seg.length, ...seg);
+        return nr;
+    }
+
+    function opInteract(r, neighbor) {
+        const nr = [...r];
+        const i = Math.floor(Math.random()*nr.length);
+        const j = Math.floor(Math.random()*nr.length);
+        const min=Math.min(i,j), max=Math.max(i,j);
+        const segment = neighbor.slice(min, max+1);
+        const remaining = nr.filter(n => !segment.includes(n));
+        const pos = Math.floor(Math.random() * (remaining.length+1));
+        remaining.splice(pos, 0, ...segment);
+        return remaining;
+    }
+
+    function opLevy(r) {
+        // Perturbation that keeps some structure but breaks local optima
+        const nr = [...r];
+        const i = Math.floor(Math.random()*(nr.length/3));
+        const len = Math.floor(Math.random()*(nr.length/3));
+        const seg = nr.splice(i, len);
+        const pos = Math.floor(Math.random()*nr.length);
+        nr.splice(pos, 0, ...seg);
+        return nr;
+    }
+
+    function logTsp(txt, dist, color) {
+        const div = document.createElement('div');
+        div.className = "bg-slate-800/90 px-3 py-1 rounded text-[10px] font-mono shadow-sm animate-fade-in border-r-2 text-slate-300";
+        div.style.borderColor = color;
+        div.innerHTML = `<span style="color:${color}" class="font-bold">${txt}</span> <span class="text-white ml-2">${dist.toFixed(0)}</span>`;
+        const c = document.getElementById('solutionLog');
+        c.prepend(div);
+        if(c.children.length > 5) c.lastElementChild.remove();
+    }
+
+    function drawCityMap() {
+        tspCtx.beginPath();
+        tspCtx.strokeStyle = '#1e293b'; 
+        tspCtx.lineWidth = 1;
+        for(let x=0; x<tspW; x+=40) {
+            tspCtx.moveTo(x, 0); tspCtx.lineTo(x, tspH);
+        }
+        for(let y=0; y<tspH; y+=40) {
+            tspCtx.moveTo(0, y); tspCtx.lineTo(tspW, y);
+        }
+        tspCtx.stroke();
+        
+        tspCtx.fillStyle = '#0f172a'; 
+        for(let x=20; x<tspW; x+=80) {
+            for(let y=20; y<tspH; y+=80) {
+                if((x+y)%100 === 0) tspCtx.fillRect(x, y, 40, 40);
+            }
+        }
+    }
+
+    function loopTsp() {
+        if(tspState.running) {
+            const mu = calculateMuMax(tspState.temp, tspState.ph);
+            
+            let sum=0, sqSum=0;
+            tspState.fitnesses.forEach(f=>{sum+=f; sqSum+=f*f;});
+            let mean = sum/tspState.popSize;
+            let std = Math.sqrt(sqSum/tspState.popSize - mean*mean);
+            let V_real = (mean>0)?(std/mean)*2 : 0; 
+            // Reduced impact of stagnation to allow recovery
+            let V_total = Math.min(1.0, tspState.noise + V_real + (tspState.stagnation * 0.001));
+            
+            const B = calculateBiofilm(mu, tspState.temp, tspState.ph, V_total);
+
+            document.getElementById('metricMu').innerText = mu.toFixed(2);
+            document.getElementById('metricB').innerText = B.toFixed(2);
+            document.getElementById('metricV').innerText = V_total.toFixed(2);
+
+            let phase = 'I';
+            // Adjusted thresholds to allow more time in Phase I/II
+            if(V_total > 0.8 || tspState.stagnation > 80) phase = 'III'; 
+            else if(B > 0.6) phase = 'II';
+            else phase = 'I';
+
+            const pTxt = document.getElementById('tspPhaseText');
+            const pCard = document.getElementById('tspPhaseCard');
+            const pIcon = document.getElementById('tspPhaseIcon');
+            const pBg = document.getElementById('tspPhaseIconBg');
+
+            if(phase === 'I') {
+                pTxt.innerText = "Fase I: Crecimiento";
+                pTxt.className = "text-sm font-bold text-ocean-400";
+                pCard.className = "bg-slate-800 border-l-4 border-ocean-500 p-4 rounded-xl flex items-center justify-between shadow-lg transition-all";
+                pIcon.innerText = "Inicio"; pIcon.className = "text-ocean-600"; pBg.className = "p-2 bg-white rounded-lg";
+            } else if(phase === 'II') {
+                pTxt.innerText = "Fase II: Biofilm";
+                pTxt.className = "text-sm font-bold text-slate-300";
+                pCard.className = "bg-slate-800 border-l-4 border-slate-500 p-4 rounded-xl flex items-center justify-between shadow-lg transition-all";
+                pIcon.innerText = "Explotar"; pIcon.className = "text-slate-600"; pBg.className = "p-2 bg-white rounded-lg";
+            } else {
+                pTxt.innerText = "Fase III: Desprendimiento";
+                pTxt.className = "text-sm font-bold text-amber-500";
+                pCard.className = "bg-slate-800 border-l-4 border-amber-500 p-4 rounded-xl flex items-center justify-between shadow-lg transition-all";
+                pIcon.innerText = "Explorar"; pIcon.className = "text-amber-600"; pBg.className = "p-2 bg-white rounded-lg";
+            }
+
+            let steps = tspState.popSize; 
+            for(let i=0; i<steps; i++) {
+                let idx = i; 
+                let r = tspState.population[idx];
+                let f = tspState.fitnesses[idx];
+                let cand;
+
+                if(phase === 'I') {
+                    // Growth: Greedy 2-opt
+                    cand = op2Opt(r);
+                    // Minimal noise
+                    if(Math.random()<0.1) cand = opInteract(cand, tspState.bestRoute);
+                } else if(phase === 'II') {
+                    // Biofilm: Interaction
+                    let neighbor = tspState.population[(idx+1)%tspState.popSize];
+                    cand = opInteract(r, neighbor);
+                } else {
+                    // Detachment: Lévy / Shuffle
+                    if(Math.random() < 0.2) cand = opLevy(tspState.bestRoute); // Restart from best
+                    else cand = opLevy(r); // Big jump
+                }
+
+                let fCand = calcDist(cand);
+                let accept = false;
+                if(fCand < f) accept = true;
+                // Resilience in Biofilm
+                else if(phase === 'II' && Math.random() < 0.05*B) accept = true;
+
+                if(accept) {
+                    tspState.population[idx] = cand;
+                    tspState.fitnesses[idx] = fCand;
+                }
+            }
+
+            if(updateBest()) {
+                let c = (phase==='I')?'#38bdf8':(phase==='II')?'#94a3b8':'#fbbf24';
+                logTsp(phase, tspState.bestDist, c);
+                // Reset stagnation heavily to allow phase I/II to work again
+                tspState.stagnation = 0; 
+            } else {
+                tspState.stagnation++;
+            }
+
+            tspState.iteration++;
+            document.getElementById('iterDisplay').innerText = tspState.iteration;
+            document.getElementById('bestDistDisplay').innerText = tspState.bestDist.toFixed(0);
+        }
+
+        drawTsp();
+        requestAnimationFrame(loopTsp);
+    }
+
+    function drawTsp() {
+        tspCtx.clearRect(0,0,tspW,tspH);
+        drawCityMap();
+
+        if(tspState.bestRoute.length > 0) {
+            tspCtx.beginPath();
+            tspCtx.lineJoin = 'round';
+            
+            const mu = calculateMuMax(tspState.temp, tspState.ph);
+            const B = calculateBiofilm(mu, tspState.temp, tspState.ph, 0.5);
+
+            if(B > 0.6) {
+                tspCtx.strokeStyle = '#94a3b8'; // Slate
+                tspCtx.lineWidth = 4;
+                tspCtx.setLineDash([]);
+            } else if(tspState.stagnation > 50) {
+                tspCtx.strokeStyle = '#fbbf24'; // Amber
+                tspCtx.lineWidth = 2;
+                tspCtx.setLineDash([5,5]);
+            } else {
+                tspCtx.strokeStyle = '#38bdf8'; // Ocean
+                tspCtx.lineWidth = 3;
+                tspCtx.setLineDash([]);
+            }
+
+            const r = tspState.bestRoute;
+            tspCtx.moveTo(tspState.nodes[r[0]].x, tspState.nodes[r[0]].y);
+            for(let i=1; i<r.length; i++) tspCtx.lineTo(tspState.nodes[r[i]].x, tspState.nodes[r[i]].y);
+            tspCtx.closePath();
+            tspCtx.stroke();
+        }
+
+        tspState.nodes.forEach((n,i)=>{
+            tspCtx.beginPath();
+            tspCtx.arc(n.x, n.y, 5, 0, Math.PI*2);
+            tspCtx.fillStyle = (i===0)?'#38bdf8':'white';
+            tspCtx.fill();
+            tspCtx.strokeStyle = '#0ea5e9';
+            tspCtx.lineWidth = 2;
+            tspCtx.stroke();
+        });
+    }
+
+    document.getElementById('simTemp').addEventListener('input', e => {
+        tspState.temp = parseFloat(e.target.value);
+        document.getElementById('valTspTemp').innerText = tspState.temp + "°C";
+    });
+    document.getElementById('simTspPh').addEventListener('input', e => {
+        tspState.ph = parseFloat(e.target.value);
+        document.getElementById('valTspPh').innerText = tspState.ph;
+    });
+    document.getElementById('simNoise').addEventListener('input', e => {
+        tspState.noise = parseFloat(e.target.value);
+        document.getElementById('valTspNoise').innerText = tspState.noise;
+    });
+    document.getElementById('simPop').addEventListener('input', e => {
+        tspState.popSize = parseFloat(e.target.value);
+        document.getElementById('valTspPop').innerText = tspState.popSize;
+        if(tspState.population.length !== tspState.popSize) initTsp();
+    });
+
+    document.getElementById('toggleTspBtn').addEventListener('click', () => {
+        tspState.running = !tspState.running;
+        const t = document.getElementById('tspBtnText');
+        const i = document.getElementById('tspIcon');
+        if(tspState.running){t.innerText="Pausar";i.innerText="pause";}
+        else{t.innerText="Reanudar";i.innerText="play_arrow";}
+    });
+    document.getElementById('resetTspBtn').addEventListener('click', initTsp);
+
+    setTimeout(()=>{initTsp(); loopTsp();}, 300);
+    window.addEventListener('resize', initTsp);
+
+</script>
+
+
+</body></html>

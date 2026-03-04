@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import VennDiagram from "@/components/venn-diagram"
-import { ArrowRight, HelpCircle, Info, Database } from "lucide-react"
+import { ArrowRight, HelpCircle, Info, Database, FlaskConical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
 import Tutorial from "@/components/tutorial"
@@ -379,6 +379,23 @@ export default function Home() {
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Show tutorial</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full"
+                    onClick={() => router.push("/solver")}
+                    aria-label="Cobetia Solver"
+                  >
+                    <FlaskConical className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Cobetia Solver</p>
                 </TooltipContent>
               </Tooltip>
 
