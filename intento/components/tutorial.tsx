@@ -67,17 +67,17 @@ export default function Tutorial({ onClose }: TutorialProps) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
-          className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full"
+          className="bg-card border border-border rounded-2xl shadow-2xl max-w-md w-full"
         >
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">{steps[step].title}</h2>
+              <h2 className="text-xl font-bold font-[family-name:var(--font-display)]">{steps[step].title}</h2>
               <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close tutorial">
                 <X className="h-5 w-5" />
               </Button>
             </div>
 
-            <div className="aspect-video bg-slate-100 dark:bg-slate-700 rounded-lg mb-4 flex items-center justify-center">
+            <div className="aspect-video bg-muted rounded-lg mb-4 flex items-center justify-center">
               <img
                 src={steps[step].image || "/placeholder.svg"}
                 alt={`Tutorial step ${step + 1}`}
@@ -92,7 +92,7 @@ export default function Tutorial({ onClose }: TutorialProps) {
                 {steps.map((_, index) => (
                   <div
                     key={index}
-                    className={`w-2 h-2 rounded-full ${index === step ? "bg-primary" : "bg-slate-300 dark:bg-slate-600"}`}
+                    className={`w-2 h-2 rounded-full ${index === step ? "bg-primary" : "bg-border"}`}
                   />
                 ))}
               </div>

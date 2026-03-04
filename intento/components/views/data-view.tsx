@@ -73,7 +73,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
   const uniqueCategories = Array.from(new Set(info.data.map((item) => item.category)))
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-background dot-grid">
       {navigationBar}
 
       <div className="container mx-auto px-4 py-8">
@@ -85,11 +85,12 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
 
           {/* Dropdown to select specific elements in intersections */}
           {isIntersection(section) && (
-            <div className="mb-6 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md">
+            <div className="mb-6 bg-card border border-border p-4 rounded-xl shadow-md">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                   <p className="text-sm font-medium mb-2">Genes in intersection:</p>
-                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  <p className="font-[family-name:var(--font-mono)] text-2xl font-bold" style={{color:'hsl(var(--temp-cold))'}}>
+
                     {loading ? (
                       <span className="inline-block w-6 h-6 rounded-full border-2 border-slate-300 border-t-slate-600 animate-spin"></span>
                     ) : (
@@ -146,7 +147,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
             </div>
           )}
 
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md mb-8">
+          <div className="bg-card border border-border p-6 rounded-xl shadow-md mb-8">
             <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
               <div className="flex-1">
                 <div className="relative">
@@ -338,7 +339,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
 
           {/* Detailed data table for intersection elements */}
           {isIntersection(section) && !selectedElement && (
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md mb-8">
+            <div className="bg-card border border-border p-6 rounded-xl shadow-md mb-8">
               <h2 className="text-xl font-semibold mb-4">Intersection specific elements</h2>
 
 
@@ -352,7 +353,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                       {loading ? (
                         <span className="inline-block w-4 h-4 rounded-full border-2 border-slate-300 border-t-slate-600 animate-spin ml-1"></span>
                       ) : (
-                        <span className="text-blue-600 dark:text-blue-400 font-semibold">{stats?.elements || "N/A"}</span>
+                        <span className="font-semibold" style={{color:'hsl(var(--temp-cold))'}}>{stats?.elements || "N/A"}</span>
                       )}
                     </p>
                     <p className="text-sm mb-2">
@@ -413,9 +414,9 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
                     {stats.pathwaysList.map((pathway, index) => (
                       <div
                         key={index}
-                        className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                        className="bg-card border border-border p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow"
                       >
-                        <p className="text-sm font-medium text-blue-600 dark:text-blue-400">{pathway}</p>
+                        <p className="text-sm font-medium" style={{color:'hsl(var(--temp-cold))'}}>{pathway}</p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                           Pathway {index + 1} of {stats.pathwaysList.length}
                         </p>
@@ -427,7 +428,7 @@ export default function DataView({ section, navigationBar }: DataViewProps) {
             </div>
           )}
 
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md mb-8">
+          <div className="bg-card border border-border p-6 rounded-xl shadow-md mb-8">
             <h2 className="text-xl font-semibold mb-4">Data summary</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

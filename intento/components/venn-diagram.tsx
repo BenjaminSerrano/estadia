@@ -1,491 +1,293 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback, type KeyboardEvent } from "react"
+import { useState, useEffect, useRef } from "react"
 
 interface VennDiagramProps {
   onSectionClick: (section: string) => void | Promise<void>
   selectedSection: string | null
 }
 
+// ─── Geometry ────────────────────────────────────────────────────────────────
+const CX = { A: 160, B: 280, C: 220 }
+const CY = { A: 140, B: 140, C: 220 }
+const R  = 80
+const VW = 440
+const VH = 320
+
+// ─── Temperature-semantic palette ────────────────────────────────────────────
+const PALETTE = {
+  A:   { base: "rgba(14,165,233,0.28)",  hover: "rgba(14,165,233,0.55)",  active: "rgba(14,165,233,0.80)",  ring: "rgb(14,165,233)",   label: "16°C",           desc: "Genes expressed at 16°C" },
+  B:   { base: "rgba(245,158,11,0.28)", hover: "rgba(245,158,11,0.55)", active: "rgba(245,158,11,0.80)", ring: "rgb(245,158,11)",  label: "38°C",           desc: "Genes expressed at 38°C" },
+  C:   { base: "rgba(239,68,68,0.28)",  hover: "rgba(239,68,68,0.55)",  active: "rgba(239,68,68,0.80)",  ring: "rgb(239,68,68)",   label: "41°C",           desc: "Genes expressed at 41°C" },
+  AB:  { base: "rgba(20,184,166,0.38)", hover: "rgba(20,184,166,0.62)", active: "rgba(20,184,166,0.85)", ring: "rgb(20,184,166)",  label: "16°C ∩ 38°C",   desc: "Common genes: 16°C & 38°C" },
+  AC:  { base: "rgba(168,85,247,0.38)", hover: "rgba(168,85,247,0.62)", active: "rgba(168,85,247,0.85)", ring: "rgb(168,85,247)",  label: "16°C ∩ 41°C",   desc: "Common genes: 16°C & 41°C" },
+  BC:  { base: "rgba(249,115,22,0.38)", hover: "rgba(249,115,22,0.62)", active: "rgba(249,115,22,0.85)", ring: "rgb(249,115,22)",  label: "38°C ∩ 41°C",   desc: "Common genes: 38°C & 41°C" },
+  ABC: { base: "rgba(255,255,255,0.45)",hover: "rgba(255,255,255,0.70)",active: "rgba(255,255,255,0.90)",ring: "rgb(255,255,255)", label: "All temps",      desc: "Common genes across all temperatures" },
+} as const
+
+type SectionId = keyof typeof PALETTE
+
+const SECTIONS: SectionId[] = ["A", "B", "C", "AB", "AC", "BC", "ABC"]
+
+// Which circles border each region (for ring highlighting)
+const BORDERS: Record<SectionId, Array<"A" | "B" | "C">> = {
+  A: ["A"], B: ["B"], C: ["C"],
+  AB: ["A", "B"], AC: ["A", "C"], BC: ["B", "C"], ABC: ["A", "B", "C"],
+}
+
 export default function VennDiagram({ onSectionClick, selectedSection }: VennDiagramProps) {
-  const [hoveredSection, setHoveredSection] = useState<string | null>(null)
-  const [isAnimating, setIsAnimating] = useState(false)
+  const [hovered, setHovered] = useState<SectionId | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
 
-  // Define the sections of the Venn diagram with improved colors and better positioning
-  const sections = [
-    {
-      id: "A",
-      label: "16°C",
-      color: "rgba(147, 51, 234, 0.5)",
-      hoverColor: "rgba(147, 51, 234, 0.75)",
-      activeColor: "rgba(147, 51, 234, 0.9)",
-      description: "Genes expressed at 16°C",
-      cx: 160,
-      cy: 140,
-      r: 80,
-    },
-    {
-      id: "B",
-      label: "38°C",
-      color: "rgba(59, 130, 246, 0.5)",
-      hoverColor: "rgba(59, 130, 246, 0.75)",
-      activeColor: "rgba(59, 130, 246, 0.9)",
-      description: "Genes expressed at 38°C",
-      cx: 280,
-      cy: 140,
-      r: 80,
-    },
-    {
-      id: "C",
-      label: "41°C",
-      color: "rgba(236, 72, 153, 0.5)",
-      hoverColor: "rgba(236, 72, 153, 0.75)",
-      activeColor: "rgba(236, 72, 153, 0.9)",
-      description: "Genes expressed at 41°C",
-      cx: 220,
-      cy: 220,
-      r: 80,
-    },
-    {
-      id: "AB",
-      label: "16°C ∩ 38°C",
-      color: "rgba(139, 92, 246, 0.6)",
-      hoverColor: "rgba(139, 92, 246, 0.8)",
-      activeColor: "rgba(139, 92, 246, 0.95)",
-      description: "Common genes between 16°C and 38°C",
-    },
-    {
-      id: "AC",
-      label: "16°C ∩ 41°C",
-      color: "rgba(190, 24, 185, 0.6)",
-      hoverColor: "rgba(190, 24, 185, 0.8)",
-      activeColor: "rgba(190, 24, 185, 0.95)",
-      description: "Common genes between 16°C and 41°C",
-    },
-    {
-      id: "BC",
-      label: "38°C ∩ 41°C",
-      color: "rgba(79, 70, 229, 0.6)",
-      hoverColor: "rgba(79, 70, 229, 0.8)",
-      activeColor: "rgba(79, 70, 229, 0.95)",
-      description: "Common genes between 38°C and 41°C",
-    },
-    {
-      id: "ABC",
-      label: "16°C ∩ 38°C ∩ 41°C",
-      color: "rgba(255, 255, 255, 0.9)",
-      hoverColor: "rgba(248, 250, 252, 0.95)",
-      activeColor: "rgba(241, 245, 249, 1)",
-      description: "Common genes across all temperatures",
-      cx: 220,
-      cy: 180,
-      r: 25,
-    },
-  ]
-
-  // Get the color for a section based on its state
-  const getSectionColor = (id: string) => {
-    const section = sections.find((s) => s.id === id)
-    if (!section) return "rgba(200, 200, 200, 0.7)"
-
-    if (selectedSection === id) return section.activeColor
-    if (hoveredSection === id) return section.hoverColor
-    return section.color
+  // ─── Color helpers ─────────────────────────────────────────────────────────
+  const fill = (id: SectionId) => {
+    const p = PALETTE[id]
+    if (selectedSection === id) return p.active
+    if (hovered === id)         return p.hover
+    return p.base
   }
 
-  // Handle click with animation
-  const handleSectionClick = useCallback((sectionId: string) => {
-    setIsAnimating(true)
-    onSectionClick(sectionId)
-    setTimeout(() => setIsAnimating(false), 300)
-  }, [onSectionClick])
+  const ringOpacity = (letter: "A" | "B" | "C") => {
+    const sid = selectedSection as SectionId | null
+    const hid = hovered
+    const active = sid ?? hid
+    if (!active) return "0.35"
+    const borders = BORDERS[active] ?? []
+    return borders.includes(letter) ? "1" : "0.25"
+  }
 
-  // Handle keyboard navigation
+  const ringWidth = (letter: "A" | "B" | "C") => {
+    const active = (selectedSection ?? hovered) as SectionId | null
+    if (!active) return "1.5"
+    return (BORDERS[active] ?? []).includes(letter) ? "2.5" : "1"
+  }
+
+  // ─── Region props (shared across all 7 clickable rects) ───────────────────
+  const rp = (id: SectionId) => ({
+    x: 0, y: 0, width: VW, height: VH,
+    fill: fill(id),
+    style: { transition: "fill 0.2s ease", cursor: "pointer" },
+    onClick:      () => onSectionClick(id),
+    onMouseEnter: () => setHovered(id),
+    onMouseLeave: () => setHovered(null),
+    role: "button" as const,
+    "aria-label": PALETTE[id].desc,
+    "aria-pressed": selectedSection === id,
+    tabIndex: 0,
+    onKeyDown: (e: React.KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") onSectionClick(id) },
+  })
+
+  // ─── Keyboard escape ───────────────────────────────────────────────────────
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent<HTMLElement> | any) => {
-      if (e.key === "Enter" && hoveredSection) {
-        handleSectionClick(hoveredSection)
-      } else if (e.key === "Escape") {
-        setHoveredSection(null)
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [hoveredSection, handleSectionClick])
-
-  // Focus trap for keyboard navigation
-  useEffect(() => {
-    const handleTabKey = (e: KeyboardEvent<HTMLElement> | any) => {
-      if (e.key === "Tab" && svgRef.current) {
-        const focusableElements = svgRef.current.querySelectorAll('[tabindex="0"]')
-        const firstElement = focusableElements[0] as HTMLElement
-        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
-
-        if (e.shiftKey && document.activeElement === firstElement) {
-          lastElement.focus()
-          e.preventDefault()
-        } else if (!e.shiftKey && document.activeElement === lastElement) {
-          firstElement.focus()
-          e.preventDefault()
-        }
-      }
-    }
-
-    window.addEventListener("keydown", handleTabKey)
-    return () => window.removeEventListener("keydown", handleTabKey)
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setHovered(null) }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
   }, [])
 
+  const tooltip = hovered ? PALETTE[hovered] : null
+
   return (
-    <div className="w-full max-w-4xl mx-auto relative">
+    <div className="w-full max-w-3xl mx-auto select-none">
       <svg
         ref={svgRef}
-        viewBox="0 0 440 320"
-        className={`w-full h-auto drop-shadow-2xl transition-all duration-500 ${
-          isAnimating ? 'scale-105' : 'scale-100'
-        }`}
+        viewBox={`0 0 ${VW} ${VH}`}
+        className="w-full h-auto"
         role="img"
-        aria-label="Interactive Venn diagram with three temperatures: 16°C, 38°C and 41°C"
+        aria-label="Interactive Venn diagram — three temperature conditions"
       >
         <title>Interactive Venn diagram of genes expressed at different temperatures</title>
-        <desc>
-          A Venn diagram showing genes expressed at different temperatures (16°C, 38°C, 41°C) and their intersections.
-          Click on any section to see more information about genes expressed under those conditions.
-        </desc>
 
         <defs>
-          {/* Gradientes modernos más suaves */}
-          <radialGradient id="gradientA" cx="30%" cy="30%">
-            <stop offset="0%" stopColor="rgba(147, 51, 234, 0.3)" />
-            <stop offset="70%" stopColor="rgba(147, 51, 234, 0.6)" />
-            <stop offset="100%" stopColor="rgba(147, 51, 234, 0.8)" />
-          </radialGradient>
-          
-          <radialGradient id="gradientB" cx="70%" cy="30%">
-            <stop offset="0%" stopColor="rgba(59, 130, 246, 0.3)" />
-            <stop offset="70%" stopColor="rgba(59, 130, 246, 0.6)" />
-            <stop offset="100%" stopColor="rgba(59, 130, 246, 0.8)" />
-          </radialGradient>
-          
-          <radialGradient id="gradientC" cx="50%" cy="70%">
-            <stop offset="0%" stopColor="rgba(236, 72, 153, 0.3)" />
-            <stop offset="70%" stopColor="rgba(236, 72, 153, 0.6)" />
-            <stop offset="100%" stopColor="rgba(236, 72, 153, 0.8)" />
-          </radialGradient>
+          {/* ── Clip paths for the 3 circles ── */}
+          <clipPath id="cp-A">
+            <circle cx={CX.A} cy={CY.A} r={R} />
+          </clipPath>
+          <clipPath id="cp-B">
+            <circle cx={CX.B} cy={CY.B} r={R} />
+          </clipPath>
+          <clipPath id="cp-C">
+            <circle cx={CX.C} cy={CY.C} r={R} />
+          </clipPath>
 
-          {/* Filtros mejorados */}
-          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="4" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-          
-          <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-            <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="rgba(0,0,0,0.25)" />
-          </filter>
-
-          <filter id="hoverGlow" x="-100%" y="-100%" width="300%" height="300%">
-            <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
-            <feMerge> 
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
+          {/* ── Glow filter ── */}
+          <filter id="venn-glow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
             </feMerge>
+          </filter>
+
+          {/* ── Soft inner shadow ── */}
+          <filter id="venn-shadow" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="0" dy="3" stdDeviation="6" floodColor="rgba(0,0,0,0.35)" />
           </filter>
         </defs>
 
-        {/* Círculos principales con gradientes */}
-        <circle
-          cx="160"
-          cy="140"
-          r="80"
-          fill="url(#gradientA)"
-          fillOpacity={selectedSection === "A" ? "0.9" : hoveredSection === "A" ? "0.7" : "0.5"}
-          stroke="rgba(147, 51, 234, 0.8)"
-          strokeWidth={selectedSection === "A" ? "4" : hoveredSection === "A" ? "3" : "2"}
-          filter={hoveredSection === "A" || selectedSection === "A" ? "url(#hoverGlow)" : "url(#shadow)"}
-          onClick={() => handleSectionClick("A")}
-          onMouseEnter={() => setHoveredSection("A")}
-          onMouseLeave={() => setHoveredSection(null)}
-          className="cursor-pointer transition-all duration-300 transform-gpu"
-          style={{
-            transform: selectedSection === "A" ? "scale(1.05)" : hoveredSection === "A" ? "scale(1.02)" : "scale(1)",
-            transformOrigin: "160px 140px"
-          }}
-          role="button"
-          tabIndex={0}
-          data-section="A"
-        />
+        {/* ══════════════════════════════════════════════════════════════════
+            STEP 1 — decorative circle rings (non-interactive, behind fills)
+        ═══════════════════════════════════════════════════════════════════ */}
+        {(["A", "B", "C"] as const).map((letter) => (
+          <circle
+            key={letter}
+            cx={CX[letter]} cy={CY[letter]} r={R}
+            fill="none"
+            stroke={PALETTE[letter].ring}
+            strokeWidth={ringWidth(letter)}
+            strokeOpacity={ringOpacity(letter)}
+            style={{ transition: "stroke-opacity 0.25s, stroke-width 0.25s" }}
+            pointerEvents="none"
+          />
+        ))}
 
-        <circle
-          cx="280"
-          cy="140"
-          r="80"
-          fill="url(#gradientB)"
-          fillOpacity={selectedSection === "B" ? "0.9" : hoveredSection === "B" ? "0.7" : "0.5"}
-          stroke="rgba(59, 130, 246, 0.8)"
-          strokeWidth={selectedSection === "B" ? "4" : hoveredSection === "B" ? "3" : "2"}
-          filter={hoveredSection === "B" || selectedSection === "B" ? "url(#hoverGlow)" : "url(#shadow)"}
-          onClick={() => handleSectionClick("B")}
-          onMouseEnter={() => setHoveredSection("B")}
-          onMouseLeave={() => setHoveredSection(null)}
-          className="cursor-pointer transition-all duration-300 transform-gpu"
-          style={{
-            transform: selectedSection === "B" ? "scale(1.05)" : hoveredSection === "B" ? "scale(1.02)" : "scale(1)",
-            transformOrigin: "280px 140px"
-          }}
-          role="button"
-          tabIndex={0}
-          data-section="B"
-        />
+        {/* ══════════════════════════════════════════════════════════════════
+            STEP 2 — 7 independent clickable regions via clipPath nesting.
+            Z-order: single sets → pairwise → triple (topmost wins click).
+            Each region is a <rect> that fills the SVG, clipped to the
+            intersection of its constituent circles only.
+        ═══════════════════════════════════════════════════════════════════ */}
 
-        <circle
-          cx="220"
-          cy="220"
-          r="80"
-          fill="url(#gradientC)"
-          fillOpacity={selectedSection === "C" ? "0.9" : hoveredSection === "C" ? "0.7" : "0.5"}
-          stroke="rgba(236, 72, 153, 0.8)"
-          strokeWidth={selectedSection === "C" ? "4" : hoveredSection === "C" ? "3" : "2"}
-          filter={hoveredSection === "C" || selectedSection === "C" ? "url(#hoverGlow)" : "url(#shadow)"}
-          onClick={() => handleSectionClick("C")}
-          onMouseEnter={() => setHoveredSection("C")}
-          onMouseLeave={() => setHoveredSection(null)}
-          className="cursor-pointer transition-all duration-300 transform-gpu"
-          style={{
-            transform: selectedSection === "C" ? "scale(1.05)" : hoveredSection === "C" ? "scale(1.02)" : "scale(1)",
-            transformOrigin: "220px 220px"
-          }}
-          role="button"
-          tabIndex={0}
-          data-section="C"
-        />
+        {/* ── A (entire circle A — AB, AC, ABC rendered on top) ── */}
+        <g clipPath="url(#cp-A)">
+          <rect {...rp("A")} />
+        </g>
 
-        {/* Áreas de intersección clickeables (invisibles pero funcionales) */}
-        {/* Intersección AB */}
-        <path
-          d="M 200 100 A 80 80 0 0 1 240 120 A 80 80 0 0 0 220 155 A 80 80 0 0 0 200 140 A 80 80 0 0 1 200 100 Z"
-          fill="rgba(139, 92, 246, 0.1)"
-          fillOpacity={selectedSection === "AB" ? "0.8" : hoveredSection === "AB" ? "0.4" : "0"}
-          stroke={selectedSection === "AB" ? "rgba(139, 92, 246, 0.9)" : hoveredSection === "AB" ? "rgba(139, 92, 246, 0.6)" : "transparent"}
-          strokeWidth={selectedSection === "AB" ? "3" : "2"}
-          onClick={() => handleSectionClick("AB")}
-          onMouseEnter={() => setHoveredSection("AB")}
-          onMouseLeave={() => setHoveredSection(null)}
-          className="cursor-pointer transition-all duration-300"
-          role="button"
-          tabIndex={0}
-          data-section="AB"
-        />
+        {/* ── B ── */}
+        <g clipPath="url(#cp-B)">
+          <rect {...rp("B")} />
+        </g>
 
-        {/* Intersección AC */}
-        <path
-          d="M 180 180 A 80 80 0 0 1 200 155 A 80 80 0 0 0 220 155 A 80 80 0 0 0 200 200 A 80 80 0 0 1 180 180 Z"
-          fill="rgba(190, 24, 185, 0.1)"
-          fillOpacity={selectedSection === "AC" ? "0.8" : hoveredSection === "AC" ? "0.4" : "0"}
-          stroke={selectedSection === "AC" ? "rgba(190, 24, 185, 0.9)" : hoveredSection === "AC" ? "rgba(190, 24, 185, 0.6)" : "transparent"}
-          strokeWidth={selectedSection === "AC" ? "3" : "2"}
-          onClick={() => handleSectionClick("AC")}
-          onMouseEnter={() => setHoveredSection("AC")}
-          onMouseLeave={() => setHoveredSection(null)}
-          className="cursor-pointer transition-all duration-300"
-          role="button"
-          tabIndex={0}
-          data-section="AC"
-        />
+        {/* ── C ── */}
+        <g clipPath="url(#cp-C)">
+          <rect {...rp("C")} />
+        </g>
 
-        {/* Intersección BC */}
-        <path
-          d="M 240 155 A 80 80 0 0 1 260 180 A 80 80 0 0 0 240 200 A 80 80 0 0 0 220 155 A 80 80 0 0 1 240 155 Z"
-          fill="rgba(79, 70, 229, 0.1)"
-          fillOpacity={selectedSection === "BC" ? "0.8" : hoveredSection === "BC" ? "0.4" : "0"}
-          stroke={selectedSection === "BC" ? "rgba(79, 70, 229, 0.9)" : hoveredSection === "BC" ? "rgba(79, 70, 229, 0.6)" : "transparent"}
-          strokeWidth={selectedSection === "BC" ? "3" : "2"}
-          onClick={() => handleSectionClick("BC")}
-          onMouseEnter={() => setHoveredSection("BC")}
-          onMouseLeave={() => setHoveredSection(null)}
-          className="cursor-pointer transition-all duration-300"
-          role="button"
-          tabIndex={0}
-          data-section="BC"
-        />
+        {/* ── AB = A ∩ B ── */}
+        <g clipPath="url(#cp-A)">
+          <rect clipPath="url(#cp-B)" {...rp("AB")} />
+        </g>
 
-        {/* Centro - todas las intersecciones */}
-        <circle
-          cx="220"
-          cy="180"
-          r="25"
-          fill="rgba(255, 255, 255, 0.9)"
-          fillOpacity={selectedSection === "ABC" ? "1" : hoveredSection === "ABC" ? "0.95" : "0.9"}
-          stroke={selectedSection === "ABC" ? "rgba(71, 85, 105, 0.9)" : hoveredSection === "ABC" ? "rgba(71, 85, 105, 0.7)" : "rgba(71, 85, 105, 0.5)"}
-          strokeWidth={selectedSection === "ABC" ? "4" : hoveredSection === "ABC" ? "3" : "2"}
-          filter={hoveredSection === "ABC" || selectedSection === "ABC" ? "url(#glow)" : "url(#shadow)"}
-          onClick={() => handleSectionClick("ABC")}
-          onMouseEnter={() => setHoveredSection("ABC")}
-          onMouseLeave={() => setHoveredSection(null)}
-          className="cursor-pointer transition-all duration-300 transform-gpu"
-          style={{
-            transform: selectedSection === "ABC" ? "scale(1.1)" : hoveredSection === "ABC" ? "scale(1.05)" : "scale(1)",
-            transformOrigin: "220px 180px"
-          }}
-          role="button"
-          tabIndex={0}
-          data-section="ABC"
-        />
+        {/* ── AC = A ∩ C ── */}
+        <g clipPath="url(#cp-A)">
+          <rect clipPath="url(#cp-C)" {...rp("AC")} />
+        </g>
 
-        {/* Etiquetas de temperatura con mejor posicionamiento */}
+        {/* ── BC = B ∩ C ── */}
+        <g clipPath="url(#cp-B)">
+          <rect clipPath="url(#cp-C)" {...rp("BC")} />
+        </g>
+
+        {/* ── ABC = A ∩ B ∩ C — topmost, always wins ── */}
+        <g clipPath="url(#cp-A)">
+          <g clipPath="url(#cp-B)">
+            <rect clipPath="url(#cp-C)" {...rp("ABC")} />
+          </g>
+        </g>
+
+        {/* ══════════════════════════════════════════════════════════════════
+            STEP 3 — temperature labels (outside circles, non-interactive)
+        ═══════════════════════════════════════════════════════════════════ */}
         <text
-          x="160"
-          y="70"
-          fill="rgba(147, 51, 234, 1)"
-          fontWeight="bold"
-          fontSize="18"
-          textAnchor="middle"
-          className="select-none font-mono"
-          filter="url(#shadow)"
-        >
-          16°C
-        </text>
+          x="90" y="88"
+          fill={PALETTE.A.ring} fontSize="15" fontWeight="700"
+          textAnchor="middle" fontFamily="var(--font-mono), monospace"
+          pointerEvents="none"
+          opacity={hovered && !BORDERS[hovered].includes("A") && selectedSection && !BORDERS[selectedSection as SectionId]?.includes("A") ? "0.4" : "1"}
+          style={{ transition: "opacity 0.2s" }}
+        >16°C</text>
         <text
-          x="280"
-          y="70"
-          fill="rgba(59, 130, 246, 1)"
-          fontWeight="bold"
-          fontSize="18"
-          textAnchor="middle"
-          className="select-none font-mono"
-          filter="url(#shadow)"
-        >
-          38°C
-        </text>
+          x="350" y="88"
+          fill={PALETTE.B.ring} fontSize="15" fontWeight="700"
+          textAnchor="middle" fontFamily="var(--font-mono), monospace"
+          pointerEvents="none"
+          opacity={hovered && !BORDERS[hovered].includes("B") && selectedSection && !BORDERS[selectedSection as SectionId]?.includes("B") ? "0.4" : "1"}
+          style={{ transition: "opacity 0.2s" }}
+        >38°C</text>
         <text
-          x="220"
-          y="310"
-          fill="rgba(236, 72, 153, 1)"
-          fontWeight="bold"
-          fontSize="18"
-          textAnchor="middle"
-          className="select-none font-mono"
-          filter="url(#shadow)"
-        >
-          41°C
-        </text>
+          x="220" y="315"
+          fill={PALETTE.C.ring} fontSize="15" fontWeight="700"
+          textAnchor="middle" fontFamily="var(--font-mono), monospace"
+          pointerEvents="none"
+          opacity={hovered && !BORDERS[hovered].includes("C") && selectedSection && !BORDERS[selectedSection as SectionId]?.includes("C") ? "0.4" : "1"}
+          style={{ transition: "opacity 0.2s" }}
+        >41°C</text>
 
-        {/* Tooltip dinámico */}
-        {hoveredSection && (
-          <g className="animate-fadeIn">
+        {/* ══════════════════════════════════════════════════════════════════
+            STEP 4 — hover tooltip
+        ═══════════════════════════════════════════════════════════════════ */}
+        {tooltip && (
+          <g style={{ animation: "fadeIn 0.15s ease-out" }}>
             <rect
-              x="320"
-              y="30"
-              width="100"
-              height="60"
-              rx="12"
-              fill="rgba(0,0,0,0.9)"
-              filter="url(#shadow)"
+              x="298" y="18" width="132" height="52"
+              rx="8" ry="8"
+              fill="rgba(10,15,30,0.92)"
+              stroke="rgba(255,255,255,0.12)"
+              strokeWidth="1"
             />
             <text
-              x="370"
-              y="50"
-              fill="white"
-              fontSize="12"
-              fontWeight="600"
-              textAnchor="middle"
-              className="select-none"
-            >
-              {sections.find((s) => s.id === hoveredSection)?.label}
-            </text>
+              x="364" y="38"
+              fill={tooltip.ring} fontSize="12" fontWeight="700"
+              textAnchor="middle" fontFamily="var(--font-mono), monospace"
+            >{tooltip.label}</text>
             <text
-              x="370"
-              y="70"
-              fill="rgba(255,255,255,0.8)"
-              fontSize="10"
-              textAnchor="middle"
-              className="select-none"
-            >
-              Click to explore
-            </text>
+              x="364" y="56"
+              fill="rgba(255,255,255,0.55)" fontSize="9"
+              textAnchor="middle" fontFamily="var(--font-display, system-ui), sans-serif"
+            >Click to explore</text>
           </g>
         )}
+
       </svg>
-      {/* Leyenda moderna e interactiva */}
-      <div className="mt-12 space-y-6">
-        <div className="text-center">
-          <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent mb-2">
-            Interactive Sections
-          </h3>
-          <p className="text-slate-600 dark:text-slate-400 text-sm max-w-2xl mx-auto">
-            Explore each region by clicking the buttons or directly on the diagram
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
-          {sections.map((section) => (
+
+      {/* ════════════════════════════════════════════════════════════════════
+          Section legend buttons (accessibility + quick selection)
+      ═══════════════════════════════════════════════════════════════════ */}
+      <div className="mt-8 grid grid-cols-4 gap-2">
+        {SECTIONS.map((id) => {
+          const p = PALETTE[id]
+          const isActive = selectedSection === id
+          const isHov    = hovered === id
+          return (
             <button
-              key={section.id}
-              onClick={() => handleSectionClick(section.id)}
-              onMouseEnter={() => setHoveredSection(section.id)}
-              onMouseLeave={() => setHoveredSection(null)}
-              className={`group relative overflow-hidden rounded-2xl p-4 transition-all duration-500 border-2 backdrop-blur-sm transform hover:scale-105 ${
-                selectedSection === section.id
-                  ? "bg-gradient-to-br from-slate-800 to-slate-900 text-white border-slate-600 shadow-2xl scale-105"
-                  : "bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-700 hover:shadow-xl"
+              key={id}
+              onClick={() => onSectionClick(id)}
+              onMouseEnter={() => setHovered(id)}
+              onMouseLeave={() => setHovered(null)}
+              aria-pressed={isActive}
+              className={`relative flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all duration-200 border ${
+                isActive
+                  ? "border-white/20 bg-white/8 shadow-md"
+                  : isHov
+                    ? "border-white/15 bg-white/5"
+                    : "border-border bg-muted"
               }`}
-              aria-pressed={selectedSection === section.id}
-              aria-label={section.description}
             >
-              {/* Indicador de color animado */}
-              <div className="flex items-start gap-3 mb-3">
-                <div 
-                  className={`w-4 h-4 rounded-full shadow-lg transition-all duration-300 ${
-                    selectedSection === section.id || hoveredSection === section.id ? 'scale-125 shadow-xl' : 'scale-100'
-                  }`}
-                  style={{
-                    backgroundColor: section.id === "A" ? "rgb(147, 51, 234)" :
-                                   section.id === "B" ? "rgb(59, 130, 246)" :
-                                   section.id === "C" ? "rgb(236, 72, 153)" :
-                                   section.id === "ABC" ? "rgb(71, 85, 105)" :
-                                   "rgb(139, 92, 246)",
-                    boxShadow: selectedSection === section.id ? '0 0 20px rgba(147, 51, 234, 0.5)' : 'none'
-                  }}
-                />
-                <div className="flex-1 text-left">
-                  <h4 className="font-bold text-base mb-1 leading-tight">
-                    {section.label}
-                  </h4>
-                  <p className="text-xs opacity-80 leading-relaxed">
-                    {section.description}
-                  </p>
-                </div>
-              </div>
-              
-              {/* Indicador de selección */}
-              {selectedSection === section.id && (
-                <div className="absolute top-2 right-2">
-                  <div className="w-3 h-3 bg-green-400 rounded-full shadow-lg animate-pulse"></div>
-                </div>
+              {/* color swatch */}
+              <span
+                className="w-2 h-2 rounded-full flex-shrink-0 transition-all duration-200"
+                style={{
+                  backgroundColor: p.ring,
+                  boxShadow: (isActive || isHov) ? `0 0 8px 2px ${p.ring}55` : "none",
+                }}
+              />
+              {/* label */}
+              <span className="font-[family-name:var(--font-mono)] text-[10px] font-medium leading-tight text-foreground/80 truncate">
+                {p.label}
+              </span>
+              {/* active indicator */}
+              {isActive && (
+                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
               )}
-              
-              {/* Efecto de hover */}
-              <div className={`absolute inset-0 bg-gradient-to-r opacity-0 transition-opacity duration-300 ${
-                section.id === "A" ? "from-purple-500/10 to-purple-600/10" :
-                section.id === "B" ? "from-blue-500/10 to-blue-600/10" :
-                section.id === "C" ? "from-pink-500/10 to-pink-600/10" :
-                "from-slate-500/10 to-slate-600/10"
-              } ${hoveredSection === section.id ? 'opacity-100' : ''}`} />
             </button>
-          ))}
-        </div>
+          )
+        })}
       </div>
-      
-      {/* Instrucciones de accesibilidad mejoradas */}
-      <div className="sr-only">
-        <p>
-          This Venn diagram is fully interactive and accessible. Use the Tab key to navigate between sections and Enter to select.
-        </p>
-        <p>
-          It includes seven regions: three individual sets (16°C, 38°C, 41°C), three pairwise intersections, and one central intersection of all three sets.
-        </p>
-      </div>
+
+      {/* sr-only description */}
+      <p className="sr-only">
+        Interactive Venn diagram with seven clickable regions: 16°C only, 38°C only, 41°C only,
+        intersections 16∩38, 16∩41, 38∩41, and the triple intersection. Use Tab to navigate, Enter to select.
+      </p>
     </div>
   )
 }
-

@@ -13,7 +13,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 221.2 83.2% 53.3%;
+    --primary: 199 80% 40%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -30,27 +30,31 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 199 80% 40%;
+
+    --temp-cold: 199 89% 48%;
+    --temp-warm: 38 92% 50%;
+    --temp-hot: 0 84% 60%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 222 47% 7%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 222 40% 10%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 222 40% 10%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 217.2 91.2% 59.8%;
+    --primary: 199 89% 48%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 222 35% 14%;
+    --muted-foreground: 215 20% 55%;
 
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
@@ -58,9 +62,13 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --border: 222 30% 18%;
+    --input: 222 30% 18%;
+    --ring: 199 89% 48%;
+
+    --temp-cold: 199 89% 48%;
+    --temp-warm: 38 92% 50%;
+    --temp-hot: 0 84% 60%;
   }
 }
 
@@ -70,18 +78,24 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-display), system-ui, sans-serif;
   }
 }
 
 @layer utilities {
+  .dot-grid {
+    background-image: radial-gradient(circle, hsl(var(--border)) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
   .animate-fadeIn {
     animation: fadeIn 0.3s ease-in-out;
   }
-  
+
   .transform-gpu {
     transform: translateZ(0);
   }
-  
+
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -92,9 +106,13 @@
       transform: translateY(0);
     }
   }
-  
+
   .hover\:scale-102:hover {
     transform: scale(1.02);
   }
-}
 
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(1.4); }
+  }
+}

@@ -25,7 +25,7 @@ export default function GeneralView({ section, navigationBar }: GeneralViewProps
   const elementDetails = getSelectedElementDetails()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-background dot-grid">
       {navigationBar}
 
       <div className="container mx-auto px-4 py-8">
@@ -33,12 +33,12 @@ export default function GeneralView({ section, navigationBar }: GeneralViewProps
           {/* Modificar cómo se renderiza el icono */}
           <div className="flex items-center gap-3 mb-6">
             {typeof info.icon === "function" ? info.icon() : null}
-            <h1 className={`text-3xl font-bold ${info.accentColor}`}>{info.title}</h1>
+            <h1 className={`text-3xl font-bold font-[family-name:var(--font-display)] ${info.accentColor}`}>{info.title}</h1>
           </div>
 
           {/* Dropdown para seleccionar elementos específicos en intersecciones */}
           {isIntersection(section) && info.detailedElements && (
-            <div className="mb-6 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md">
+            <div className="mb-6 bg-card border border-border p-4 rounded-xl shadow-md">
               <label htmlFor="element-selector" className="block text-sm font-medium mb-2">
                 Seleccionar elemento específico:
               </label>
@@ -96,7 +96,7 @@ export default function GeneralView({ section, navigationBar }: GeneralViewProps
 
             <div className="col-span-3 md:col-span-2">
               {selectedElement && elementDetails ? (
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md">
+                <div className="bg-card border border-border p-6 rounded-xl shadow-md">
                   <div className="flex items-center gap-2 mb-4">
                     <Info className="w-5 h-5 text-slate-500" />
                     <h3 className="font-semibold">Propiedades del elemento {elementDetails.name}:</h3>
@@ -124,7 +124,7 @@ export default function GeneralView({ section, navigationBar }: GeneralViewProps
                   </TabsList>
 
                   <TabsContent value="descripcion" className="space-y-4">
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md">
+                    <div className="bg-card border border-border p-6 rounded-xl shadow-md">
                       <div className="flex items-center gap-2 mb-4">
                         <Info className="w-5 h-5 text-slate-500" />
                         <h3 className="font-semibold">Descripción detallada:</h3>
@@ -159,7 +159,7 @@ export default function GeneralView({ section, navigationBar }: GeneralViewProps
                   </TabsContent>
 
                   <TabsContent value="propiedades" className="space-y-4">
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md">
+                    <div className="bg-card border border-border p-6 rounded-xl shadow-md">
                       <div className="flex items-center gap-2 mb-4">
                         <CheckCircle className="w-5 h-5 text-slate-500" />
                         <h3 className="font-semibold">Propiedades:</h3>
@@ -193,7 +193,7 @@ export default function GeneralView({ section, navigationBar }: GeneralViewProps
                   </TabsContent>
 
                   <TabsContent value="aplicaciones" className="space-y-4">
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md">
+                    <div className="bg-card border border-border p-6 rounded-xl shadow-md">
                       <div className="flex items-center gap-2 mb-4">
                         <ExternalLink className="w-5 h-5 text-slate-500" />
                         <h3 className="font-semibold">Aplicaciones:</h3>
@@ -230,7 +230,7 @@ export default function GeneralView({ section, navigationBar }: GeneralViewProps
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md mb-8">
+          <div className="bg-card border border-border p-6 rounded-xl shadow-md mb-8">
             <h2 className="text-xl font-semibold mb-4">Relaciones con otros conjuntos</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -271,7 +271,7 @@ export default function GeneralView({ section, navigationBar }: GeneralViewProps
 
           {/* Tabla de datos detallados para el elemento seleccionado */}
           {selectedElement && elementDetails && (
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md mb-8">
+            <div className="bg-card border border-border p-6 rounded-xl shadow-md mb-8">
               <div className="flex items-center gap-2 mb-4">
                 <Database className="w-5 h-5 text-slate-500" />
                 <h2 className="text-xl font-semibold">Datos detallados: {elementDetails.name}</h2>
