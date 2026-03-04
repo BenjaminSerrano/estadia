@@ -132,28 +132,28 @@ export default function Home() {
     return (
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg">
-            <h3 className="font-medium mb-2">Elementos:</h3>
+          <div className="bg-muted border border-border p-4 rounded-lg">
+            <h3 className="font-medium mb-2">Elements:</h3>
             {loading ? (
               <div className="flex items-center justify-center h-8">
                 <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
               </div>
             ) : (
-              <p className="text-2xl font-bold">
+              <p className="font-[family-name:var(--font-mono)] text-3xl font-bold">
                 {sectionStats?.elements !== undefined
                   ? sectionStats.elements
                   : "Loading..."}
               </p>
             )}
           </div>
-          <div className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg">
-            <h3 className="font-medium mb-2">Propiedades:</h3>
+          <div className="bg-muted border border-border p-4 rounded-lg">
+            <h3 className="font-medium mb-2">Properties:</h3>
             {loading ? (
               <div className="flex items-center justify-center h-8">
                 <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
               </div>
             ) : (
-              <p className="text-2xl font-bold">
+              <p className="font-[family-name:var(--font-mono)] text-3xl font-bold">
                 {sectionStats?.uniqueProperties !== undefined
                   ? sectionStats.uniqueProperties
                   : "Loading..."}
@@ -163,60 +163,48 @@ export default function Home() {
         </div>
 
 
-        <div>
-          <label
-            htmlFor="element-selector-normal"
-            className="block text-sm font-medium mb-2 text-red-500 dark:text-red-400"
-          >
-            * Select a property (pathway) to view data:
-          </label>
+        {/* ── Pathway selector bar ── */}
+        <div className="rounded-lg border border-border overflow-hidden">
+          <div className="px-3 py-1.5 bg-muted/80 border-b border-border/60 flex items-center gap-2">
+            <span className="font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-widest text-muted-foreground">Pathway</span>
+            {selectedElement && (
+              <span className="ml-auto font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-widest text-sky-400">ready</span>
+            )}
+          </div>
           {loadingPathways ? (
-            <div className="p-4 flex items-center justify-center">
-              <div className="w-6 h-6 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
-              <span className="ml-2 text-sm text-slate-500">Loading properties...</span>
+            <div className="px-4 py-3 flex items-center gap-2">
+              <div className="w-3.5 h-3.5 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
+              <span className="font-[family-name:var(--font-mono)] text-xs text-muted-foreground">Loading...</span>
             </div>
           ) : (
-            <Select
-              value={selectedElement || ""}
-              onValueChange={(value) => setSelectedElement(value === "none" ? null : value)}
-            >
-              <SelectTrigger id="element-selector-normal" className="w-full border-red-300 dark:border-red-700">
-                <SelectValue placeholder="Select a property" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem key="all-data" value="__TODOS_LOS_DATOS__">
-                  All data
-                </SelectItem>
-                {pathways.length > 0 ? (
-                  pathways.map((pathway, index) => (
-                    <SelectItem key={`normal-${pathway}-${index}`} value={pathway}>
-                      {pathway}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="none" disabled>
-                    No properties available
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          {selectedElement && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded text-sm text-blue-800 dark:text-blue-200 mb-2">
-{selectedElement === "__TODOS_LOS_DATOS__" ? (
-                <>Showing: <strong>All table data</strong></>
-              ) : (
-                <>Selected pathway: <strong>{selectedElement}</strong></>
-              )}
+            <div className="flex">
+              <Select
+                value={selectedElement || ""}
+                onValueChange={(value) => setSelectedElement(value === "none" ? null : value)}
+              >
+                <SelectTrigger className="flex-1 border-0 rounded-none shadow-none focus:ring-0 font-[family-name:var(--font-mono)] text-sm h-11 bg-transparent">
+                  <SelectValue placeholder="— select a pathway —" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__TODOS_LOS_DATOS__">All data</SelectItem>
+                  {pathways.length > 0 ? (
+                    pathways.map((pathway, index) => (
+                      <SelectItem key={`normal-${pathway}-${index}`} value={pathway}>{pathway}</SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="none" disabled>No properties available</SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+              <button
+                onClick={handleViewData}
+                disabled={!selectedElement}
+                className="px-4 border-l border-border/60 flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-xs transition-colors disabled:opacity-25 disabled:cursor-not-allowed bg-muted/40 hover:bg-muted text-foreground"
+              >
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
             </div>
           )}
-          <Button className="w-full" onClick={handleViewData} disabled={!selectedElement}>
-            <Database className="mr-2 h-4 w-4" />
-            {selectedElement ? "View element data" : "Select an element first"}
-          </Button>
         </div>
       </div>
     )
@@ -226,12 +214,12 @@ export default function Home() {
   const renderElementDetails = () => {
     return (
       <div className="space-y-4">
-        <div className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg">
+        <div className="bg-muted border border-border p-4 rounded-lg">
           <h3 className="font-medium mb-2">{elementDetails.name}</h3>
           <p className="text-slate-700 dark:text-slate-300 text-sm">{elementDetails.description}</p>
         </div>
 
-        <div className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg">
+        <div className="bg-muted border border-border p-4 rounded-lg">
           <h3 className="font-medium mb-2">Properties:</h3>
           <ul className="space-y-1">
             {elementDetails?.properties?.map ? (
@@ -263,28 +251,28 @@ export default function Home() {
     return (
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg">
+          <div className="bg-muted border border-border p-4 rounded-lg">
             <h3 className="font-medium mb-2">Elements:</h3>
             {loading ? (
               <div className="flex items-center justify-center h-8">
                 <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
               </div>
             ) : (
-              <p className="text-2xl font-bold">
+              <p className="font-[family-name:var(--font-mono)] text-3xl font-bold">
                 {sectionStats?.elements !== undefined
                   ? sectionStats.elements
                   : "Loading..."}
               </p>
             )}
           </div>
-          <div className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg">
+          <div className="bg-muted border border-border p-4 rounded-lg">
             <h3 className="font-medium mb-2">Properties:</h3>
             {loading ? (
               <div className="flex items-center justify-center h-8">
                 <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
               </div>
             ) : (
-              <p className="text-2xl font-bold">
+              <p className="font-[family-name:var(--font-mono)] text-3xl font-bold">
                 {sectionStats?.uniqueProperties !== undefined
                   ? sectionStats.uniqueProperties
                   : "Loading..."}
@@ -293,7 +281,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg">
+        <div className="bg-muted border border-border p-4 rounded-lg">
           <h3 className="font-medium mb-2">Applications:</h3>
           <ul className="space-y-1">
             <li className="flex items-start gap-2 text-sm">
@@ -361,15 +349,18 @@ export default function Home() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 transition-colors duration-300">
+      <div className="min-h-screen bg-background dot-grid transition-colors duration-300">
         <div className="container mx-auto px-4 py-8">
           <header className="flex flex-col md:flex-row justify-between items-center mb-8">
             <div className="text-center md:text-left mb-6 md:mb-0">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-500">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 font-[family-name:var(--font-display)] text-foreground tracking-tight">
                 Interactive Venn Diagram
               </h1>
-              <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl">
+              <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl flex flex-wrap items-center gap-2">
                 Explore the relationships between sets by clicking on any section of the diagram
+                <span className="font-[family-name:var(--font-mono)] text-xs px-1.5 py-0.5 rounded border" style={{color:'hsl(var(--temp-cold))', borderColor:'hsl(var(--temp-cold) / 0.4)'}}>16°C</span>
+                <span className="font-[family-name:var(--font-mono)] text-xs px-1.5 py-0.5 rounded border" style={{color:'hsl(var(--temp-warm))', borderColor:'hsl(var(--temp-warm) / 0.4)'}}>38°C</span>
+                <span className="font-[family-name:var(--font-mono)] text-xs px-1.5 py-0.5 rounded border" style={{color:'hsl(var(--temp-hot))', borderColor:'hsl(var(--temp-hot) / 0.4)'}}>41°C</span>
               </p>
             </div>
 
@@ -398,10 +389,16 @@ export default function Home() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
             {/* Left column: Venn Diagram */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 transition-all duration-300">
-              <div className="flex items-center gap-2 mb-4 text-slate-500 dark:text-slate-400">
-                <Info size={18} />
-                <p className="text-sm">Click on any section to see details</p>
+            <div className="bg-card border border-border rounded-2xl shadow-xl p-6 transition-all duration-300 relative">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                  <Info size={18} />
+                  <p className="text-sm">Click on any section to see details</p>
+                </div>
+                <span className="flex items-center gap-1.5 text-xs font-[family-name:var(--font-mono)] text-muted-foreground border border-border rounded-full px-2.5 py-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                  Interactive
+                </span>
               </div>
               <VennDiagram onSectionClick={handleSectionClick} selectedSection={selectedSection} />
             </div>
@@ -428,28 +425,28 @@ export default function Home() {
                     {isIntersection(selectedSection) ? (
                       <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg">
+                          <div className="bg-muted border border-border p-4 rounded-lg">
                             <h3 className="font-medium mb-2">Elements:</h3>
                             {loading ? (
                               <div className="flex items-center justify-center h-8">
                                 <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
                               </div>
                             ) : (
-                              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                              <p className="font-[family-name:var(--font-mono)] text-3xl font-bold" style={{color:'hsl(var(--temp-cold))'}}>
                                 {sectionStats?.elements !== undefined
                                   ? sectionStats.elements
                                   : "N/A"}
                               </p>
                             )}
                           </div>
-                          <div className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg">
+                          <div className="bg-muted border border-border p-4 rounded-lg">
                             <h3 className="font-medium mb-2">Properties:</h3>
                             {loading ? (
                               <div className="flex items-center justify-center h-8">
                                 <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
                               </div>
                             ) : (
-                              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                              <p className="font-[family-name:var(--font-mono)] text-3xl font-bold text-green-600 dark:text-green-400">
                                 {sectionStats?.uniqueProperties !== undefined
                                   ? sectionStats.uniqueProperties
                                   : "N/A"}
@@ -458,55 +455,49 @@ export default function Home() {
                           </div>
                         </div>
 
-                        <div className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg">
-                          <label
-                            htmlFor="intersection-pathway-selector"
-                            className="block text-sm font-medium mb-2 text-red-500 dark:text-red-400"
-                          >
-                            * Select a property (pathway) to view data:
-                          </label>
+                        {/* ── Pathway selector bar ── */}
+                        <div className="rounded-lg border border-border overflow-hidden">
+                          <div className="px-3 py-1.5 bg-muted/80 border-b border-border/60 flex items-center gap-2">
+                            <span className="font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-widest text-muted-foreground">Pathway</span>
+                            {selectedElement && (
+                              <span className="ml-auto font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-widest text-sky-400">ready</span>
+                            )}
+                          </div>
                           {loadingPathways ? (
-                            <div className="p-4 flex items-center justify-center">
-                              <div className="w-6 h-6 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
-              <span className="ml-2 text-sm text-slate-500">Loading properties...</span>
+                            <div className="px-4 py-3 flex items-center gap-2">
+                              <div className="w-3.5 h-3.5 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
+                              <span className="font-[family-name:var(--font-mono)] text-xs text-muted-foreground">Loading...</span>
                             </div>
                           ) : (
-                            <Select
-                              value={selectedElement || ""}
-                              onValueChange={(value) => setSelectedElement(value === "none" ? null : value)}
-                            >
-                              <SelectTrigger id="intersection-pathway-selector" className="w-full border-red-300 dark:border-red-700">
-                                <SelectValue placeholder="Select a property" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem key="all-data-intersection" value="__TODOS_LOS_DATOS__">
-                                  All data
-                                </SelectItem>
-                                {pathways.length > 0 ? (
-                                  pathways.map((pathway, index) => (
-                                    <SelectItem key={index} value={pathway}>
-                                      {pathway}
-                                    </SelectItem>
-                                  ))
-                                ) : (
-                                  <SelectItem value="none" disabled>
-                                    No properties available
-                                  </SelectItem>
-                                )}
-                              </SelectContent>
-                            </Select>
-                          )}
-                          {selectedElement && (
-                            <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded text-sm text-blue-800 dark:text-blue-200 mt-2">
-                              Selected pathway: <strong>{selectedElement}</strong>
+                            <div className="flex">
+                              <Select
+                                value={selectedElement || ""}
+                                onValueChange={(value) => setSelectedElement(value === "none" ? null : value)}
+                              >
+                                <SelectTrigger className="flex-1 border-0 rounded-none shadow-none focus:ring-0 font-[family-name:var(--font-mono)] text-sm h-11 bg-transparent">
+                                  <SelectValue placeholder="— select a pathway —" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="__TODOS_LOS_DATOS__">All data</SelectItem>
+                                  {pathways.length > 0 ? (
+                                    pathways.map((pathway, index) => (
+                                      <SelectItem key={`intersection-${pathway}-${index}`} value={pathway}>{pathway}</SelectItem>
+                                    ))
+                                  ) : (
+                                    <SelectItem value="none" disabled>No properties available</SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <button
+                                onClick={handleViewData}
+                                disabled={!selectedElement}
+                                className="px-4 border-l border-border/60 flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-xs transition-colors disabled:opacity-25 disabled:cursor-not-allowed bg-muted/40 hover:bg-muted text-foreground"
+                              >
+                                <ArrowRight className="h-3.5 w-3.5" />
+                              </button>
                             </div>
                           )}
                         </div>
-
-                        <Button className="w-full" onClick={handleViewData} disabled={!selectedElement}>
-                          <Database className="mr-2 h-4 w-4" />
-                          {selectedElement ? "View element data" : "Select an element first"}
-                        </Button>
                       </div>
                     ) : (
                       renderNormalSectionInfo()
@@ -514,49 +505,44 @@ export default function Home() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="h-full flex items-center justify-center p-8 border rounded-2xl bg-white/50 dark:bg-slate-800/50 shadow-lg backdrop-blur-sm">
+                <div className="h-full flex items-center justify-center p-8 border border-border rounded-2xl bg-card shadow-lg">
                   <div className="text-center space-y-4">
-                    <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto">
-                      <Info className="w-8 h-8 text-slate-400 dark:text-slate-300" />
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="font-[family-name:var(--font-mono)] text-sm px-3 py-1.5 rounded border" style={{color:'hsl(var(--temp-cold))', borderColor:'hsl(var(--temp-cold) / 0.4)', background:'hsl(var(--temp-cold) / 0.08)'}}>16°C — Cold</span>
+                      <span className="font-[family-name:var(--font-mono)] text-sm px-3 py-1.5 rounded border" style={{color:'hsl(var(--temp-warm))', borderColor:'hsl(var(--temp-warm) / 0.4)', background:'hsl(var(--temp-warm) / 0.08)'}}>38°C — Warm</span>
+                      <span className="font-[family-name:var(--font-mono)] text-sm px-3 py-1.5 rounded border" style={{color:'hsl(var(--temp-hot))', borderColor:'hsl(var(--temp-hot) / 0.4)', background:'hsl(var(--temp-hot) / 0.08)'}}>41°C — Hot</span>
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400 max-w-xs">
-                      Select a section of the Venn diagram to view detailed information
+                    <p className="text-slate-500 dark:text-slate-400 max-w-xs text-sm">
+                      Select a region of the diagram to explore gene data
                     </p>
                     <div className="flex items-center justify-center gap-2 text-slate-500 dark:text-slate-400 animate-pulse">
-                      <p>Select a section</p>
                       <ArrowRight size={18} />
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md">
+              <div className="bg-card border border-border p-6 rounded-xl shadow-md">
                 <h2 className="text-xl font-semibold mb-4">How to use this diagram?</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-100 dark:border-purple-800/30">
-                    <div className="w-10 h-10 bg-purple-100 dark:bg-purple-800 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <span className="text-purple-600 dark:text-purple-300 font-bold">1</span>
-                    </div>
-                    <h3 className="font-medium mb-1 text-center">Explore</h3>
-                    <p className="text-slate-600 dark:text-slate-300 text-sm text-center">
+                  <div className="p-4 rounded-lg border border-border bg-muted">
+                    <p className="font-[family-name:var(--font-mono)] text-3xl font-bold mb-2" style={{color:'hsl(var(--temp-cold))'}}>1</p>
+                    <h3 className="font-medium mb-1">Explore</h3>
+                    <p className="text-slate-600 dark:text-slate-300 text-sm">
                       Hover over the different sections to see them highlighted
                     </p>
                   </div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800/30">
-                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-800 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <span className="text-blue-600 dark:text-blue-300 font-bold">2</span>
-                    </div>
-                    <h3 className="font-medium mb-1 text-center">Select</h3>
-                    <p className="text-slate-600 dark:text-slate-300 text-sm text-center">
+                  <div className="p-4 rounded-lg border border-border bg-muted">
+                    <p className="font-[family-name:var(--font-mono)] text-3xl font-bold mb-2" style={{color:'hsl(var(--temp-warm))'}}>2</p>
+                    <h3 className="font-medium mb-1">Select</h3>
+                    <p className="text-slate-600 dark:text-slate-300 text-sm">
                       Click on any section of the diagram to view its information
                     </p>
                   </div>
-                  <div className="bg-pink-50 dark:bg-pink-900/20 p-4 rounded-lg border border-pink-100 dark:border-pink-800/30">
-                    <div className="w-10 h-10 bg-pink-100 dark:bg-pink-800 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <span className="text-pink-600 dark:text-pink-300 font-bold">3</span>
-                    </div>
-                    <h3 className="font-medium mb-1 text-center">Explore data</h3>
-                    <p className="text-slate-600 dark:text-slate-300 text-sm text-center">
+                  <div className="p-4 rounded-lg border border-border bg-muted">
+                    <p className="font-[family-name:var(--font-mono)] text-3xl font-bold mb-2" style={{color:'hsl(var(--temp-hot))'}}>3</p>
+                    <h3 className="font-medium mb-1">Explore data</h3>
+                    <p className="text-slate-600 dark:text-slate-300 text-sm">
                       In intersections, select specific elements and review their data
                     </p>
                   </div>
@@ -565,8 +551,8 @@ export default function Home() {
             </div>
           </div>
 
-          <footer className="mt-16 text-center text-sm text-slate-500 dark:text-slate-400 pb-8">
-            <p>Interactive Venn Diagram © {new Date().getFullYear()}</p>
+          <footer className="mt-16 text-center pb-8">
+            <p className="font-[family-name:var(--font-mono)] text-xs text-slate-500 dark:text-slate-400">Interactive Venn Diagram © {new Date().getFullYear()}</p>
           </footer>
         </div>
       </div>
@@ -575,4 +561,5 @@ export default function Home() {
     </TooltipProvider>
   )
 }
+
 
