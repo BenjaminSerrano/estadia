@@ -156,8 +156,14 @@ def get_genes_by_pathway(table_name: str, pathway: str, db: Session = Depends(ge
 
 
 # Todos los genes de una tabla
+MAX_LIMIT = 1000
+
 @router.get("/genes/all/{table_name}", response_model=GeneFilterResponse)
-def get_all_genes(table_name: str, skip: int = 0, limit: int = 1000, db: Session = Depends(get_db)):
+def get_all_genes(table_name: str, skip: int = 0, limit: int = MAX_LIMIT, db: Session = Depends(get_db)):
+    if limit < 1 or limit > MAX_LIMIT:
+        raise HTTPException(status_code=400, detail=f"limit must be between 1 and {MAX_LIMIT}")
+    if skip < 0:
+        raise HTTPException(status_code=400, detail="skip must be >= 0")
     model = _get_model(table_name)
     genes = db.query(model).offset(skip).limit(limit).all()
     return GeneFilterResponse(genes=[_gene_to_dict(g, table_name) for g in genes])

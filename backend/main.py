@@ -13,33 +13,11 @@ app = FastAPI(title="Genes API",
               description="API para consultar genes en diferentes condiciones de temperatura",
               version="1.0.0")
 
-# Configurar CORS dinámico para desarrollo y producción
-# Producción: Dominios de producción activos
 allowed_origins = [
-    "http://localhost:3000",  # Desarrollo local
-    "https://localhost:3000",  # Desarrollo local HTTPS
-    "https://687fb35af2799d00080d8f7d--lovely-jelly-fe7bb8.netlify.app",  # Netlify deployment
+    "http://localhost:3000",
+    "https://687fb35af2799d00080d8f7d--lovely-jelly-fe7bb8.netlify.app",
+    "https://lovely-jelly-fe7bb8.netlify.app",
 ]
-# Local: Solo dominios locales (comentar/descomentar según necesidad)
-#allowed_origins = [
-#     "http://localhost:3000",  # Frontend local
-#     "http://127.0.0.1:3000",  # Frontend local alternativo
-#     "http://localhost:8080",  # Frontend alternativo
-#]
-
-# En producción, permitir dominios específicos
-if os.getenv("RAILWAY_ENVIRONMENT"):
-    # Agregar dominios de producción cuando se despliegue
-    allowed_origins.extend([
-        "https://687fb35af2799d00080d8f7d--lovely-jelly-fe7bb8.netlify.app",
-        "https://lovely-jelly-fe7bb8.netlify.app",
-        "https://*.netlify.app",
-        "https://*.railway.app",
-        "https://*.vercel.app"
-    ])
-else:
-    # En desarrollo local también permitir el dominio de Netlify para pruebas
-    allowed_origins.append("https://687fb35af2799d00080d8f7d--lovely-jelly-fe7bb8.netlify.app")
 
 app.add_middleware(
     CORSMiddleware,
