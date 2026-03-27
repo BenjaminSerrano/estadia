@@ -1,1 +1,16 @@
 **/.claude/settings.local.json
+
+# Cache de Python
+**/__pycache__/
+**/*.pyc
+
+# Archivos del sistema
+.DS_Store
+**/.DS_Store
+
+# Archivos Excel de datos
+db/*.xlsx
+
+# Scripts y backups locales
+db/kegg_enrich.py
+db/*.bak*
