@@ -6,8 +6,8 @@
 // En Netlify, configurar la variable de entorno: NEXT_PUBLIC_API_BASE_URL
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://estadia-production.up.railway.app'
 
-// Default timeout for API requests (10 seconds)
-const DEFAULT_TIMEOUT = 10000;
+// Default timeout for API requests (30 seconds to handle cold starts)
+const DEFAULT_TIMEOUT = 30000;
 
 // Only log in development
 if (process.env.NODE_ENV === 'development') {
@@ -80,98 +80,23 @@ function safeParseInt(value: any, defaultValue: number = 0): number {
 // Función para obtener estadísticas de intersección de tablas
 export async function getIntersectionStats(tables: string[]): Promise<IntersectionStats> {
   try {
-    // En modo desarrollo o pruebas podemos activar este flag para usar datos simulados
-    const USE_MOCK_DATA = false;
-    
-    // Si estamos en modo prueba o desarrollo, usamos datos simulados
-    if (USE_MOCK_DATA) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Using mock data for table intersection');
-      }
-      
-      // Datos simulados para cada intersección
-      const intersectionData: Record<string, IntersectionStats> = {
-        '16_38': {
-          total_rows: 89,
-          unique_pathways: 15,
-          pathways_list: [
-            "Human Diseases", "Organismal Systems", "Metabolism", 
-            "Environmental Information Processing", "Genetic Information Processing"
-          ],
-          common_genes: ["gene1", "gene2", "gene3", "gene4", "gene5"]
-        },
-        '16_41': {
-          total_rows: 75,
-          unique_pathways: 12,
-          pathways_list: [
-            "Metabolism", "Cellular Processes", "Environmental Information Processing", 
-            "Genetic Information Processing", "Human Diseases"
-          ],
-          common_genes: ["geneA", "geneB", "geneC", "geneD", "geneE"]
-        },
-        '38_41': {
-          total_rows: 113,
-          unique_pathways: 18,
-          pathways_list: [
-            "Organismal Systems", "Metabolism", "Cellular Processes", 
-            "Environmental Information Processing", "Genetic Information Processing"
-          ],
-          common_genes: ["geneX", "geneY", "geneZ", "geneW", "geneV"]
-        },
-        '16_38_41': {
-          total_rows: 47,
-          unique_pathways: 9,
-          pathways_list: [
-            "Metabolism", "Environmental Information Processing", "Genetic Information Processing"
-          ],
-          common_genes: ["commonGene1", "commonGene2", "commonGene3", "commonGene4", "commonGene5"]
-        }
-      };
-      
-      // Ordenar las tablas para formar la clave correcta
-      const sortedTables = [...tables].sort();
-      const key = sortedTables.join('_');
-      
-      // Simular un pequeño retraso para imitar una llamada a la API
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      return intersectionData[key] || {
-        total_rows: 0,
-        unique_pathways: 0,
-        pathways_list: [],
-        common_genes: []
-      };
-    } else {
-      // In production, make API call
-      const url = `${API_BASE_URL}/intersection/${tables.join('/')}/stats`;
+    const url = `${API_BASE_URL}/intersection/${tables.join('/')}/stats`;
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Getting statistics for table intersection: ${tables.join('/')}`);
-      }
+    const response = await fetchWithTimeout(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      },
+      cache: 'no-store'
+    });
 
-      // Make API call with timeout
-      const response = await fetchWithTimeout(url, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache'
-        },
-        cache: 'no-store'
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Error al obtener estadísticas de intersección: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Intersection data received:', data);
-      }
-
-      return data;
+    if (!response.ok) {
+      throw new Error(`Error al obtener estadísticas de intersección: ${response.statusText}`);
     }
+
+    return await response.json();
   } catch (error) {
     console.error('Error obteniendo estadísticas de intersección:', error);
     // Retornar valores por defecto en caso de error
@@ -557,11 +482,6 @@ export async function getGenesByPathway(tableName: string, pathway: string): Pro
 
     if (process.env.NODE_ENV === 'development') {
       console.log('Calling API URL:', url);
-
-      // Special logging for Metabolism in table 41
-      if (tableName === "41" && pathway.toLowerCase() === "metabolism") {
-        console.log('⚠️ Special case: Requesting Metabolism pathway in table 41 (should return 107 genes)');
-      }
     }
     
     // Use explicit GET method and configure headers to accept JSON
@@ -597,19 +517,7 @@ export async function getGenesByPathway(tableName: string, pathway: string): Pro
       data = JSON.parse(responseText);
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('Response text:', responseText.substring(0, 200) + '...');
         console.log('Data parsed correctly:', data ? 'OK' : 'Null');
-
-        // Specific verification for Metabolism
-        if (tableName === "41" && pathway.toLowerCase() === "metabolism") {
-          console.log(`🔍 Verifying count: ${data?.genes?.length || 0} genes (expected: 107)`);
-
-          if (data?.genes?.length !== 107) {
-            console.warn(`⚠️ Incorrect count for Metabolism in table 41: ${data?.genes?.length || 0} genes (expected: 107)`);
-          } else {
-            console.log('✓ Correct: 107 genes found for Metabolism in table 41');
-          }
-        }
       }
     } catch (parseError) {
       console.error('Error al parsear JSON:', parseError);
