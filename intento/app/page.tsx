@@ -353,9 +353,12 @@ export default function Home() {
         <div className="container mx-auto px-4 py-8">
           <header className="flex flex-col md:flex-row justify-between items-center mb-8">
             <div className="text-center md:text-left mb-6 md:mb-0">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 font-[family-name:var(--font-display)] text-foreground tracking-tight">
-                Interactive Venn Diagram
+              <h1 className="text-4xl md:text-5xl font-bold mb-1 font-[family-name:var(--font-display)] text-foreground tracking-tight">
+                Cobetia thermal transcriptional response by set theory
               </h1>
+              <p className="text-base text-slate-500 dark:text-slate-400 font-[family-name:var(--font-display)] mb-3">
+                Respuesta transcripcional térmica de Cobetia por teoría de conjuntos
+              </p>
               <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl flex flex-wrap items-center gap-2">
                 Explore the relationships between sets by clicking on any section of the diagram
                 <span className="font-[family-name:var(--font-mono)] text-xs px-1.5 py-0.5 rounded border" style={{color:'hsl(var(--temp-cold))', borderColor:'hsl(var(--temp-cold) / 0.4)'}}>16°C</span>
@@ -569,7 +572,7 @@ export default function Home() {
           </div>
 
           <footer className="mt-16 text-center pb-8">
-            <p className="font-[family-name:var(--font-mono)] text-xs text-slate-500 dark:text-slate-400">Interactive Venn Diagram © {new Date().getFullYear()}</p>
+            <p className="font-[family-name:var(--font-mono)] text-xs text-slate-500 dark:text-slate-400">Proyecto ANID Exploración 13220184</p>
           </footer>
         </div>
       </div>
