@@ -1,6 +1,6 @@
 import { Circle, CheckCircle } from "lucide-react"
 
-import { getTableStats, getIntersectionStats, getGenesByPathway, mapSectionToTable, getComparisonTableStats, getComparisonTablePathways, mapSectionToComparisonTable } from "./api-service"
+import { getTableStats, getIntersectionStats, mapSectionToTable, mapSectionToComparisonTable } from "./api-service"
 
 // Variable to store cached statistics data
 interface StatsCache {
@@ -45,7 +45,7 @@ export async function fetchSectionStats(section: string): Promise<{elements: num
       if (comparisonTable) {
         // Use direct comparison table (16_38, 16_41, 38_41)
         console.log(`Using comparison table ${comparisonTable} for section ${section}`);
-        const stats = await getComparisonTableStats(comparisonTable);
+        const stats = await getTableStats(comparisonTable);
 
         // Update cache
         statsCache[cacheKey] = {
@@ -209,35 +209,4 @@ export function isIntersection(section: string) {
   return section.length > 1
 }
 
-// Function to get genes filtered by pathway for any section
-export async function getSectionGenesByPathway(section: string, pathway: string) {
-  const tableData = mapSectionToTable(section);
-  
-  if (!tableData) return { genes: [] };
-
-  try {
-    // Check if it's a simple section or an intersection
-    const isIntersectionSection = Array.isArray(tableData);
-
-    if (isIntersectionSection) {
-      // For intersections, map to comparison table
-      const comparisonTable = mapSectionToComparisonTable(section);
-
-      if (comparisonTable) {
-        console.log(`Getting genes from intersection ${section} using table ${comparisonTable} with pathway ${pathway}`);
-        return await getGenesByPathway(comparisonTable, pathway);
-      } else {
-        console.error(`Could not map intersection ${section} to a comparison table`);
-        return { genes: [] };
-      }
-    } else {
-      // It's an individual table
-      console.log(`Getting genes from table ${tableData} with pathway ${pathway}`);
-      return await getGenesByPathway(tableData as string, pathway);
-    }
-  } catch (error) {
-    console.error(`Error getting genes for section ${section} with pathway ${pathway}:`, error);
-    return { genes: [] };
-  }
-}
 

@@ -89,7 +89,7 @@ export default function StatisticsView({ section, navigationBar }: StatisticsVie
                       {section.length > 1 ? "Propiedades compartidas" : "Propiedades únicas"}
                     </span>
                     <span className="text-sm font-medium">
-                      {section.length > 1 ? info.statistics.sharedProperties : info.statistics.uniqueProperties}
+                      {section.length > 1 ? info.statistics?.sharedProperties ?? 0 : info.statistics?.uniqueProperties ?? 0}
                     </span>
                   </div>
                   <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5">
@@ -106,8 +106,8 @@ export default function StatisticsView({ section, navigationBar }: StatisticsVie
                       style={{
                         width: `${
                           section.length > 1
-                            ? (info.statistics.sharedProperties / 15) * 100
-                            : (info.statistics.uniqueProperties / 15) * 100
+                            ? ((info.statistics?.sharedProperties ?? 0) / 15) * 100
+                            : ((info.statistics?.uniqueProperties ?? 0) / 15) * 100
                         }%`,
                       }}
                     ></div>
@@ -258,7 +258,7 @@ export default function StatisticsView({ section, navigationBar }: StatisticsVie
               <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
                 <h3 className="text-sm font-medium mb-3">Usos comunes</h3>
                 <div className="flex flex-wrap gap-2">
-                  {info.statistics.commonUses.map((use, index) => (
+                  {info.statistics?.commonUses?.map((use: any, index: number) => (
                     <span key={index} className="px-3 py-1 bg-slate-100 dark:bg-slate-700 rounded-full text-xs">
                       {use}
                     </span>

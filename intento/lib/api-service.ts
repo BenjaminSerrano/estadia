@@ -364,6 +364,7 @@ export interface IntersectionGeneFilterResponse {
  */
 export interface UnifiedGeneFilterResponse {
   genes: (Gene | IntersectionGene)[];
+  total?: number;
 }
 
 /**
@@ -419,9 +420,9 @@ export async function getTablePathways(tableName: string): Promise<PathwaysData>
  * @param tableName - Nombre de la tabla (16, 38, 41, 16_38, 16_41, 38_41, 16_38_41)
  * @returns Promesa con todos los genes de la tabla
  */
-export async function getAllGenes(tableName: string): Promise<UnifiedGeneFilterResponse> {
+export async function getAllGenes(tableName: string, skip = 0): Promise<UnifiedGeneFilterResponse> {
   try {
-    const url = `${API_BASE_URL}/genes/all/${tableName}`;
+    const url = `${API_BASE_URL}/genes/all/${tableName}?skip=${skip}`;
 
     if (process.env.NODE_ENV === 'development') {
       console.log('Calling API URL for all data:', url);
@@ -726,93 +727,6 @@ export async function getGenesByPathway(tableName: string, pathway: string): Pro
 // FUNCIÓN ELIMINADA: getIntersectionGenesByPathway
 // Ya no necesitamos esta función porque el backend devuelve la estructura exacta
 // de cada tabla. Usamos directamente getGenesByPathway para todas las tablas.
-
-/**
- * Mapea secciones del diagrama de Venn a tablas en la base de datos
- * @param section - Identificador de sección del diagrama (A, B, C, AB, etc.)
- * @returns El nombre de la tabla correspondiente (16, 38, 41) o un array de nombres para intersecciones
- */
-/**
- * Obtiene estadísticas directas de las tablas de comparación (16_38, 16_41, 38_41)
- * @param tableId - ID de la tabla de comparación (16_38, 16_41, 38_41)
- * @returns Promesa con las estadísticas de la tabla de comparación
- */
-export async function getComparisonTableStats(tableId: string): Promise<TableStats> {
-  try {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Getting comparison table statistics: ${tableId}`);
-    }
-
-    const response = await fetchWithTimeout(`${API_BASE_URL}/stats/${tableId}`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache'
-      },
-      cache: 'no-store'
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error al obtener estadísticas de comparación: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Statistics for table ${tableId}:`, data);
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Error obteniendo estadísticas de tabla de comparación:', error);
-    return {
-      total_rows: 0,
-      unique_pathways: 0,
-      pathways_list: []
-    };
-  }
-}
-
-/**
- * Obtiene los pathways de las tablas de comparación
- * @param tableId - ID de la tabla de comparación (16_38, 16_41, 38_41)
- * @returns Promesa con los pathways de la tabla de comparación
- */
-export async function getComparisonTablePathways(tableId: string): Promise<PathwaysData> {
-  try {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Getting pathways from comparison table: ${tableId}`);
-    }
-
-    const response = await fetchWithTimeout(`${API_BASE_URL}/pathways/${tableId}`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache'
-      },
-      cache: 'no-store'
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error al obtener pathways de comparación: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Pathways for table ${tableId}:`, data);
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Error obteniendo pathways de tabla de comparación:', error);
-    return {
-      pathways: []
-    };
-  }
-}
 
 export function mapSectionToTable(section: string): string | string[] | null {
   // Mapeamos cada sección a su tabla correspondiente

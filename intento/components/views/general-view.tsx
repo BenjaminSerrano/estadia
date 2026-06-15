@@ -83,12 +83,12 @@ export default function GeneralView({ section, navigationBar }: GeneralViewProps
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="bg-white/70 dark:bg-slate-800/70 p-3 rounded-lg">
                   <p className="text-slate-500 dark:text-slate-400">Elementos:</p>
-                  <p className="font-medium text-lg">{info.statistics.elements}</p>
+                  <p className="font-medium text-lg">{info.statistics?.elements ?? 0}</p>
                 </div>
                 <div className="bg-white/70 dark:bg-slate-800/70 p-3 rounded-lg">
                   <p className="text-slate-500 dark:text-slate-400">Propiedades:</p>
                   <p className="font-medium text-lg">
-                    {section.length > 1 ? info.statistics.sharedProperties : info.statistics.uniqueProperties}
+                    {section.length > 1 ? info.statistics?.sharedProperties ?? 0 : info.statistics?.uniqueProperties ?? 0}
                   </p>
                 </div>
               </div>
@@ -147,7 +147,7 @@ export default function GeneralView({ section, navigationBar }: GeneralViewProps
                           <h3 className="font-semibold">Ejemplos:</h3>
                         </div>
                         <ul className="space-y-2">
-                          {info.examples.map((example, index) => (
+                          {info.examples?.map((example, index) => (
                             <li key={index} className="flex items-start gap-2">
                               <span className="text-slate-400 mt-1">•</span>
                               <span className="text-slate-700 dark:text-slate-300">{example}</span>
@@ -166,7 +166,7 @@ export default function GeneralView({ section, navigationBar }: GeneralViewProps
                       </div>
 
                       <div className="grid gap-4 mb-6">
-                        {info.properties.map((property, index) => (
+                        {info.properties?.map((property, index) => (
                           <div
                             key={index}
                             className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg border border-slate-200 dark:border-slate-600"
@@ -200,7 +200,7 @@ export default function GeneralView({ section, navigationBar }: GeneralViewProps
                       </div>
 
                       <div className="grid gap-4">
-                        {info.applications.map((application, index) => (
+                        {info.applications?.map((application, index) => (
                           <div
                             key={index}
                             className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg border border-slate-200 dark:border-slate-600"
@@ -213,7 +213,7 @@ export default function GeneralView({ section, navigationBar }: GeneralViewProps
                       <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-600">
                         <h4 className="font-medium mb-2">Usos comunes:</h4>
                         <div className="flex flex-wrap gap-2">
-                          {info.statistics.commonUses.map((use, index) => (
+                          {info.statistics?.commonUses?.map((use, index) => (
                             <span
                               key={index}
                               className="px-3 py-1 bg-white dark:bg-slate-700 rounded-full text-sm border border-slate-200 dark:border-slate-600"

@@ -1,5 +1,5 @@
 import ElementDataClient from './element-data-client'
-import { getTablePathways, getComparisonTablePathways, mapSectionToTable, mapSectionToComparisonTable } from '../../../../lib/api-service'
+import { getTablePathways, mapSectionToTable, mapSectionToComparisonTable } from '../../../../lib/api-service'
 
 // Generar rutas estáticas para el export
 export async function generateStaticParams() {
@@ -28,7 +28,7 @@ export async function generateStaticParams() {
       else {
         const comparisonTable = mapSectionToComparisonTable(section)
         if (comparisonTable) {
-          const pathwaysData = await getComparisonTablePathways(comparisonTable)
+          const pathwaysData = await getTablePathways(comparisonTable)
           pathways = pathwaysData.pathways || []
         }
       }

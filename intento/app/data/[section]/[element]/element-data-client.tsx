@@ -8,7 +8,7 @@ import {
   ChevronLeft, ChevronRight, Download, Search, X,
   ArrowUp, ArrowDown, ChevronsUpDown, Dna, AlertTriangle
 } from "lucide-react"
-import { getGenesByPathway, mapSectionToTable, type Gene, type IntersectionGene } from "@/lib/api-service"
+import { getGenesByPathway, getAllGenes, mapSectionToTable, type Gene, type IntersectionGene } from "@/lib/api-service"
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -90,8 +90,11 @@ export default function ElementDataClient() {
   const [genesData,     setGenesData]     = useState<(Gene | IntersectionGene)[]>([])
   const [intersectData, setIntersectData] = useState<(Gene | IntersectionGene)[]>([])
   const [loading,       setLoading]       = useState(true)
+  const [loadingMore,   setLoadingMore]   = useState(false)
   const [error,         setError]         = useState<string | null>(null)
   const [page,          setPage]          = useState(1)
+  const [serverTotal,   setServerTotal]   = useState<number | null>(null)
+  const [tableName,     setTableName]     = useState<string>("")
 
   const PAGE_SIZE = 50
 
@@ -115,20 +118,22 @@ export default function ElementDataClient() {
     const fetchData = async () => {
       if (!section) return
       try {
-        setLoading(true); setError(null)
-        let tableName: string
+        setLoading(true); setError(null); setServerTotal(null)
+        let tbl: string
         if (isIntersect) {
           const tables = mapSectionToTable(section) as string[]
-          if (section === "ABC") tableName = "16_38_41"
-          else if (tables.includes("16") && tables.includes("38") && !tables.includes("41")) tableName = "16_38"
-          else if (tables.includes("16") && tables.includes("41") && !tables.includes("38")) tableName = "16_41"
-          else if (tables.includes("38") && tables.includes("41") && !tables.includes("16")) tableName = "38_41"
+          if (section === "ABC") tbl = "16_38_41"
+          else if (tables.includes("16") && tables.includes("38") && !tables.includes("41")) tbl = "16_38"
+          else if (tables.includes("16") && tables.includes("41") && !tables.includes("38")) tbl = "16_41"
+          else if (tables.includes("38") && tables.includes("41") && !tables.includes("16")) tbl = "38_41"
           else throw new Error(`Invalid table combination: ${tables.join(", ")}`)
         } else {
-          tableName = mapSectionToTable(section) as string
+          tbl = mapSectionToTable(section) as string
         }
-        const response = await getGenesByPathway(tableName, element)
+        setTableName(tbl)
+        const response = await getGenesByPathway(tbl, element)
         if (!response?.genes || !Array.isArray(response.genes)) throw new Error("Invalid response")
+        if (response.total != null) setServerTotal(response.total)
         if (isIntersect) { setIntersectData(response.genes); setGenesData([]) }
         else             { setGenesData(response.genes);     setIntersectData([]) }
       } catch (err) {
@@ -140,6 +145,24 @@ export default function ElementDataClient() {
     }
     fetchData()
   }, [section, element, isIntersect])
+
+  // ─── Load more ─────────────────────────────────────────────────────────────
+  const loadMore = async () => {
+    if (!tableName || loadingMore) return
+    try {
+      setLoadingMore(true)
+      const skip = isIntersect ? intersectData.length : genesData.length
+      const response = await getAllGenes(tableName, skip)
+      if (!response?.genes?.length) return
+      if (response.total != null) setServerTotal(response.total)
+      if (isIntersect) setIntersectData(prev => [...prev, ...response.genes])
+      else             setGenesData(prev => [...prev, ...response.genes])
+    } catch (err) {
+      console.error("Error loading more genes:", err)
+    } finally {
+      setLoadingMore(false)
+    }
+  }
 
   useEffect(() => { if (!info) router.push("/") }, [info, router])
   if (!info) return null
@@ -463,10 +486,17 @@ export default function ElementDataClient() {
                     {filteredData.length !== totalGenes && (
                       <span className="text-muted-foreground"> (filtered)</span>
                     )}
-                    <span className="text-muted-foreground"> · {totalGenes} total</span>
+                    <span className="text-muted-foreground"> · {totalGenes} loaded</span>
+                    {serverTotal != null && totalGenes < serverTotal && (
+                      <span className="text-muted-foreground"> of {serverTotal} total</span>
+                    )}
                   </>
                 ) : (
-                  <span className="text-foreground/60">{totalGenes} total genes in {info.title}</span>
+                  <span className="text-foreground/60">
+                    {totalGenes} loaded
+                    {serverTotal != null && totalGenes < serverTotal && ` of ${serverTotal} total`}
+                    {" "}in {info.title}
+                  </span>
                 )}
               </p>
 
@@ -512,6 +542,25 @@ export default function ElementDataClient() {
                   </button>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Load more */}
+          {!loading && !error && serverTotal != null && totalGenes < serverTotal && (
+            <div className="flex justify-center py-4 border-t border-border">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="font-[family-name:var(--font-mono)] text-xs gap-2"
+              >
+                {loadingMore ? (
+                  <span className="animate-pulse">Loading…</span>
+                ) : (
+                  <>Load more <span className="text-muted-foreground">({serverTotal - totalGenes} remaining)</span></>
+                )}
+              </Button>
             </div>
           )}
         </div>

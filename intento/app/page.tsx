@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 // Corregir la importación de section-data
 import { getSectionInfo, isIntersection, fetchSectionStats } from "@/lib/section-data"
-import { getTablePathways, getComparisonTablePathways, mapSectionToComparisonTable } from "@/lib/api-service"
+import { getTablePathways, mapSectionToComparisonTable } from "@/lib/api-service"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 // Importar el componente ThemeToggle
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -46,7 +46,7 @@ export default function Home() {
         // For intersections, use comparison tables
         const comparisonTable = mapSectionToComparisonTable(section)
         if (comparisonTable) {
-          const pathwaysData = await getComparisonTablePathways(comparisonTable)
+          const pathwaysData = await getTablePathways(comparisonTable)
           if (pathwaysData && pathwaysData.pathways) {
             setPathways(pathwaysData.pathways)
           }

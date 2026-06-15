@@ -96,16 +96,16 @@ export default function DocumentationView({ section, navigationBar }: Documentat
                   </>
                 ) : (
                   <>
-                    <p className="mb-4">{info.documentation.definition}</p>
+                    <p className="mb-4">{info.documentation?.definition}</p>
 
                     <h3 className="text-lg font-medium mt-6 mb-3">Notación matemática</h3>
                     <div className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg border border-slate-200 dark:border-slate-600 font-mono text-center mb-6">
-                      {info.documentation.notation}
+                      {info.documentation?.notation}
                     </div>
 
                     <h3 className="text-lg font-medium mt-6 mb-3">Operaciones</h3>
                     <ul className="space-y-2 mb-6">
-                      {info.documentation.operations.map((operation, index) => (
+                      {info.documentation?.operations?.map((operation, index) => (
                         <li key={index} className="flex items-start gap-2">
                           <span className="text-slate-400 mt-1">•</span>
                           <span className="text-slate-700 dark:text-slate-300">{operation}</span>
@@ -199,7 +199,7 @@ export default function DocumentationView({ section, navigationBar }: Documentat
                   <h2 className="text-lg font-medium mb-4">Referencias bibliográficas</h2>
 
                   <div className="space-y-4">
-                    {info.references.map((ref, index) => (
+                    {info.references?.map((ref: any, index: number) => (
                       <div
                         key={index}
                         className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg border border-slate-200 dark:border-slate-600"
