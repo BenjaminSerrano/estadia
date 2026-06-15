@@ -152,7 +152,8 @@ def get_genes_by_pathway(table_name: str, pathway: str, db: Session = Depends(ge
         unslug = pathway.replace("-", " ")
         genes = db.query(model).filter(pathway_col.ilike(f"%{unslug}%")).all()
 
-    return GeneFilterResponse(genes=[_gene_to_dict(g, table_name) for g in genes])
+    gene_list = [_gene_to_dict(g, table_name) for g in genes]
+    return GeneFilterResponse(genes=gene_list, total=len(gene_list))
 
 
 # Todos los genes de una tabla
@@ -165,5 +166,7 @@ def get_all_genes(table_name: str, skip: int = 0, limit: int = MAX_LIMIT, db: Se
     if skip < 0:
         raise HTTPException(status_code=400, detail="skip must be >= 0")
     model = _get_model(table_name)
+    id_field = model.id if table_name in ["16", "38", "41"] else model.ID
+    total = db.query(func.count(id_field)).scalar()
     genes = db.query(model).offset(skip).limit(limit).all()
-    return GeneFilterResponse(genes=[_gene_to_dict(g, table_name) for g in genes])
+    return GeneFilterResponse(genes=[_gene_to_dict(g, table_name) for g in genes], total=total)
