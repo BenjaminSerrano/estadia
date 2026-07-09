@@ -1,172 +1,186 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from app.database import get_db
-from app.models import alone_16, alone_38, alone_41, Comparison_16_38, Comparison_16_41, Comparison_38_41, Comparison_16_38_41
-from app.schemas import TableStatsResponse, PathwaysResponse, GeneFilterResponse
-from sqlalchemy import func
+from app.models import Dataset, Condition
 
 router = APIRouter()
 
-
-def _get_model(table_name: str):
-    models = {
-        "16": alone_16,
-        "38": alone_38,
-        "41": alone_41,
-        "16_38": Comparison_16_38,
-        "16_41": Comparison_16_41,
-        "38_41": Comparison_38_41,
-        "16_38_41": Comparison_16_38_41,
-    }
-    model = models.get(table_name)
-    if model is None:
-        raise HTTPException(status_code=404, detail=f"Table {table_name} not found")
-    return model
+MAX_LIMIT = 1000
 
 
-def _gene_to_dict(gene, table_name: str) -> dict:
-    gene_dict = {}
-
-    for column in gene.__table__.columns:
-        column_name = column.name
-        if column_name == "BEGIN":
-            attr_name = "Begin"
-        elif column_name == "END":
-            attr_name = "End"
-        else:
-            attr_name = column_name
-
-        value = getattr(gene, attr_name, None)
-
-        try:
-            python_type = column.type.python_type
-        except (AttributeError, NotImplementedError):
-            python_type = str
-
-        if value is None:
-            if python_type == int:
-                gene_dict[column_name] = 0
-            elif python_type == float:
-                gene_dict[column_name] = 0.0
-            else:
-                gene_dict[column_name] = ""
-        else:
-            if python_type == int:
-                try:
-                    gene_dict[column_name] = int(value) if value != "" else 0
-                except (ValueError, TypeError):
-                    gene_dict[column_name] = 0
-            elif python_type == float:
-                try:
-                    gene_dict[column_name] = float(value) if value != "" else 0.0
-                except (ValueError, TypeError):
-                    gene_dict[column_name] = 0.0
-            else:
-                gene_dict[column_name] = str(value)
-
-    # Alias de compatibilidad con el frontend
-    if 'id' not in gene_dict and 'ID' in gene_dict:
-        gene_dict['id'] = gene_dict['ID']
-    elif 'ID' not in gene_dict and 'id' in gene_dict:
-        gene_dict['ID'] = gene_dict['id']
-
-    if table_name not in ["16", "38", "41"]:
-        if 'locustag' not in gene_dict and 'Locustag' in gene_dict:
-            gene_dict['locustag'] = gene_dict['Locustag']
-
-        for temp in ['16', '38', '41']:
-            if gene_dict.get(f'KO_code_{temp}') and not gene_dict.get('KO_code'):
-                gene_dict['KO_code'] = gene_dict[f'KO_code_{temp}']
-                break
-
-        for temp in ['16', '38', '41']:
-            if gene_dict.get(f'Name_{temp}') and not gene_dict.get('Name'):
-                gene_dict['Name'] = gene_dict[f'Name_{temp}']
-                break
-
-        for temp in ['16', '38', '41']:
-            if gene_dict.get(f'Protein_accession_{temp}') and not gene_dict.get('Protein_accession'):
-                gene_dict['Protein_accession'] = gene_dict[f'Protein_accession_{temp}']
-                break
-
-        if table_name == "16_38_41" and gene_dict.get('Name_x') and not gene_dict.get('Name'):
-            gene_dict['Name'] = gene_dict['Name_x']
-
-    return gene_dict
+def _parse_ids(s: str) -> list:
+    if not s:
+        return []
+    try:
+        return [int(x.strip()) for x in s.split(",") if x.strip()]
+    except ValueError:
+        raise HTTPException(400, "condition IDs must be integers")
 
 
-def _pathway_field(table_name: str):
-    return "Pathways" if table_name == "16_38_41" else "Pathway"
+def _filter_clause(include_ids: list, exclude_ids: list, params: dict) -> str:
+    """
+    Builds the SQL WHERE fragment that restricts genes to those with expression
+    in ALL include_ids and in NONE of exclude_ids. Populates params in place.
+    ponytail: named params prevent injection; string-interpolated placeholders are safe
+              because they're derived from the param dict keys, not user strings.
+    """
+    n = len(include_ids)
+    if n == 0:
+        raise HTTPException(400, "include_conditions is required")
 
+    inc_ph = ",".join(f":inc{i}" for i in range(n))
+    for i, cid in enumerate(include_ids):
+        params[f"inc{i}"] = cid
+    params["n"] = n
 
-def _collect_pathways(pathways_data: list) -> list:
-    all_pathways = []
-    for (pathway_value,) in pathways_data:
-        if pathway_value and isinstance(pathway_value, str) and pathway_value.strip():
-            for pathway in pathway_value.split(","):
-                pathway = pathway.strip()
-                if pathway:
-                    all_pathways.append(pathway)
-    return all_pathways
+    excl = ""
+    if exclude_ids:
+        exc_ph = ",".join(f":exc{i}" for i in range(len(exclude_ids)))
+        for i, cid in enumerate(exclude_ids):
+            params[f"exc{i}"] = cid
+        excl = f"AND g.id NOT IN (SELECT gene_id FROM expression_results WHERE condition_id IN ({exc_ph}))"
 
-
-# Estadísticas de una tabla
-@router.get("/stats/{table_name}", response_model=TableStatsResponse)
-def get_table_stats(table_name: str, db: Session = Depends(get_db)):
-    model = _get_model(table_name)
-    id_field = model.id if table_name in ["16", "38", "41"] else model.ID
-    total_rows = db.query(func.count(id_field)).scalar()
-
-    pathway_col = getattr(model, _pathway_field(table_name))
-    pathways_data = db.query(pathway_col).all()
-    unique_pathways = set(_collect_pathways(pathways_data))
-
-    return TableStatsResponse(
-        total_rows=total_rows,
-        unique_pathways=len(unique_pathways),
-        pathways_list=list(unique_pathways)
+    return (
+        f"AND g.id IN ("
+        f"  SELECT gene_id FROM expression_results"
+        f"  WHERE condition_id IN ({inc_ph})"
+        f"  GROUP BY gene_id HAVING COUNT(DISTINCT condition_id) = :n"
+        f") {excl}"
     )
 
 
-# Pathways únicos de una tabla
-@router.get("/pathways/{table_name}", response_model=PathwaysResponse)
-def get_pathways(table_name: str, db: Session = Depends(get_db)):
-    model = _get_model(table_name)
-    pathway_col = getattr(model, _pathway_field(table_name))
-    pathways_data = db.query(pathway_col).all()
-    unique_pathways = sorted(set(_collect_pathways(pathways_data)))
-    return PathwaysResponse(pathways=unique_pathways)
+# ── Dataset / Condition listing ────────────────────────────────────────────────
+
+@router.get("/datasets")
+def list_datasets(db: Session = Depends(get_db)):
+    rows = db.query(Dataset).all()
+    return [{"id": r.id, "name": r.name, "organism": r.organism} for r in rows]
 
 
-# Genes filtrados por pathway
-@router.get("/genes/filter/{table_name}/{pathway}", response_model=GeneFilterResponse)
-def get_genes_by_pathway(table_name: str, pathway: str, db: Session = Depends(get_db)):
-    model = _get_model(table_name)
-    pathway_col = getattr(model, _pathway_field(table_name))
-
-    # Búsqueda directa
-    genes = db.query(model).filter(pathway_col.ilike(f"%{pathway}%")).all()
-
-    # Los pathways llegan como slugs URL (guiones en lugar de espacios), intentar decodificar
-    if not genes and "-" in pathway:
-        unslug = pathway.replace("-", " ")
-        genes = db.query(model).filter(pathway_col.ilike(f"%{unslug}%")).all()
-
-    gene_list = [_gene_to_dict(g, table_name) for g in genes]
-    return GeneFilterResponse(genes=gene_list, total=len(gene_list))
+@router.get("/datasets/{dataset_id}/conditions")
+def list_conditions(dataset_id: int, db: Session = Depends(get_db)):
+    rows = db.query(Condition).filter(Condition.dataset_id == dataset_id).order_by(Condition.id).all()
+    if not rows:
+        raise HTTPException(404, f"Dataset {dataset_id} not found")
+    return [{"id": r.id, "label": r.label, "is_baseline": bool(r.is_baseline)} for r in rows]
 
 
-# Todos los genes de una tabla
-MAX_LIMIT = 1000
+# ── Gene queries ───────────────────────────────────────────────────────────────
 
-@router.get("/genes/all/{table_name}", response_model=GeneFilterResponse)
-def get_all_genes(table_name: str, skip: int = 0, limit: int = MAX_LIMIT, db: Session = Depends(get_db)):
+@router.get("/datasets/{dataset_id}/genes")
+def get_genes(
+    dataset_id: int,
+    include_conditions: str = Query(..., description="Comma-separated condition IDs (gene must appear in ALL)"),
+    exclude_conditions: str = Query("", description="Comma-separated condition IDs (gene must appear in NONE)"),
+    pathway: str = Query(""),
+    skip: int = 0,
+    limit: int = MAX_LIMIT,
+    db: Session = Depends(get_db),
+):
     if limit < 1 or limit > MAX_LIMIT:
-        raise HTTPException(status_code=400, detail=f"limit must be between 1 and {MAX_LIMIT}")
-    if skip < 0:
-        raise HTTPException(status_code=400, detail="skip must be >= 0")
-    model = _get_model(table_name)
-    id_field = model.id if table_name in ["16", "38", "41"] else model.ID
-    total = db.query(func.count(id_field)).scalar()
-    genes = db.query(model).offset(skip).limit(limit).all()
-    return GeneFilterResponse(genes=[_gene_to_dict(g, table_name) for g in genes], total=total)
+        raise HTTPException(400, f"limit must be 1–{MAX_LIMIT}")
+
+    include_ids = _parse_ids(include_conditions)
+    exclude_ids = _parse_ids(exclude_conditions)
+
+    params: dict = {"dataset_id": dataset_id, "skip": skip, "limit": limit}
+    filt = _filter_clause(include_ids, exclude_ids, params)
+
+    pathway_clause = ""
+    if pathway:
+        pathway_clause = "AND (g.Pathway LIKE :pathway)"
+        params["pathway"] = f"%{pathway}%"
+
+    genes = db.execute(text(f"""
+        SELECT g.id, g.locustag, g.KO_code, g.Protein_accession, g.Name,
+               g.Accession, g.Begin, g.End, g.Protein_length, g.Orientation, g.Pathway,
+               g.Brite_specific_family_1, g.Brite_specific_family_2, g.Brite_specific_family_3,
+               g.Brite_protein_families_1, g.Brite_protein_families_2, g.Brite_protein_families_3
+        FROM genes g
+        WHERE g.dataset_id = :dataset_id {filt} {pathway_clause}
+        LIMIT :limit OFFSET :skip
+    """), params).mappings().all()
+
+    # Count total without pagination
+    count_params = {k: v for k, v in params.items() if k not in ("skip", "limit")}
+    total = db.execute(text(f"""
+        SELECT COUNT(DISTINCT g.id) FROM genes g
+        WHERE g.dataset_id = :dataset_id {filt} {pathway_clause}
+    """), count_params).scalar()
+
+    # Fetch expression data for the returned genes (one extra query, avoids N+1)
+    gene_ids = [g["id"] for g in genes]
+    expr_map: dict = {}
+    if gene_ids:
+        ph = ",".join(str(x) for x in gene_ids)  # safe: integers from DB
+        for e in db.execute(text(
+            f"SELECT er.gene_id, c.label, er.log2FoldChange, er.pvalue, er.padj "
+            f"FROM expression_results er JOIN conditions c ON c.id = er.condition_id "
+            f"WHERE er.gene_id IN ({ph})"
+        )).mappings():
+            expr_map.setdefault(e["gene_id"], {})[e["label"]] = {
+                "log2FoldChange": e["log2FoldChange"],
+                "pvalue": e["pvalue"],
+                "padj": e["padj"],
+            }
+
+    result = [dict(g) | {"expression": expr_map.get(g["id"], {})} for g in genes]
+    return {"genes": result, "total": total}
+
+
+@router.get("/datasets/{dataset_id}/pathways")
+def get_pathways(
+    dataset_id: int,
+    include_conditions: str = Query(...),
+    exclude_conditions: str = Query(""),
+    db: Session = Depends(get_db),
+):
+    include_ids = _parse_ids(include_conditions)
+    exclude_ids = _parse_ids(exclude_conditions)
+
+    params: dict = {"dataset_id": dataset_id}
+    filt = _filter_clause(include_ids, exclude_ids, params)
+
+    rows = db.execute(text(f"""
+        SELECT g.Pathway FROM genes g
+        WHERE g.dataset_id = :dataset_id AND g.Pathway IS NOT NULL AND g.Pathway != ''
+        {filt}
+    """), params).scalars().all()
+
+    # Pathways are comma-separated within each row
+    pathways: set = set()
+    for raw in rows:
+        for p in raw.split(","):
+            p = p.strip()
+            if p:
+                pathways.add(p)
+
+    return {"pathways": sorted(pathways)}
+
+
+@router.get("/datasets/{dataset_id}/stats")
+def get_stats(
+    dataset_id: int,
+    include_conditions: str = Query(...),
+    exclude_conditions: str = Query(""),
+    db: Session = Depends(get_db),
+):
+    include_ids = _parse_ids(include_conditions)
+    exclude_ids = _parse_ids(exclude_conditions)
+
+    params: dict = {"dataset_id": dataset_id}
+    filt = _filter_clause(include_ids, exclude_ids, params)
+
+    total = db.execute(text(f"""
+        SELECT COUNT(DISTINCT g.id) FROM genes g
+        WHERE g.dataset_id = :dataset_id {filt}
+    """), params).scalar()
+
+    pathway_data = get_pathways(dataset_id, include_conditions, exclude_conditions, db)
+
+    return {
+        "total_genes": total,
+        "unique_pathways": len(pathway_data["pathways"]),
+        "pathways_list": pathway_data["pathways"],
+    }
