@@ -1,52 +1,33 @@
 import ElementDataClient from './element-data-client'
-import { getTablePathways, mapSectionToTable, mapSectionToComparisonTable } from '../../../../lib/api-service'
+import { getConditions, getPathways } from '../../../../lib/api-service'
+import { sectionToConditions } from '../../../../lib/section-data'
 
-// Generar rutas estáticas para el export
 export async function generateStaticParams() {
   const sections = ['A', 'B', 'C', 'AB', 'AC', 'BC', 'ABC']
   const allParams: Array<{ section: string; element: string }> = []
-  
-  for (const section of sections) {
-    // Agregar siempre la opción de todos los datos
-    allParams.push({
-      section: section,
-      element: '__TODOS_LOS_DATOS__'
-    })
-    
-    try {
-      let pathways: string[] = []
-      
-      // Para secciones individuales (A, B, C)
-      if (['A', 'B', 'C'].includes(section)) {
-        const tableMapping = mapSectionToTable(section)
-        if (typeof tableMapping === 'string') {
-          const pathwaysData = await getTablePathways(tableMapping)
-          pathways = pathwaysData.pathways || []
-        }
-      }
-      // Para secciones de intersección (AB, AC, BC, ABC)
-      else {
-        const comparisonTable = mapSectionToComparisonTable(section)
-        if (comparisonTable) {
-          const pathwaysData = await getTablePathways(comparisonTable)
-          pathways = pathwaysData.pathways || []
-        }
-      }
-      
-      // Convertir pathways a slugs URL y agregar a los parámetros
+
+  try {
+    const conditions = await getConditions(1)
+
+    for (const section of sections) {
+      allParams.push({ section, element: '__TODOS_LOS_DATOS__' })
+
+      const { include, exclude } = sectionToConditions(section, conditions)
+      const { pathways } = await getPathways(1, include, exclude)
+
       for (const pathway of pathways) {
-        const elementSlug = pathway.replace(/ /g, '-').toLowerCase()
-        allParams.push({
-          section: section,
-          element: elementSlug
-        })
+        allParams.push({ section, element: pathway.replace(/ /g, '-').toLowerCase() })
       }
-    } catch (error) {
-      console.error(`Error al obtener pathways para sección ${section}:`, error)
-      // En caso de error, continuar con otras secciones
+    }
+  } catch (error) {
+    console.error('Error generating static params:', error)
+    // Fallback: at minimum guarantee the "all data" routes exist
+    const sections2 = ['A', 'B', 'C', 'AB', 'AC', 'BC', 'ABC']
+    for (const section of sections2) {
+      allParams.push({ section, element: '__TODOS_LOS_DATOS__' })
     }
   }
-  
+
   return allParams
 }
 
