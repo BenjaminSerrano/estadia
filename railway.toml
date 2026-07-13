@@ -13,3 +13,11 @@ startCommand = "python backend/main.py"
 
 # Variables adicionales si necesitas
 # DATABASE_URL se puede configurar en Railway UI
+
+# M2: para que los datasets subidos (POST /datasets) sobrevivan un redeploy,
+# hace falta un volumen persistente. railway.toml no declara volúmenes
+# (no soportado); se agrega manualmente:
+#   1. Railway dashboard/CLI: `railway volume add --mount-path /data`
+#   2. Variable de entorno del servicio: DATA_DIR=/data
+# Sin esto, DATA_DIR queda unset y la app usa la DB horneada en la imagen
+# (se pierde en cada redeploy, igual que hoy).

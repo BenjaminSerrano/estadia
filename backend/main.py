@@ -1,12 +1,27 @@
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 from app.database import engine, Base
 from app.routes import router
 import uvicorn
 
 # Crear las tablas
 Base.metadata.create_all(bind=engine)
+
+# M2: create_all no altera tablas ya existentes (data_v2.db horneado en la
+# imagen no tiene status/error). ALTER idempotente vía try/except.
+# ponytail: migrador de verdad si el esquema sigue creciendo.
+for ddl in (
+    "ALTER TABLE datasets ADD COLUMN status VARCHAR(16) DEFAULT 'ready'",
+    "ALTER TABLE datasets ADD COLUMN error VARCHAR",
+):
+    try:
+        with engine.begin() as conn:
+            conn.execute(text(ddl))
+    except OperationalError:
+        pass  # columna ya existe
 
 # Inicializar la aplicación
 app = FastAPI(title="Genes API",

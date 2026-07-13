@@ -9,6 +9,10 @@ class Dataset(Base):
     name = Column(String(256), nullable=False)
     organism = Column(String(256))
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    # M2: uploads crudos pasan por pending -> running -> done/error. Datasets
+    # sembrados desde el schema original quedan "ready" (ver ALTER en main.py).
+    status = Column(String(16), default="ready")
+    error = Column(String, nullable=True)
 
 
 class Condition(Base):

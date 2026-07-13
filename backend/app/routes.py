@@ -1,12 +1,25 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+import csv
+import io
+import os
+import subprocess
+import json
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, UploadFile, Form
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from app.database import get_db
-from app.models import Dataset, Condition
+from app.database import get_db, SessionLocal, UPLOADS_DIR
+from app.models import Dataset, Condition, Gene, ExpressionResult
+
+# estadia-back/run_deseq2.R — three levels up from backend/app/routes.py
+R_SCRIPT_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "run_deseq2.R",
+)
 
 router = APIRouter()
 
 MAX_LIMIT = 1000
+MIN_REPLICATES = 2
+DESEQ2_TIMEOUT_SEC = 600
 
 
 def _parse_ids(s: str) -> list:
@@ -184,3 +197,193 @@ def get_stats(
         "unique_pathways": len(pathway_data["pathways"]),
         "pathways_list": pathway_data["pathways"],
     }
+
+
+# ── Upload de datos crudos + pipeline DESeq2 (Milestone 2) ─────────────────────
+
+def _validate_upload(counts_bytes: bytes, metadata_bytes: bytes, baseline: str) -> dict:
+    """
+    Valida counts.csv (filas=genes, columnas=muestras) contra metadata.csv
+    (filas=muestras, con columna 'condition'). Lanza HTTPException(400) con el
+    primer problema encontrado. Sin pandas: csv stdlib alcanza para esto.
+    """
+    try:
+        counts_rows = list(csv.reader(io.StringIO(counts_bytes.decode("utf-8"))))
+    except UnicodeDecodeError:
+        raise HTTPException(400, "counts.csv must be UTF-8 encoded")
+    if len(counts_rows) < 2:
+        raise HTTPException(400, "counts.csv has no data rows")
+
+    header, data_rows = counts_rows[0], counts_rows[1:]
+    sample_names = header[1:]
+    if not sample_names:
+        raise HTTPException(400, "counts.csv must have at least one sample column")
+
+    gene_ids = []
+    for row in data_rows:
+        if not row:
+            continue
+        if len(row) != len(header):
+            raise HTTPException(400, f"counts.csv row for gene '{row[0]}' has the wrong number of columns")
+        gene_ids.append(row[0])
+        for sample, value in zip(sample_names, row[1:]):
+            try:
+                n = int(value)
+            except ValueError:
+                raise HTTPException(400, f"counts.csv: non-integer count '{value}' (gene {row[0]}, sample {sample})")
+            if n < 0:
+                raise HTTPException(400, f"counts.csv: negative count for gene {row[0]}, sample {sample}")
+
+    try:
+        meta_reader = csv.DictReader(io.StringIO(metadata_bytes.decode("utf-8")))
+    except UnicodeDecodeError:
+        raise HTTPException(400, "metadata.csv must be UTF-8 encoded")
+    fieldnames = meta_reader.fieldnames or []
+    if "condition" not in fieldnames:
+        raise HTTPException(400, "metadata.csv must have a 'condition' column")
+    sample_id_col = fieldnames[0]
+
+    sample_condition = {}
+    for row in meta_reader:
+        sample_condition[row[sample_id_col]] = row["condition"]
+
+    if set(sample_names) != set(sample_condition.keys()):
+        raise HTTPException(
+            400,
+            "counts.csv sample columns must exactly match metadata.csv sample rows "
+            f"(counts: {sorted(sample_names)}, metadata: {sorted(sample_condition.keys())})",
+        )
+
+    conditions = list(dict.fromkeys(sample_condition.values()))
+    if baseline not in conditions:
+        raise HTTPException(400, f"baseline '{baseline}' not found among conditions {conditions}")
+    if len(conditions) < 2:
+        raise HTTPException(400, "at least one non-baseline condition is required")
+
+    for cond in conditions:
+        n = sum(1 for c in sample_condition.values() if c == cond)
+        if n < MIN_REPLICATES:
+            # ponytail: umbral mínimo; DESeq2 sin réplicas no produce estadística confiable
+            raise HTTPException(400, f"condition '{cond}' has {n} sample(s), needs at least {MIN_REPLICATES}")
+
+    return {
+        "gene_ids": gene_ids,
+        "sample_names": sample_names,
+        "conditions": conditions,
+    }
+
+
+def run_analysis(dataset_id: int):
+    """Background task: corre DESeq2 (subprocess Rscript) por cada condición
+    no-baseline y persiste expression_results. Abre su propia sesión porque
+    corre después de que la sesión de la request ya fue cerrada."""
+    db = SessionLocal()
+    try:
+        dataset = db.get(Dataset, dataset_id)
+        if dataset is None:
+            return
+        dataset.status = "running"
+        db.commit()
+
+        conditions = db.query(Condition).filter(Condition.dataset_id == dataset_id).all()
+        baseline_cond = next((c for c in conditions if c.is_baseline), None)
+        targets = [c for c in conditions if not c.is_baseline]
+        if baseline_cond is None or not targets:
+            raise RuntimeError("dataset has no baseline/target conditions")
+
+        gene_map = {
+            g.locustag: g.id
+            for g in db.query(Gene).filter(Gene.dataset_id == dataset_id).all()
+        }
+        upload_dir = os.path.join(UPLOADS_DIR, str(dataset_id))
+        counts_path = os.path.join(upload_dir, "counts.csv")
+        metadata_path = os.path.join(upload_dir, "metadata.csv")
+
+        for target in targets:
+            result = subprocess.run(
+                ["Rscript", R_SCRIPT_PATH, counts_path, metadata_path, baseline_cond.label, target.label],
+                capture_output=True, text=True, timeout=DESEQ2_TIMEOUT_SEC,
+            )
+            if result.returncode != 0:
+                raise RuntimeError(f"DESeq2 failed for {target.label}: {result.stderr[-2000:]}")
+            try:
+                rows = json.loads(result.stdout)
+            except json.JSONDecodeError:
+                raise RuntimeError(f"DESeq2 produced invalid JSON for {target.label}")
+
+            for row in rows:
+                gene_id = gene_map.get(row.get("locustag"))
+                if gene_id is None:
+                    continue  # ponytail: gen desconocido, se ignora en vez de fallar todo el batch
+                db.add(ExpressionResult(
+                    gene_id=gene_id,
+                    condition_id=target.id,
+                    log2FoldChange=row.get("log2FoldChange"),
+                    pvalue=row.get("pvalue"),
+                    padj=row.get("padj"),
+                ))
+            db.commit()
+
+        dataset.status = "done"
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        dataset = db.get(Dataset, dataset_id)
+        if dataset is not None:
+            dataset.status = "error"
+            dataset.error = str(e)[:2000]
+            db.commit()
+    finally:
+        db.close()
+
+
+@router.post("/datasets")
+async def upload_dataset(
+    background_tasks: BackgroundTasks,
+    name: str = Form(...),
+    organism: str = Form(""),
+    baseline: str = Form(...),
+    counts: UploadFile = None,
+    metadata: UploadFile = None,
+    db: Session = Depends(get_db),
+):
+    if counts is None or metadata is None:
+        raise HTTPException(400, "both 'counts' and 'metadata' files are required")
+
+    counts_bytes = await counts.read()
+    metadata_bytes = await metadata.read()
+    parsed = _validate_upload(counts_bytes, metadata_bytes, baseline)
+
+    dataset = Dataset(name=name, organism=organism, status="pending")
+    db.add(dataset)
+    db.commit()
+    db.refresh(dataset)
+
+    for label in parsed["conditions"]:
+        db.add(Condition(dataset_id=dataset.id, label=label, is_baseline=(label == baseline)))
+    db.commit()
+
+    # Solo locustag: la anotación KEGG (Pathway/Brite/etc.) es un paso separado
+    # (ver db/kegg_enrich.py), no parte del upload de counts crudos.
+    db.bulk_save_objects([
+        Gene(dataset_id=dataset.id, locustag=gene_id) for gene_id in parsed["gene_ids"]
+    ])
+    db.commit()
+
+    upload_dir = os.path.join(UPLOADS_DIR, str(dataset.id))
+    os.makedirs(upload_dir, exist_ok=True)
+    with open(os.path.join(upload_dir, "counts.csv"), "wb") as f:
+        f.write(counts_bytes)
+    with open(os.path.join(upload_dir, "metadata.csv"), "wb") as f:
+        f.write(metadata_bytes)
+
+    background_tasks.add_task(run_analysis, dataset.id)
+    return {"dataset_id": dataset.id, "status": dataset.status}
+
+
+@router.get("/datasets/{dataset_id}/status")
+def get_dataset_status(dataset_id: int, db: Session = Depends(get_db)):
+    dataset = db.get(Dataset, dataset_id)
+    if dataset is None:
+        raise HTTPException(404, f"Dataset {dataset_id} not found")
+    return {"status": dataset.status, "error": dataset.error}
