@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import VennDiagram from "@/components/venn-diagram"
-import { ArrowRight, HelpCircle, Info, FlaskConical } from "lucide-react"
+import { ArrowRight, HelpCircle, Info, FlaskConical, Database } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Tutorial from "@/components/tutorial"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -202,6 +202,15 @@ function VennPage() {
             </div>
 
             <div className="flex items-center gap-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon" className="rounded-full" onClick={() => router.push("/")} aria-label="Back to datasets">
+                    <Database className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent><p>Back to datasets</p></TooltipContent>
+              </Tooltip>
+
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="outline" size="icon" className="rounded-full" onClick={() => setShowTutorial(true)} aria-label="Show tutorial">
