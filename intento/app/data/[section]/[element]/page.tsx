@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import ElementDataClient from './element-data-client'
 import { getConditions, getPathways } from '../../../../lib/api-service'
 import { sectionToConditions } from '../../../../lib/section-data'
@@ -32,5 +33,9 @@ export async function generateStaticParams() {
 }
 
 export default function ElementDataPage() {
-  return <ElementDataClient />
+  return (
+    <Suspense fallback={null}>
+      <ElementDataClient />
+    </Suspense>
+  )
 }

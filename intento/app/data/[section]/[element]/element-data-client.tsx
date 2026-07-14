@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
-import { useRouter, useParams } from "next/navigation"
+import { useRouter, useParams, useSearchParams } from "next/navigation"
 import { getSectionInfo, sectionToConditions } from "@/lib/section-data"
 import { getConditions, getGenes, type Gene, type Condition } from "@/lib/api-service"
 import { Button } from "@/components/ui/button"
@@ -9,8 +9,6 @@ import {
   ChevronLeft, ChevronRight, Download, Search, X,
   ArrowUp, ArrowDown, ChevronsUpDown, Dna, AlertTriangle
 } from "lucide-react"
-
-const DATASET_ID = 1
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -69,6 +67,7 @@ export default function ElementDataClient() {
   const section = params.section as string
   const elementSlug = params.element as string
   const pathway = elementSlug === "__TODOS_LOS_DATOS__" ? "__TODOS_LOS_DATOS__" : elementSlug.replace(/-/g, " ")
+  const datasetId = Number(useSearchParams().get("dataset")) || 1
 
   const [conditions, setConditions]   = useState<Condition[]>([])
   const [genesData, setGenesData]     = useState<Gene[]>([])
@@ -95,7 +94,7 @@ export default function ElementDataClient() {
 
   // Fetch conditions once, then genes
   useEffect(() => {
-    getConditions(DATASET_ID).then(setConditions).catch(console.error)
+    getConditions(datasetId).then(setConditions).catch(console.error)
   }, [])
 
   useEffect(() => {
@@ -104,7 +103,7 @@ export default function ElementDataClient() {
       try {
         setLoading(true)
         setError(null)
-        const data = await getGenes(DATASET_ID, include, exclude, pathway)
+        const data = await getGenes(datasetId, include, exclude, pathway)
         setGenesData(data.genes)
         setServerTotal(data.total)
       } catch (err) {
@@ -115,13 +114,13 @@ export default function ElementDataClient() {
       }
     }
     fetchGenes()
-  }, [include.join(','), exclude.join(','), pathway])
+  }, [datasetId, include.join(','), exclude.join(','), pathway])
 
   const loadMore = async () => {
     if (loadingMore || genesData.length >= (serverTotal ?? 0)) return
     try {
       setLoadingMore(true)
-      const data = await getGenes(DATASET_ID, include, exclude, pathway, genesData.length)
+      const data = await getGenes(datasetId, include, exclude, pathway, genesData.length)
       setGenesData(prev => [...prev, ...data.genes])
       setServerTotal(data.total)
     } catch (err) {
@@ -131,7 +130,7 @@ export default function ElementDataClient() {
     }
   }
 
-  useEffect(() => { if (!info && !loading) router.push("/") }, [info, loading, router])
+  useEffect(() => { if (!info && !loading) router.push(`/dataset/?id=${datasetId}`) }, [info, loading, router, datasetId])
 
   // ─── Filter + sort ────────────────────────────────────────────────────────
   const filteredData = useMemo(() => {
@@ -193,7 +192,7 @@ export default function ElementDataClient() {
 
         {/* ── Header ── */}
         <div className="flex items-center gap-3 mb-6 flex-wrap">
-          <Button variant="ghost" size="sm" onClick={() => router.push(`/data/${section}?refresh=true`)}
+          <Button variant="ghost" size="sm" onClick={() => router.push(`/dataset/?id=${datasetId}`)}
             className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground border border-border">
             <ChevronLeft className="h-4 w-4" />
             <span className="font-[family-name:var(--font-mono)] text-xs">{info?.title ?? section}</span>
@@ -209,7 +208,7 @@ export default function ElementDataClient() {
             </h1>
           </div>
 
-          <Button variant="ghost" size="sm" onClick={() => router.push("/")}
+          <Button variant="ghost" size="sm" onClick={() => router.push(`/dataset/?id=${datasetId}`)}
             className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground border border-border">
             <ChevronLeft className="h-4 w-4" />
             <span className="font-[family-name:var(--font-mono)] text-xs">Diagram</span>
@@ -290,7 +289,7 @@ export default function ElementDataClient() {
                         </p>
                         <div className="flex gap-2">
                           <Button size="sm" variant="outline" onClick={() => window.location.reload()}>Retry</Button>
-                          <Button size="sm" variant="ghost" onClick={() => router.push("/")}>Back to diagram</Button>
+                          <Button size="sm" variant="ghost" onClick={() => router.push(`/dataset/?id=${datasetId}`)}>Back to diagram</Button>
                         </div>
                       </div>
                     </td>

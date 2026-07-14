@@ -6,6 +6,13 @@ export interface Condition {
   is_baseline: boolean
 }
 
+export interface Dataset {
+  id: number
+  name: string
+  organism: string
+  status: string
+}
+
 export interface Gene {
   id: number
   locustag: string
@@ -46,6 +53,17 @@ export const getPathways = (datasetId: number, include: number[], exclude: numbe
   apiFetch<{ pathways: string[] }>(
     `/datasets/${datasetId}/pathways?${condParams(include, exclude)}`
   )
+
+export const listDatasets = () => apiFetch<Dataset[]>('/datasets')
+
+export const uploadDataset = async (formData: FormData): Promise<{ dataset_id: number; status: string }> => {
+  const r = await fetch(`${API_BASE}/datasets`, { method: 'POST', body: formData })
+  if (!r.ok) throw new Error((await r.json().catch(() => null))?.detail || `${r.status} ${r.statusText}`)
+  return r.json()
+}
+
+export const getDatasetStatus = (datasetId: number) =>
+  apiFetch<{ status: string; error: string | null }>(`/datasets/${datasetId}/status`)
 
 export const getGenes = (
   datasetId: number,

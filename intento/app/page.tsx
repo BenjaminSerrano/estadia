@@ -1,307 +1,189 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import VennDiagram from "@/components/venn-diagram"
-import { ArrowRight, HelpCircle, Info, Database, FlaskConical } from "lucide-react"
+import { Upload, FlaskConical, Database } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useTheme } from "next-themes"
-import Tutorial from "@/components/tutorial"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { getSectionInfo, isIntersection, sectionToConditions } from "@/lib/section-data"
-import { getConditions, getStats, getPathways, type Condition } from "@/lib/api-service"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { listDatasets, uploadDataset, getDatasetStatus, type Dataset } from "@/lib/api-service"
 
-const DATASET_ID = 1
+const STATUS_POLL_MS = 3000
+
+// "ready" = seeded pre-M2 (always viewable); "done" = upload finished. Both are terminal-ok states.
+const VIEWABLE_STATUSES = ["ready", "done"]
+
+function StatusBadge({ status }: { status: string }) {
+  if (VIEWABLE_STATUSES.includes(status)) return null
+  const styles: Record<string, string> = {
+    pending: "text-amber-400 border-amber-500/30 bg-amber-500/10",
+    running: "text-sky-400 border-sky-500/30 bg-sky-500/10",
+    error: "text-red-400 border-red-500/30 bg-red-500/10",
+  }
+  return (
+    <span className={`font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded border ${styles[status] ?? styles.pending}`}>
+      {status}
+    </span>
+  )
+}
 
 export default function Home() {
-  const [selectedSection, setSelectedSection] = useState<string | null>(null)
-  const [selectedElement, setSelectedElement] = useState<string | null>(null)
-  const [showTutorial, setShowTutorial] = useState(false)
-  const [firstVisit, setFirstVisit] = useState(true)
-  const [sectionStats, setSectionStats] = useState<{ elements: number; uniqueProperties: number } | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [pathways, setPathways] = useState<string[]>([])
-  const [loadingPathways, setLoadingPathways] = useState(false)
-  const [conditions, setConditions] = useState<Condition[]>([])
+  const [datasets, setDatasets] = useState<Dataset[] | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
+  const formRef = useRef<HTMLFormElement>(null)
 
-  // Fetch dataset conditions once on mount
-  useEffect(() => {
-    getConditions(DATASET_ID).then(setConditions).catch(console.error)
-  }, [])
+  const refresh = () => listDatasets().then(setDatasets).catch(() => setDatasets([]))
 
-  const handleSectionClick = async (section: string) => {
-    setSelectedSection(section)
-    setSelectedElement(null)
-    setLoading(true)
-    setLoadingPathways(true)
+  useEffect(() => { refresh() }, [])
 
+  const pollUntilDone = (id: number) => {
+    const poll = async () => {
+      try {
+        const { status, error } = await getDatasetStatus(id)
+        if (status === "done") {
+          toast({ title: "Dataset ready", description: "DESeq2 analysis complete." })
+          refresh()
+          router.push(`/dataset/?id=${id}`)
+        } else if (status === "error") {
+          toast({ title: "Analysis failed", description: error || "Unknown error", variant: "destructive" })
+          setSubmitting(false)
+          refresh()
+        } else {
+          toast({ title: "Processing…", description: `Status: ${status}` })
+          setTimeout(poll, STATUS_POLL_MS)
+        }
+      } catch {
+        setTimeout(poll, STATUS_POLL_MS)
+      }
+    }
+    poll()
+  }
+
+  const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setSubmitting(true)
     try {
-      const { include, exclude } = sectionToConditions(section, conditions)
-      const [stats, pathwaysData] = await Promise.all([
-        getStats(DATASET_ID, include, exclude),
-        getPathways(DATASET_ID, include, exclude),
-      ])
-      setSectionStats({ elements: stats.total_genes, uniqueProperties: stats.unique_pathways })
-      setPathways(pathwaysData.pathways)
-    } catch (error) {
-      console.error("Error fetching section data:", error)
-      setSectionStats(null)
-      setPathways([])
-    } finally {
-      setLoading(false)
-      setLoadingPathways(false)
+      const formData = new FormData(e.currentTarget)
+      const { dataset_id } = await uploadDataset(formData)
+      toast({ title: "Upload received", description: "Running DESeq2 in the background…" })
+      setDialogOpen(false)
+      formRef.current?.reset()
+      refresh()
+      pollUntilDone(dataset_id)
+    } catch (err) {
+      toast({ title: "Upload failed", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" })
+      setSubmitting(false)
     }
   }
-
-  const resetSelection = () => {
-    setSelectedSection(null)
-    setSelectedElement(null)
-    toast({ title: "Selection reset", description: "You can select a new section of the diagram", duration: 3000 })
-  }
-
-  useEffect(() => {
-    const hasVisited = localStorage.getItem("venn-diagram-visited")
-    if (!hasVisited && firstVisit) {
-      setShowTutorial(true)
-      localStorage.setItem("venn-diagram-visited", "true")
-      setFirstVisit(false)
-    }
-  }, [firstVisit])
-
-  const handleViewData = () => {
-    if (selectedSection && selectedElement) {
-      toast({ title: "Loading data", description: "Processing information, please wait..." })
-      const elementSlug = selectedElement === "__TODOS_LOS_DATOS__"
-        ? "__TODOS_LOS_DATOS__"
-        : selectedElement.replace(/ /g, '-').toLowerCase()
-      router.push(`/data/${selectedSection}/${elementSlug}`)
-    } else {
-      toast({ title: "Selection required", description: "Please select a section and a specific element", variant: "destructive" })
-    }
-  }
-
-  const sectionInfo = selectedSection ? getSectionInfo(selectedSection, conditions) : null
-
-  // Spinner helper
-  const Spinner = () => (
-    <div className="flex items-center justify-center h-8">
-      <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
-    </div>
-  )
-
-  // Unified pathway selector — same UI for all Venn regions
-  const PathwaySelector = () => (
-    <div className="rounded-lg border border-border overflow-hidden">
-      <div className="px-3 py-1.5 bg-muted/80 border-b border-border/60 flex items-center gap-2">
-        <span className="font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-widest text-muted-foreground">Pathway</span>
-        {selectedElement && (
-          <span className="ml-auto font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-widest text-sky-400">ready</span>
-        )}
-      </div>
-      {loadingPathways ? (
-        <div className="px-4 py-3 flex items-center gap-2">
-          <div className="w-3.5 h-3.5 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
-          <span className="font-[family-name:var(--font-mono)] text-xs text-muted-foreground">Loading...</span>
-        </div>
-      ) : (
-        <div className="flex">
-          <Select
-            value={selectedElement || ""}
-            onValueChange={(value) => setSelectedElement(value === "none" ? null : value)}
-          >
-            <SelectTrigger className="flex-1 border-0 rounded-none shadow-none focus:ring-0 font-[family-name:var(--font-mono)] text-sm h-11 bg-transparent">
-              <SelectValue placeholder="— select a pathway —" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__TODOS_LOS_DATOS__">All data</SelectItem>
-              {pathways.length > 0 ? (
-                pathways.map((pathway, i) => (
-                  <SelectItem key={i} value={pathway}>{pathway}</SelectItem>
-                ))
-              ) : (
-                <SelectItem value="none" disabled>No pathways available</SelectItem>
-              )}
-            </SelectContent>
-          </Select>
-          <button
-            onClick={handleViewData}
-            disabled={!selectedElement}
-            className="px-4 border-l border-border/60 flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-xs transition-colors disabled:opacity-25 disabled:cursor-not-allowed bg-muted/40 hover:bg-muted text-foreground"
-          >
-            <ArrowRight className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      )}
-    </div>
-  )
-
-  const condColors = ['var(--temp-cold)', 'var(--temp-warm)', 'var(--temp-hot)']
 
   return (
-    <TooltipProvider>
-      <div className="min-h-screen bg-background dot-grid transition-colors duration-300">
-        <div className="container mx-auto px-4 py-8">
-          <header className="flex flex-col md:flex-row justify-between items-center mb-8">
-            <div className="text-center md:text-left mb-6 md:mb-0">
-              <h1 className="text-4xl md:text-5xl font-bold mb-1 font-[family-name:var(--font-display)] text-foreground tracking-tight">
-                Cobetia thermal transcriptional response by set theory
-              </h1>
-              <p className="text-base text-slate-500 dark:text-slate-400 font-[family-name:var(--font-display)] mb-3">
-                Respuesta transcripcional térmica de Cobetia por teoría de conjuntos
-              </p>
-              <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl flex flex-wrap items-center gap-2">
-                Explore the relationships between sets by clicking on any section of the diagram
-                {conditions.map((c, i) => (
-                  <span
-                    key={c.id}
-                    className="font-[family-name:var(--font-mono)] text-xs px-1.5 py-0.5 rounded border"
-                    style={{ color: `hsl(${condColors[i]})`, borderColor: `hsl(${condColors[i]} / 0.4)` }}
-                  >
-                    {c.label}
-                  </span>
-                ))}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" className="rounded-full" onClick={() => setShowTutorial(true)} aria-label="Show tutorial">
-                    <HelpCircle className="h-5 w-5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent><p>Show tutorial</p></TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" className="rounded-full" onClick={() => router.push("/solver")} aria-label="Cobetia Solver">
-                    <FlaskConical className="h-5 w-5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent><p>Cobetia Solver</p></TooltipContent>
-              </Tooltip>
-
-              <ThemeToggle />
-            </div>
-          </header>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-            {/* Left: Venn Diagram */}
-            <div className="bg-card border border-border rounded-2xl shadow-xl p-6 transition-all duration-300 relative">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                  <Info size={18} />
-                  <p className="text-sm">Click on any section to see details</p>
-                </div>
-                <span className="flex items-center gap-1.5 text-xs font-[family-name:var(--font-mono)] text-muted-foreground border border-border rounded-full px-2.5 py-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  Interactive
-                </span>
-              </div>
-              <VennDiagram onSectionClick={handleSectionClick} selectedSection={selectedSection} />
-            </div>
-
-            {/* Right: Info panel */}
-            <div className="space-y-6">
-              {selectedSection ? (
-                <Card className="shadow-lg">
-                  <CardHeader className={`${sectionInfo?.color} rounded-t-lg`}>
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-3">
-                        {sectionInfo?.icon && <sectionInfo.icon className="w-6 h-6 text-current opacity-70" />}
-                        <CardTitle className={`text-2xl ${sectionInfo?.accentColor}`}>{sectionInfo?.title}</CardTitle>
-                      </div>
-                      <Button variant="outline" size="sm" onClick={resetSelection}>Change selection</Button>
-                    </div>
-                    <CardDescription className="text-slate-700 dark:text-slate-300 mt-2">
-                      {sectionInfo?.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-6">
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-muted border border-border p-4 rounded-lg">
-                          <h3 className="font-medium mb-2">Genes:</h3>
-                          {loading ? <Spinner /> : (
-                            <p className="font-[family-name:var(--font-mono)] text-3xl font-bold">
-                              {sectionStats?.elements ?? 'N/A'}
-                            </p>
-                          )}
-                        </div>
-                        <div className="bg-muted border border-border p-4 rounded-lg">
-                          <h3 className="font-medium mb-2">Pathways:</h3>
-                          {loading ? <Spinner /> : (
-                            <p className="font-[family-name:var(--font-mono)] text-3xl font-bold">
-                              {sectionStats?.uniqueProperties ?? 'N/A'}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <PathwaySelector />
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="h-full flex items-center justify-center p-8 border border-border rounded-2xl bg-card shadow-lg">
-                  <div className="text-center space-y-4">
-                    <div className="flex flex-col items-center gap-2">
-                      {conditions.map((c, i) => (
-                        <span
-                          key={c.id}
-                          className="font-[family-name:var(--font-mono)] text-sm px-3 py-1.5 rounded border"
-                          style={{ color: `hsl(${condColors[i]})`, borderColor: `hsl(${condColors[i]} / 0.4)`, background: `hsl(${condColors[i]} / 0.08)` }}
-                        >
-                          {c.label}
-                        </span>
-                      ))}
-                    </div>
-                    <p className="text-slate-500 dark:text-slate-400 max-w-xs text-sm">
-                      Select a region of the diagram to explore gene data
-                    </p>
-                    <div className="flex items-center justify-center gap-2 text-slate-500 dark:text-slate-400 animate-pulse">
-                      <ArrowRight size={18} />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="bg-card border border-border p-6 rounded-xl shadow-md">
-                <h2 className="text-xl font-semibold mb-4">How to use this diagram?</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-lg border border-border bg-muted">
-                    <p className="font-[family-name:var(--font-mono)] text-3xl font-bold mb-2" style={{ color: `hsl(${condColors[0]})` }}>1</p>
-                    <h3 className="font-medium mb-1">Explore</h3>
-                    <p className="text-slate-600 dark:text-slate-300 text-sm">Hover over the different sections to see them highlighted</p>
-                  </div>
-                  <div className="p-4 rounded-lg border border-border bg-muted">
-                    <p className="font-[family-name:var(--font-mono)] text-3xl font-bold mb-2" style={{ color: `hsl(${condColors[1]})` }}>2</p>
-                    <h3 className="font-medium mb-1">Select</h3>
-                    <p className="text-slate-600 dark:text-slate-300 text-sm">Click on any section of the diagram to view its information</p>
-                  </div>
-                  <div className="p-4 rounded-lg border border-border bg-muted">
-                    <p className="font-[family-name:var(--font-mono)] text-3xl font-bold mb-2" style={{ color: `hsl(${condColors[2]})` }}>3</p>
-                    <h3 className="font-medium mb-1">Explore data</h3>
-                    <p className="text-slate-600 dark:text-slate-300 text-sm">Select a pathway and explore the gene data table</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+    <div className="min-h-screen bg-background dot-grid transition-colors duration-300">
+      <div className="container mx-auto px-4 py-8">
+        <header className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+          <div className="text-center md:text-left">
+            <h1 className="text-4xl md:text-5xl font-bold mb-1 font-[family-name:var(--font-display)] text-foreground tracking-tight">
+              DPDDS
+            </h1>
+            <p className="text-lg text-slate-600 dark:text-slate-300">
+              RNA-seq datasets explored by set theory — pick one, or upload your own
+            </p>
           </div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="icon" className="rounded-full" onClick={() => router.push("/solver")} aria-label="Cobetia Solver">
+              <FlaskConical className="h-5 w-5" />
+            </Button>
+            <ThemeToggle />
+          </div>
+        </header>
 
-          <footer className="mt-16 text-center pb-8">
-            <p className="font-[family-name:var(--font-mono)] text-xs text-slate-500 dark:text-slate-400">Proyecto ANID Exploración 13220184</p>
-          </footer>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <Database className="h-5 w-5" /> Datasets
+          </h2>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2"><Upload className="h-4 w-4" /> Upload dataset</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Upload dataset</DialogTitle>
+                <DialogDescription>
+                  A raw counts matrix and sample metadata. DESeq2 runs in the background once uploaded.
+                </DialogDescription>
+              </DialogHeader>
+              <form ref={formRef} onSubmit={handleUpload} className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="name">Name</Label>
+                  <Input id="name" name="name" required placeholder="e.g. Cobetia marina thermal stress" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="organism">Organism</Label>
+                  <Input id="organism" name="organism" placeholder="e.g. Cobetia marina" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="baseline">Baseline condition</Label>
+                  <Input id="baseline" name="baseline" required placeholder="must match a value in metadata.csv's condition column" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="counts">counts.csv</Label>
+                  <Input id="counts" name="counts" type="file" accept=".csv" required />
+                  <p className="text-xs text-muted-foreground">Rows = genes, columns = samples, values = raw integer counts.</p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="metadata">metadata.csv</Label>
+                  <Input id="metadata" name="metadata" type="file" accept=".csv" required />
+                  <p className="text-xs text-muted-foreground">Rows = samples (matching counts.csv columns), with a &quot;condition&quot; column.</p>
+                </div>
+                <DialogFooter>
+                  <Button type="submit" disabled={submitting}>
+                    {submitting ? "Uploading…" : "Upload"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
-      </div>
 
-      {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
-    </TooltipProvider>
+        {datasets === null ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
+          </div>
+        ) : datasets.length === 0 ? (
+          <div className="text-center py-20 border border-border rounded-2xl bg-card">
+            <p className="text-slate-500 dark:text-slate-400">No datasets yet — upload one to get started.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {datasets.map(d => (
+              <Card
+                key={d.id}
+                className={`shadow-lg transition-shadow ${VIEWABLE_STATUSES.includes(d.status) ? "cursor-pointer hover:shadow-xl" : "opacity-70"}`}
+                onClick={() => { if (VIEWABLE_STATUSES.includes(d.status)) router.push(`/dataset/?id=${d.id}`) }}
+              >
+                <CardHeader>
+                  <div className="flex items-center justify-between gap-2">
+                    <CardTitle className="text-lg">{d.name}</CardTitle>
+                    <StatusBadge status={d.status} />
+                  </div>
+                  {d.organism && <CardDescription className="italic">{d.organism}</CardDescription>}
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        <footer className="mt-16 text-center pb-8">
+          <p className="font-[family-name:var(--font-mono)] text-xs text-slate-500 dark:text-slate-400">Proyecto ANID Exploración 13220184</p>
+        </footer>
+      </div>
+    </div>
   )
 }
