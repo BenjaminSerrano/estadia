@@ -68,7 +68,7 @@ def _filter_clause(include_ids: list, exclude_ids: list, params: dict) -> str:
 @router.get("/datasets")
 def list_datasets(db: Session = Depends(get_db)):
     rows = db.query(Dataset).all()
-    return [{"id": r.id, "name": r.name, "organism": r.organism} for r in rows]
+    return [{"id": r.id, "name": r.name, "organism": r.organism, "status": r.status} for r in rows]
 
 
 @router.get("/datasets/{dataset_id}/conditions")
