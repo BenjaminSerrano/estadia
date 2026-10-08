@@ -89,9 +89,11 @@ def run():
 
     # C. marina dataset
     new.execute("INSERT INTO datasets VALUES (1,'Cobetia marina thermal stress','Cobetia marina',datetime('now'))")
+    # Los log2FC del paper son vs 35 °C: 35 es el control (sin resultados propios), 16/38/41 las comparaciones.
     CONDS = {"16": 1, "38": 2, "41": 3}
     for label, cid in CONDS.items():
-        new.execute("INSERT INTO conditions VALUES (?,1,?,?)", (cid, label, 1 if label == "16" else 0))
+        new.execute("INSERT INTO conditions VALUES (?,1,?,0)", (cid, label))
+    new.execute("INSERT INTO conditions VALUES (4,1,'35',1)")
 
     gene_ids: dict = {}  # locustag → id in new DB
 

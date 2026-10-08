@@ -19,6 +19,9 @@ router = APIRouter()
 
 MAX_LIMIT = 1000
 MIN_REPLICATES = 2
+# Un gen "está" en una condición del Venn solo si es DEG ahí (mismos umbrales del paper de Cobetia).
+DEG_PADJ = 0.05
+DEG_LFC = 1.0
 DESEQ2_TIMEOUT_SEC = 600
 
 
@@ -33,8 +36,10 @@ def _parse_ids(s: str) -> list:
 
 def _filter_clause(include_ids: list, exclude_ids: list, params: dict) -> str:
     """
-    Builds the SQL WHERE fragment that restricts genes to those with expression
+    Builds the SQL WHERE fragment that restricts genes to those that are DEGs
     in ALL include_ids and in NONE of exclude_ids. Populates params in place.
+    Uploaded datasets store DESeq2 results for every gene, so membership must
+    be the DEG threshold, not just having a row.
     ponytail: named params prevent injection; string-interpolated placeholders are safe
               because they're derived from the param dict keys, not user strings.
     """
@@ -46,18 +51,21 @@ def _filter_clause(include_ids: list, exclude_ids: list, params: dict) -> str:
     for i, cid in enumerate(include_ids):
         params[f"inc{i}"] = cid
     params["n"] = n
+    params["deg_padj"] = DEG_PADJ
+    params["deg_lfc"] = DEG_LFC
+    is_deg = "padj < :deg_padj AND ABS(log2FoldChange) >= :deg_lfc"
 
     excl = ""
     if exclude_ids:
         exc_ph = ",".join(f":exc{i}" for i in range(len(exclude_ids)))
         for i, cid in enumerate(exclude_ids):
             params[f"exc{i}"] = cid
-        excl = f"AND g.id NOT IN (SELECT gene_id FROM expression_results WHERE condition_id IN ({exc_ph}))"
+        excl = f"AND g.id NOT IN (SELECT gene_id FROM expression_results WHERE condition_id IN ({exc_ph}) AND {is_deg})"
 
     return (
         f"AND g.id IN ("
         f"  SELECT gene_id FROM expression_results"
-        f"  WHERE condition_id IN ({inc_ph})"
+        f"  WHERE condition_id IN ({inc_ph}) AND {is_deg}"
         f"  GROUP BY gene_id HAVING COUNT(DISTINCT condition_id) = :n"
         f") {excl}"
     )

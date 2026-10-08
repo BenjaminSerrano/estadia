@@ -23,6 +23,15 @@ for ddl in (
     except OperationalError:
         pass  # columna ya existe
 
+# Dataset 1 (Cobetia) se sembró con 16 °C marcado como control, pero sus log2FC
+# son vs 35 °C. El Venn ahora excluye el control, así que se corrige una vez:
+# 35 pasa a ser el control (sin resultados) y 16 una comparación más.
+with engine.begin() as conn:
+    if conn.execute(text("SELECT 1 FROM conditions WHERE dataset_id = 1 AND label = '16' AND is_baseline = 1")).first() \
+            and not conn.execute(text("SELECT 1 FROM conditions WHERE dataset_id = 1 AND label = '35'")).first():
+        conn.execute(text("UPDATE conditions SET is_baseline = 0 WHERE dataset_id = 1 AND label = '16'"))
+        conn.execute(text("INSERT INTO conditions (dataset_id, label, is_baseline) VALUES (1, '35', 1)"))
+
 # Inicializar la aplicación
 app = FastAPI(title="Genes API",
               description="API para consultar genes en diferentes condiciones de temperatura",
