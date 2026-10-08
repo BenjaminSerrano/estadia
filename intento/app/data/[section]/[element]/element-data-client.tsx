@@ -94,7 +94,8 @@ export default function ElementDataClient() {
 
   // Fetch conditions once, then genes
   useEffect(() => {
-    getConditions(datasetId).then(setConditions).catch(console.error)
+    // Same sets as the Venn: comparisons only, never the control
+    getConditions(datasetId).then(c => setConditions(c.filter(x => !x.is_baseline))).catch(console.error)
   }, [])
 
   useEffect(() => {

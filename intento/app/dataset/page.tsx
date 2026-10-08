@@ -35,7 +35,9 @@ function VennPage() {
   const [loading, setLoading] = useState(false)
   const [pathways, setPathways] = useState<string[]>([])
   const [loadingPathways, setLoadingPathways] = useState(false)
+  // Venn sets = comparisons vs the control; the control itself has no DEGs of its own
   const [conditions, setConditions] = useState<Condition[]>([])
+  const [control, setControl] = useState<Condition | null>(null)
   const [conditionsLoaded, setConditionsLoaded] = useState(false)
   const { toast } = useToast()
 
@@ -49,7 +51,11 @@ function VennPage() {
     if (!datasetId) return
     listDatasets().then(ds => setDataset(ds.find(d => d.id === datasetId) ?? null)).catch(console.error)
     getConditions(datasetId)
-      .then(c => { setConditions(c); setConditionsLoaded(true) })
+      .then(c => {
+        setConditions(c.filter(x => !x.is_baseline))
+        setControl(c.find(x => x.is_baseline) ?? null)
+        setConditionsLoaded(true)
+      })
       .catch(() => setConditionsLoaded(true))
   }, [datasetId])
 
@@ -164,8 +170,9 @@ function VennPage() {
       <div className="min-h-screen bg-background dot-grid flex items-center justify-center p-8">
         <div className="text-center space-y-4 max-w-md">
           <p className="text-slate-600 dark:text-slate-300">
-            The Venn view currently supports datasets with exactly 3 conditions.
-            {dataset ? ` "${dataset.name}"` : " This dataset"} has {conditions.length}.
+            The Venn view currently supports datasets with exactly 3 conditions compared against the control.
+            {dataset ? ` "${dataset.name}"` : " This dataset"} has {conditions.length}
+            {control ? ` (control: ${control.label})` : ""}.
           </p>
           <Button variant="outline" onClick={() => router.push("/")}>Back to datasets</Button>
         </div>
@@ -198,6 +205,9 @@ function VennPage() {
                     {c.label}
                   </span>
                 ))}
+                {control && (
+                  <span className="font-[family-name:var(--font-mono)] text-xs text-muted-foreground">vs control {control.label}</span>
+                )}
               </p>
             </div>
 
@@ -246,7 +256,7 @@ function VennPage() {
                   Interactive
                 </span>
               </div>
-              <VennDiagram onSectionClick={handleSectionClick} selectedSection={selectedSection} />
+              <VennDiagram onSectionClick={handleSectionClick} selectedSection={selectedSection} labels={conditions.map(c => c.label)} />
             </div>
 
             {/* Right: Info panel */}

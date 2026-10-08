@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react"
 interface VennDiagramProps {
   onSectionClick: (section: string) => void | Promise<void>
   selectedSection: string | null
+  labels: string[] // one per circle (A, B, C), in order
 }
 
 // ─── Geometry ────────────────────────────────────────────────────────────────
@@ -16,16 +17,19 @@ const VH = 320
 
 // ─── Temperature-semantic palette ────────────────────────────────────────────
 const PALETTE = {
-  A:   { base: "rgba(14,165,233,0.28)",  hover: "rgba(14,165,233,0.55)",  active: "rgba(14,165,233,0.80)",  ring: "rgb(14,165,233)",   label: "16°C",           desc: "Genes expressed at 16°C" },
-  B:   { base: "rgba(245,158,11,0.28)", hover: "rgba(245,158,11,0.55)", active: "rgba(245,158,11,0.80)", ring: "rgb(245,158,11)",  label: "38°C",           desc: "Genes expressed at 38°C" },
-  C:   { base: "rgba(239,68,68,0.28)",  hover: "rgba(239,68,68,0.55)",  active: "rgba(239,68,68,0.80)",  ring: "rgb(239,68,68)",   label: "41°C",           desc: "Genes expressed at 41°C" },
-  AB:  { base: "rgba(20,184,166,0.38)", hover: "rgba(20,184,166,0.62)", active: "rgba(20,184,166,0.85)", ring: "rgb(20,184,166)",  label: "16°C ∩ 38°C",   desc: "Common genes: 16°C & 38°C" },
-  AC:  { base: "rgba(168,85,247,0.38)", hover: "rgba(168,85,247,0.62)", active: "rgba(168,85,247,0.85)", ring: "rgb(168,85,247)",  label: "16°C ∩ 41°C",   desc: "Common genes: 16°C & 41°C" },
-  BC:  { base: "rgba(249,115,22,0.38)", hover: "rgba(249,115,22,0.62)", active: "rgba(249,115,22,0.85)", ring: "rgb(249,115,22)",  label: "38°C ∩ 41°C",   desc: "Common genes: 38°C & 41°C" },
-  ABC: { base: "rgba(255,255,255,0.45)",hover: "rgba(255,255,255,0.70)",active: "rgba(255,255,255,0.90)",ring: "rgb(255,255,255)", label: "All temps",      desc: "Common genes across all temperatures" },
+  A:   { base: "rgba(14,165,233,0.28)",  hover: "rgba(14,165,233,0.55)",  active: "rgba(14,165,233,0.80)",  ring: "rgb(14,165,233)" },
+  B:   { base: "rgba(245,158,11,0.28)", hover: "rgba(245,158,11,0.55)", active: "rgba(245,158,11,0.80)", ring: "rgb(245,158,11)" },
+  C:   { base: "rgba(239,68,68,0.28)",  hover: "rgba(239,68,68,0.55)",  active: "rgba(239,68,68,0.80)",  ring: "rgb(239,68,68)" },
+  AB:  { base: "rgba(20,184,166,0.38)", hover: "rgba(20,184,166,0.62)", active: "rgba(20,184,166,0.85)", ring: "rgb(20,184,166)" },
+  AC:  { base: "rgba(168,85,247,0.38)", hover: "rgba(168,85,247,0.62)", active: "rgba(168,85,247,0.85)", ring: "rgb(168,85,247)" },
+  BC:  { base: "rgba(249,115,22,0.38)", hover: "rgba(249,115,22,0.62)", active: "rgba(249,115,22,0.85)", ring: "rgb(249,115,22)" },
+  ABC: { base: "rgba(255,255,255,0.45)",hover: "rgba(255,255,255,0.70)",active: "rgba(255,255,255,0.90)",ring: "rgb(255,255,255)" },
 } as const
 
 type SectionId = keyof typeof PALETTE
+
+// Numeric labels are temperatures ("16" -> "16°C"); anything else is shown as-is
+const fmt = (l: string) => /^\d+(\.\d+)?$/.test(l) ? `${l}°C` : l
 
 const SECTIONS: SectionId[] = ["A", "B", "C", "AB", "AC", "BC", "ABC"]
 
@@ -35,7 +39,17 @@ const BORDERS: Record<SectionId, Array<"A" | "B" | "C">> = {
   AB: ["A", "B"], AC: ["A", "C"], BC: ["B", "C"], ABC: ["A", "B", "C"],
 }
 
-export default function VennDiagram({ onSectionClick, selectedSection }: VennDiagramProps) {
+export default function VennDiagram({ onSectionClick, selectedSection, labels }: VennDiagramProps) {
+  const [a, b, c] = labels.map(fmt)
+  const TEXT: Record<SectionId, { label: string; desc: string }> = {
+    A:   { label: a,               desc: `Genes expressed at ${a}` },
+    B:   { label: b,               desc: `Genes expressed at ${b}` },
+    C:   { label: c,               desc: `Genes expressed at ${c}` },
+    AB:  { label: `${a} ∩ ${b}`,   desc: `Common genes: ${a} & ${b}` },
+    AC:  { label: `${a} ∩ ${c}`,   desc: `Common genes: ${a} & ${c}` },
+    BC:  { label: `${b} ∩ ${c}`,   desc: `Common genes: ${b} & ${c}` },
+    ABC: { label: "All conditions", desc: "Common genes across all conditions" },
+  }
   const [hovered, setHovered] = useState<SectionId | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
 
@@ -71,7 +85,7 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
     onMouseEnter: () => setHovered(id),
     onMouseLeave: () => setHovered(null),
     role: "button" as const,
-    "aria-label": PALETTE[id].desc,
+    "aria-label": TEXT[id].desc,
     "aria-pressed": selectedSection === id,
     tabIndex: 0,
     onKeyDown: (e: React.KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") onSectionClick(id) },
@@ -84,7 +98,7 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
     return () => window.removeEventListener("keydown", onKey)
   }, [])
 
-  const tooltip = hovered ? PALETTE[hovered] : null
+  const tooltip = hovered ? { ring: PALETTE[hovered].ring, label: TEXT[hovered].label } : null
 
   return (
     <div className="w-full max-w-3xl mx-auto select-none">
@@ -194,7 +208,7 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
           pointerEvents="none"
           opacity={hovered && !BORDERS[hovered].includes("A") && selectedSection && !BORDERS[selectedSection as SectionId]?.includes("A") ? "0.4" : "1"}
           style={{ transition: "opacity 0.2s" }}
-        >16°C</text>
+        >{a}</text>
         <text
           x="350" y="88"
           fill={PALETTE.B.ring} fontSize="15" fontWeight="700"
@@ -202,7 +216,7 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
           pointerEvents="none"
           opacity={hovered && !BORDERS[hovered].includes("B") && selectedSection && !BORDERS[selectedSection as SectionId]?.includes("B") ? "0.4" : "1"}
           style={{ transition: "opacity 0.2s" }}
-        >38°C</text>
+        >{b}</text>
         <text
           x="220" y="315"
           fill={PALETTE.C.ring} fontSize="15" fontWeight="700"
@@ -210,7 +224,7 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
           pointerEvents="none"
           opacity={hovered && !BORDERS[hovered].includes("C") && selectedSection && !BORDERS[selectedSection as SectionId]?.includes("C") ? "0.4" : "1"}
           style={{ transition: "opacity 0.2s" }}
-        >41°C</text>
+        >{c}</text>
 
         {/* ══════════════════════════════════════════════════════════════════
             STEP 4 — hover tooltip
@@ -272,7 +286,7 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
               />
               {/* label */}
               <span className="font-[family-name:var(--font-mono)] text-[10px] font-medium leading-tight text-foreground/80 truncate">
-                {p.label}
+                {TEXT[id].label}
               </span>
               {/* active indicator */}
               {isActive && (
@@ -285,8 +299,8 @@ export default function VennDiagram({ onSectionClick, selectedSection }: VennDia
 
       {/* sr-only description */}
       <p className="sr-only">
-        Interactive Venn diagram with seven clickable regions: 16°C only, 38°C only, 41°C only,
-        intersections 16∩38, 16∩41, 38∩41, and the triple intersection. Use Tab to navigate, Enter to select.
+        Interactive Venn diagram with seven clickable regions: {a} only, {b} only, {c} only,
+        intersections {a}∩{b}, {a}∩{c}, {b}∩{c}, and the triple intersection. Use Tab to navigate, Enter to select.
       </p>
     </div>
   )
