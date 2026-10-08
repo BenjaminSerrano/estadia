@@ -355,7 +355,8 @@ def run_annotation(dataset_id: int):
     db = SessionLocal()
     try:
         dataset = db.get(Dataset, dataset_id)
-        if dataset is None or not dataset.genome_accession or dataset.status not in ("done", "ready"):
+        # Solo uploads ya procesados ("done"); nunca el dataset sembrado ("ready"), cuya anotación es curada
+        if dataset is None or not dataset.genome_accession or dataset.status != "done":
             return
         genes = db.query(Gene).filter(Gene.dataset_id == dataset_id).all()
         rows = annotation.annotate([g.locustag for g in genes], dataset.genome_accession,
@@ -439,6 +440,9 @@ def annotate_dataset(
     dataset = db.get(Dataset, dataset_id)
     if dataset is None:
         raise HTTPException(404, f"Dataset {dataset_id} not found")
+    # La API no tiene auth: sin esto cualquiera podría pisar la anotación curada de Cobetia (status "ready")
+    if dataset.status != "done":
+        raise HTTPException(409, "only uploaded datasets whose analysis finished can be annotated")
     accession = _clean_accession(genome_accession)
     if not accession:
         raise HTTPException(400, "genome_accession is required")
