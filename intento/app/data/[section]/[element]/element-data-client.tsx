@@ -64,9 +64,10 @@ function SkeletonRows({ cols }: { cols: number }) {
 export default function ElementDataClient() {
   const router  = useRouter()
   const params  = useParams()
-  const section = params.section as string
+  // Netlify lowercases these URLs on reload/direct links (/data/A/... → /data/a/...)
+  const section = (params.section as string).toUpperCase()
   const elementSlug = params.element as string
-  const pathway = elementSlug === "__TODOS_LOS_DATOS__" ? "__TODOS_LOS_DATOS__" : elementSlug.replace(/-/g, " ")
+  const pathway = elementSlug.toUpperCase() === "__TODOS_LOS_DATOS__" ? "__TODOS_LOS_DATOS__" : elementSlug.replace(/-/g, " ")
   const datasetId = Number(useSearchParams().get("dataset")) || 1
 
   const [conditions, setConditions]   = useState<Condition[]>([])
