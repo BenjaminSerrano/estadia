@@ -16,6 +16,7 @@ Base.metadata.create_all(bind=engine)
 for ddl in (
     "ALTER TABLE datasets ADD COLUMN status VARCHAR(16) DEFAULT 'ready'",
     "ALTER TABLE datasets ADD COLUMN error VARCHAR",
+    "ALTER TABLE datasets ADD COLUMN genome_accession VARCHAR(64)",
 ):
     try:
         with engine.begin() as conn:

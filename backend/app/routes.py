@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import get_db, SessionLocal, UPLOADS_DIR
 from app.models import Dataset, Condition, Gene, ExpressionResult
+from app import annotation
 
 # estadia-back/run_deseq2.R — three levels up from backend/app/routes.py
 R_SCRIPT_PATH = os.path.join(
@@ -344,6 +345,42 @@ def run_analysis(dataset_id: int):
     finally:
         db.close()
 
+    run_annotation(dataset_id)
+
+
+def run_annotation(dataset_id: int):
+    """Background task: llena nombre, proteína, coordenadas, KO y categorías KEGG de los genes
+    desde el ensamblaje NCBI del dataset (app/annotation.py). Corre después de DESeq2 y con el
+    dataset ya visible; si falla, el dataset sigue "done" y el motivo queda en `error`."""
+    db = SessionLocal()
+    try:
+        dataset = db.get(Dataset, dataset_id)
+        if dataset is None or not dataset.genome_accession or dataset.status not in ("done", "ready"):
+            return
+        genes = db.query(Gene).filter(Gene.dataset_id == dataset_id).all()
+        rows = annotation.annotate([g.locustag for g in genes], dataset.genome_accession,
+                                   log=lambda m: print(f"[annotation ds{dataset_id}] {m}", flush=True))
+        for g in genes:
+            for field, value in rows.get(g.locustag, {}).items():
+                setattr(g, field, value)
+        dataset.error = None
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        dataset = db.get(Dataset, dataset_id)
+        if dataset is not None:
+            dataset.error = f"annotation failed: {e}"[:2000]
+            db.commit()
+    finally:
+        db.close()
+
+
+def _clean_accession(genome_accession: str) -> str | None:
+    acc = genome_accession.strip()
+    if acc and not annotation.ACCESSION_RE.match(acc):
+        raise HTTPException(400, f"genome_accession '{acc}' must look like GCF_000013465.1 or GCA_000013465.1")
+    return acc or None
+
 
 @router.post("/datasets")
 async def upload_dataset(
@@ -351,6 +388,7 @@ async def upload_dataset(
     name: str = Form(...),
     organism: str = Form(""),
     baseline: str = Form(...),
+    genome_accession: str = Form(""),
     counts: UploadFile = None,
     metadata: UploadFile = None,
     db: Session = Depends(get_db),
@@ -361,8 +399,9 @@ async def upload_dataset(
     counts_bytes = await counts.read()
     metadata_bytes = await metadata.read()
     parsed = _validate_upload(counts_bytes, metadata_bytes, baseline)
+    accession = _clean_accession(genome_accession)
 
-    dataset = Dataset(name=name, organism=organism, status="pending")
+    dataset = Dataset(name=name, organism=organism, status="pending", genome_accession=accession)
     db.add(dataset)
     db.commit()
     db.refresh(dataset)
@@ -387,6 +426,26 @@ async def upload_dataset(
 
     background_tasks.add_task(run_analysis, dataset.id)
     return {"dataset_id": dataset.id, "status": dataset.status}
+
+
+@router.post("/datasets/{dataset_id}/annotate")
+def annotate_dataset(
+    dataset_id: int,
+    background_tasks: BackgroundTasks,
+    genome_accession: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    """(Re)anota un dataset ya procesado, p. ej. uno subido antes de que existiera la anotación."""
+    dataset = db.get(Dataset, dataset_id)
+    if dataset is None:
+        raise HTTPException(404, f"Dataset {dataset_id} not found")
+    accession = _clean_accession(genome_accession)
+    if not accession:
+        raise HTTPException(400, "genome_accession is required")
+    dataset.genome_accession = accession
+    db.commit()
+    background_tasks.add_task(run_annotation, dataset_id)
+    return {"dataset_id": dataset_id, "genome_accession": accession, "status": "annotating"}
 
 
 @router.get("/datasets/{dataset_id}/status")

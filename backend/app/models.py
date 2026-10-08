@@ -13,6 +13,8 @@ class Dataset(Base):
     # sembrados desde el schema original quedan "ready" (ver ALTER en main.py).
     status = Column(String(16), default="ready")
     error = Column(String, nullable=True)
+    # Ensamblaje NCBI (GCF_/GCA_) para anotar los genes subidos; ver app/annotation.py
+    genome_accession = Column(String(64), nullable=True)
 
 
 class Condition(Base):
