@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { Fragment, useState, useEffect, useRef } from "react"
 
 interface VennDiagramProps {
   onSectionClick: (section: string) => void | Promise<void>
@@ -9,8 +9,13 @@ interface VennDiagramProps {
 }
 
 // ─── Geometry ────────────────────────────────────────────────────────────────
-const CX = { A: 160, B: 280, C: 220 }
-const CY = { A: 140, B: 140, C: 220 }
+// Circle centres and outside-label positions for 1, 2 or 3 comparisons vs the control
+type Letter = "A" | "B" | "C"
+const LAYOUT: Record<1 | 2 | 3, { c: Partial<Record<Letter, [number, number]>>; t: Partial<Record<Letter, [number, number]>> }> = {
+  1: { c: { A: [220, 160] },                         t: { A: [220, 66] } },
+  2: { c: { A: [160, 160], B: [280, 160] },             t: { A: [90, 98], B: [350, 98] } },
+  3: { c: { A: [160, 140], B: [280, 140], C: [220, 220] }, t: { A: [90, 88], B: [350, 88], C: [220, 315] } },
+}
 const R  = 80
 const VW = 440
 const VH = 320
@@ -34,13 +39,18 @@ const fmt = (l: string) => /^\d+(\.\d+)?$/.test(l) ? `${l}°C` : l
 const SECTIONS: SectionId[] = ["A", "B", "C", "AB", "AC", "BC", "ABC"]
 
 // Which circles border each region (for ring highlighting)
-const BORDERS: Record<SectionId, Array<"A" | "B" | "C">> = {
+const BORDERS: Record<SectionId, Letter[]> = {
   A: ["A"], B: ["B"], C: ["C"],
   AB: ["A", "B"], AC: ["A", "C"], BC: ["B", "C"], ABC: ["A", "B", "C"],
 }
 
 export default function VennDiagram({ onSectionClick, selectedSection, labels }: VennDiagramProps) {
   const [a, b, c] = labels.map(fmt)
+  const n = Math.min(Math.max(labels.length, 1), 3) as 1 | 2 | 3
+  const L = LAYOUT[n]
+  const letters = (["A", "B", "C"] as Letter[]).slice(0, n)
+  // Only regions made of circles that exist (e.g. A, B, AB for two comparisons)
+  const visible = SECTIONS.filter(id => BORDERS[id].every(l => letters.includes(l)))
   const TEXT: Record<SectionId, { label: string; desc: string }> = {
     A:   { label: a,               desc: `Genes expressed at ${a}` },
     B:   { label: b,               desc: `Genes expressed at ${b}` },
@@ -61,7 +71,7 @@ export default function VennDiagram({ onSectionClick, selectedSection, labels }:
     return p.base
   }
 
-  const ringOpacity = (letter: "A" | "B" | "C") => {
+  const ringOpacity = (letter: Letter) => {
     const sid = selectedSection as SectionId | null
     const hid = hovered
     const active = sid ?? hid
@@ -70,7 +80,7 @@ export default function VennDiagram({ onSectionClick, selectedSection, labels }:
     return borders.includes(letter) ? "1" : "0.25"
   }
 
-  const ringWidth = (letter: "A" | "B" | "C") => {
+  const ringWidth = (letter: Letter) => {
     const active = (selectedSection ?? hovered) as SectionId | null
     if (!active) return "1.5"
     return (BORDERS[active] ?? []).includes(letter) ? "2.5" : "1"
@@ -107,21 +117,17 @@ export default function VennDiagram({ onSectionClick, selectedSection, labels }:
         viewBox={`0 0 ${VW} ${VH}`}
         className="w-full h-auto"
         role="img"
-        aria-label="Interactive Venn diagram — three temperature conditions"
+        aria-label={`Interactive Venn diagram — ${n} condition${n > 1 ? "s" : ""} vs control`}
       >
         <title>Interactive Venn diagram of genes expressed at different temperatures</title>
 
         <defs>
-          {/* ── Clip paths for the 3 circles ── */}
-          <clipPath id="cp-A">
-            <circle cx={CX.A} cy={CY.A} r={R} />
-          </clipPath>
-          <clipPath id="cp-B">
-            <circle cx={CX.B} cy={CY.B} r={R} />
-          </clipPath>
-          <clipPath id="cp-C">
-            <circle cx={CX.C} cy={CY.C} r={R} />
-          </clipPath>
+          {/* ── Clip paths, one per circle ── */}
+          {letters.map(l => (
+            <clipPath key={l} id={`cp-${l}`}>
+              <circle cx={L.c[l]![0]} cy={L.c[l]![1]} r={R} />
+            </clipPath>
+          ))}
 
           {/* ── Glow filter ── */}
           <filter id="venn-glow" x="-40%" y="-40%" width="180%" height="180%">
@@ -141,10 +147,10 @@ export default function VennDiagram({ onSectionClick, selectedSection, labels }:
         {/* ══════════════════════════════════════════════════════════════════
             STEP 1 — decorative circle rings (non-interactive, behind fills)
         ═══════════════════════════════════════════════════════════════════ */}
-        {(["A", "B", "C"] as const).map((letter) => (
+        {letters.map((letter) => (
           <circle
             key={letter}
-            cx={CX[letter]} cy={CY[letter]} r={R}
+            cx={L.c[letter]![0]} cy={L.c[letter]![1]} r={R}
             fill="none"
             stroke={PALETTE[letter].ring}
             strokeWidth={ringWidth(letter)}
@@ -161,70 +167,31 @@ export default function VennDiagram({ onSectionClick, selectedSection, labels }:
             intersection of its constituent circles only.
         ═══════════════════════════════════════════════════════════════════ */}
 
-        {/* ── A (entire circle A — AB, AC, ABC rendered on top) ── */}
-        <g clipPath="url(#cp-A)">
-          <rect {...rp("A")} />
-        </g>
-
-        {/* ── B ── */}
-        <g clipPath="url(#cp-B)">
-          <rect {...rp("B")} />
-        </g>
-
-        {/* ── C ── */}
-        <g clipPath="url(#cp-C)">
-          <rect {...rp("C")} />
-        </g>
-
-        {/* ── AB = A ∩ B ── */}
-        <g clipPath="url(#cp-A)">
-          <rect clipPath="url(#cp-B)" {...rp("AB")} />
-        </g>
-
-        {/* ── AC = A ∩ C ── */}
-        <g clipPath="url(#cp-A)">
-          <rect clipPath="url(#cp-C)" {...rp("AC")} />
-        </g>
-
-        {/* ── BC = B ∩ C ── */}
-        <g clipPath="url(#cp-B)">
-          <rect clipPath="url(#cp-C)" {...rp("BC")} />
-        </g>
-
-        {/* ── ABC = A ∩ B ∩ C — topmost, always wins ── */}
-        <g clipPath="url(#cp-A)">
-          <g clipPath="url(#cp-B)">
-            <rect clipPath="url(#cp-C)" {...rp("ABC")} />
-          </g>
-        </g>
+        {/* Singles first, then pairs, then the triple: the topmost region wins the click.
+            Each region is a full-size <rect> nested inside the clip of every circle it belongs to. */}
+        {visible.map(id => (
+          <Fragment key={id}>
+            {BORDERS[id].reduceRight<React.ReactNode>(
+              (inner, l) => <g clipPath={`url(#cp-${l})`}>{inner}</g>,
+              <rect {...rp(id)} />,
+            )}
+          </Fragment>
+        ))}
 
         {/* ══════════════════════════════════════════════════════════════════
             STEP 3 — temperature labels (outside circles, non-interactive)
         ═══════════════════════════════════════════════════════════════════ */}
-        <text
-          x="90" y="88"
-          fill={PALETTE.A.ring} fontSize="15" fontWeight="700"
-          textAnchor="middle" fontFamily="var(--font-mono), monospace"
-          pointerEvents="none"
-          opacity={hovered && !BORDERS[hovered].includes("A") && selectedSection && !BORDERS[selectedSection as SectionId]?.includes("A") ? "0.4" : "1"}
-          style={{ transition: "opacity 0.2s" }}
-        >{a}</text>
-        <text
-          x="350" y="88"
-          fill={PALETTE.B.ring} fontSize="15" fontWeight="700"
-          textAnchor="middle" fontFamily="var(--font-mono), monospace"
-          pointerEvents="none"
-          opacity={hovered && !BORDERS[hovered].includes("B") && selectedSection && !BORDERS[selectedSection as SectionId]?.includes("B") ? "0.4" : "1"}
-          style={{ transition: "opacity 0.2s" }}
-        >{b}</text>
-        <text
-          x="220" y="315"
-          fill={PALETTE.C.ring} fontSize="15" fontWeight="700"
-          textAnchor="middle" fontFamily="var(--font-mono), monospace"
-          pointerEvents="none"
-          opacity={hovered && !BORDERS[hovered].includes("C") && selectedSection && !BORDERS[selectedSection as SectionId]?.includes("C") ? "0.4" : "1"}
-          style={{ transition: "opacity 0.2s" }}
-        >{c}</text>
+        {letters.map((l, i) => (
+          <text
+            key={l}
+            x={L.t[l]![0]} y={L.t[l]![1]}
+            fill={PALETTE[l].ring} fontSize="15" fontWeight="700"
+            textAnchor="middle" fontFamily="var(--font-mono), monospace"
+            pointerEvents="none"
+            opacity={hovered && !BORDERS[hovered].includes(l) && selectedSection && !BORDERS[selectedSection as SectionId]?.includes(l) ? "0.4" : "1"}
+            style={{ transition: "opacity 0.2s" }}
+          >{[a, b, c][i]}</text>
+        ))}
 
         {/* ══════════════════════════════════════════════════════════════════
             STEP 4 — hover tooltip
@@ -257,7 +224,7 @@ export default function VennDiagram({ onSectionClick, selectedSection, labels }:
           Section legend buttons (accessibility + quick selection)
       ═══════════════════════════════════════════════════════════════════ */}
       <div className="mt-8 grid grid-cols-4 gap-2">
-        {SECTIONS.map((id) => {
+        {visible.map((id) => {
           const p = PALETTE[id]
           const isActive = selectedSection === id
           const isHov    = hovered === id
@@ -299,8 +266,7 @@ export default function VennDiagram({ onSectionClick, selectedSection, labels }:
 
       {/* sr-only description */}
       <p className="sr-only">
-        Interactive Venn diagram with seven clickable regions: {a} only, {b} only, {c} only,
-        intersections {a}∩{b}, {a}∩{c}, {b}∩{c}, and the triple intersection. Use Tab to navigate, Enter to select.
+        Interactive Venn diagram with {visible.length} clickable regions: {visible.map(id => TEXT[id].label).join(", ")}. Use Tab to navigate, Enter to select.
       </p>
     </div>
   )

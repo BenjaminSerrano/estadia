@@ -165,12 +165,12 @@ function VennPage() {
 
   const condColors = ['var(--temp-cold)', 'var(--temp-warm)', 'var(--temp-hot)']
 
-  if (conditionsLoaded && conditions.length !== 3) {
+  if (conditionsLoaded && (conditions.length < 1 || conditions.length > 3)) {
     return (
       <div className="min-h-screen bg-background dot-grid flex items-center justify-center p-8">
         <div className="text-center space-y-4 max-w-md">
           <p className="text-slate-600 dark:text-slate-300">
-            The Venn view currently supports datasets with exactly 3 conditions compared against the control.
+            The Venn view currently supports datasets with 1 to 3 conditions compared against the control.
             {dataset ? ` "${dataset.name}"` : " This dataset"} has {conditions.length}
             {control ? ` (control: ${control.label})` : ""}.
           </p>
