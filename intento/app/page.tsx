@@ -129,6 +129,11 @@ export default function Home() {
                   <Input id="organism" name="organism" placeholder="e.g. Cobetia marina" />
                 </div>
                 <div className="space-y-1.5">
+                  <Label htmlFor="genome_accession">NCBI genome assembly (optional)</Label>
+                  <Input id="genome_accession" name="genome_accession" pattern="GC[AF]_\d{9}\.\d+" placeholder="e.g. GCF_000013465.1" />
+                  <p className="text-xs text-muted-foreground">Fills gene names, KO codes and KEGG categories after the analysis. Locus tags in counts.csv must come from this assembly.</p>
+                </div>
+                <div className="space-y-1.5">
                   <Label htmlFor="baseline">Baseline condition</Label>
                   <Input id="baseline" name="baseline" required placeholder="must match a value in metadata.csv's condition column" />
                 </div>
