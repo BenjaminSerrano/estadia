@@ -47,7 +47,9 @@ MAX_FOLDER_FILES = 1000
 MAX_REDIRECTS = 10
 # Base de todas las llamadas a curl hacia afuera: sin -L (las redirecciones se siguen a mano, revisando cada
 # salto) y solo http/https/ftp
-CURL = ["curl", "-sS", "--proto", "=http,https,ftp", "--connect-timeout", "20", "-A", "DPDDS-procesador"]
+# --globoff: "[1-100]" o "{a,b}" en un link son texto, no rangos de archivos para curl
+CURL = ["curl", "-sS", "--globoff", "--proto", "=http,https,ftp", "--connect-timeout", "20", "-A", "DPDDS-procesador"]
+HOST_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*\.?$")
 MAX_ARCHIVE_MEMBERS = 10000
 # Solo para pruebas locales (servidor de archivos en 127.0.0.1); en Railway queda sin definir
 ALLOW_PRIVATE_URLS = os.getenv("ALLOW_PRIVATE_URLS") == "1"
@@ -168,12 +170,13 @@ def sh(cmd, cwd=None):
 
 def fetch(url, timeout=60) -> tuple[bytes, str]:
     """GET con curl (urllib se queda colgado si la conexión se congela): tiempo máximo por intento, reintentos
-    y redirecciones seguidas a mano con pin() en cada salto. Devuelve (contenido, URL final)."""
+    y redirecciones seguidas a mano con target() en cada salto. Devuelve (contenido, URL final)."""
     with tempfile.NamedTemporaryFile() as f:
         for _ in range(MAX_REDIRECTS):
+            url, args = target(url)
             r = subprocess.run(CURL + ["-f", "--retry", "3", "--retry-delay", "3", "--retry-all-errors",
                                        "--max-time", str(timeout), "-o", f.name, "-w", "%{http_code} %{redirect_url}",
-                                       *pin(url), url], capture_output=True, text=True)
+                                       *args, url], capture_output=True, text=True)
             if r.returncode != 0:
                 raise RuntimeError(f"could not read {url} (curl exit code {r.returncode})")
             code, _, redirect = r.stdout.strip().partition(" ")
@@ -207,16 +210,43 @@ def check_public(url) -> list[str]:
     return addrs
 
 
-def pin(url) -> list[str]:
-    """check_public + --resolve: curl se conecta exactamente a la IP revisada, así una segunda respuesta DNS
-    distinta (DNS rebinding) no puede llevarlo a una IP interna."""
-    ips = check_public(url)
-    if not ips:
-        return []
-    u = urllib.parse.urlparse(url)
-    port = u.port or {"http": 80, "https": 443, "ftp": 21}.get(u.scheme.lower(), 443)
-    ip = next((a for a in ips if ":" not in a), ips[0])
-    return ["--resolve", f"{u.hostname}:{port}:{'[' + ip + ']' if ':' in ip else ip}"]
+def canonical(url) -> tuple[str, list[str]]:
+    """Valida el link y lo rearma desde sus partes, para que Python (que revisa el host) y curl (que se conecta)
+    vean exactamente la misma URL: sin "\\", espacios ni caracteres de control, sin "#", y el usuario/clave
+    (p. ej. FTP de un centro de secuenciación) aparte, con -u. Devuelve (URL rearmada, argumentos de curl)."""
+    if re.search(r"[\x00-\x20\x7f\\]", url):
+        raise UserError(f"The link {url[:200]!r} has spaces or invalid characters")
+    u = urllib.parse.urlsplit(url)
+    scheme = u.scheme.lower()
+    if scheme not in ("http", "https", "ftp"):
+        raise UserError(f"Only http, https and ftp links are supported: {url[:200]}")
+    try:
+        host, port = u.hostname or "", u.port
+        if ":" in host:  # IPv6 literal
+            hostpart = f"[{ipaddress.IPv6Address(host).compressed}]"
+        else:
+            host = host.encode("idna").decode("ascii").lower().rstrip(".")
+            if not HOST_RE.match(host):
+                raise ValueError(host)
+            hostpart = host
+    except (ValueError, UnicodeError):
+        raise UserError(f"The link {url[:200]} has an invalid host or port")
+    canon = urllib.parse.urlunsplit((scheme, hostpart + (f":{port}" if port else ""), u.path or "/", u.query, ""))
+    args = ["-u", f"{urllib.parse.unquote(u.username)}:{urllib.parse.unquote(u.password or '')}"] if u.username else []
+    return canon, args
+
+
+def target(url) -> tuple[str, list[str]]:
+    """canonical + check_public + --resolve: curl se conecta exactamente a la IP revisada del mismo host que
+    revisó Python, así ni otra lectura de la URL ni otra respuesta DNS (rebinding) lo llevan a una IP interna."""
+    canon, args = canonical(url)
+    ips = check_public(canon)
+    if ips:
+        u = urllib.parse.urlsplit(canon)
+        port = u.port or {"http": 80, "https": 443, "ftp": 21}[u.scheme]
+        ip = next((a for a in ips if ":" not in a), ips[0])
+        args = args + ["--resolve", f"{u.hostname}:{port}:{'[' + ip + ']' if ':' in ip else ip}"]
+    return canon, args
 
 
 def downloaded_bytes(p: Progress) -> int:
@@ -239,11 +269,12 @@ def curl(url, out_dir, p: Progress, label) -> str:
     for _ in range(MAX_REDIRECTS):
         shutil.rmtree(tmp, ignore_errors=True)
         os.makedirs(tmp)
+        url, args = target(url)
         # -J -O dentro de una carpeta vacía: así sabemos qué archivo quedó aunque el nombre venga del servidor.
         # --speed-limit/--speed-time: si pasan 2 min a < 10 KB/s la conexión se dio por muerta y se reintenta.
         proc = subprocess.Popen(CURL + ["-f", "--retry", "5", "--retry-delay", "10", "--retry-all-errors",
                                         "--speed-limit", "10000", "--speed-time", "120", "--max-filesize", str(budget),
-                                        "-w", "%{http_code} %{redirect_url}", *pin(url), "-J", "-O", url],
+                                        "-w", "%{http_code} %{redirect_url}", *args, "-J", "-O", url],
                                 cwd=tmp, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         over = False
         while proc.poll() is None:  # avance en vivo y tope de tamaño aunque el servidor no diga cuánto pesa
@@ -261,7 +292,7 @@ def curl(url, out_dir, p: Progress, label) -> str:
             p.watch_path = None
         code, _, redirect = out.strip().partition(" ")
         if proc.returncode == 0 and code.startswith("3") and redirect:
-            url = redirect  # el próximo pin() revisa el destino antes de pedirlo
+            url = redirect  # el próximo target() revisa el destino antes de pedirlo
             continue
         break
     else:
@@ -310,8 +341,9 @@ def probe(url) -> tuple[str, str]:
     if url.lower().startswith("ftp://"):
         return ("text/html" if url.endswith("/") else "", url)
     for _ in range(MAX_REDIRECTS):
+        url, args = target(url)
         r = subprocess.run(CURL + ["-I", "--max-time", "60", "-o", "/dev/null",
-                                   "-w", "%{http_code}\t%{redirect_url}\t%{content_type}", *pin(url), url],
+                                   "-w", "%{http_code}\t%{redirect_url}\t%{content_type}", *args, url],
                            capture_output=True, text=True)
         if r.returncode != 0:
             return ("", url)
@@ -326,7 +358,8 @@ def probe(url) -> tuple[str, str]:
 def list_folder(url: str) -> list[str]:
     """Archivos FASTQ o comprimidos dentro de una carpeta HTTP (índice HTML) o FTP."""
     if url.lower().startswith("ftp://"):
-        names = sh(CURL + ["-f", "--max-time", "120", "--list-only", *pin(url), url]).split()
+        canon, args = target(url)  # url (con usuario/clave si los trae) sigue siendo la base de los archivos
+        names = sh(CURL + ["-f", "--max-time", "120", "--list-only", *args, canon]).split()
     else:
         body, url = fetch(url)
         names = [urllib.parse.unquote(h) for h in re.findall(r'href="([^"?#]+)"', body.decode("utf-8", "replace"), re.I)]
@@ -610,7 +643,7 @@ def _run(job, p: Progress):
                 runs.append(r)
     expanded = []
     for u in urls:
-        check_public(u)
+        target(u)
         if not (FQ_RE.search(urllib.parse.urlparse(u).path) or ARCHIVE_RE.search(urllib.parse.urlparse(u).path)):
             ctype, final = probe(u)  # sin extensión conocida: ¿archivo o página/carpeta?
             if ctype.startswith("text/html"):
