@@ -18,10 +18,12 @@ import bz2
 import csv
 import gzip
 import io
+import ipaddress
 import json
 import os
 import re
 import shutil
+import socket
 import subprocess
 import tarfile
 import threading
@@ -40,6 +42,11 @@ WORK = os.getenv("WORK_DIR", "/tmp/work")
 THREADS = int(os.getenv("THREADS") or min(8, os.cpu_count() or 4))
 POLL_S = 15
 HEARTBEAT_S = 20
+MAX_FOLDER_FILES = 1000
+MAX_ARCHIVE_MEMBERS = 10000
+# Solo para pruebas locales (servidor de archivos en 127.0.0.1); en Railway queda sin definir
+ALLOW_PRIVATE_URLS = os.getenv("ALLOW_PRIVATE_URLS") == "1"
+LIMIT_BYTES = 80e9  # límite de descarga del trabajo en curso; lo fija _run con el valor del backend
 
 FQ_RE = re.compile(r"\.(?:fastq|fq)(?:\.gz|\.bz2)?$", re.I)
 ARCHIVE_RE = re.compile(r"\.(?:zip|tar|tar\.gz|tgz|tar\.bz2)$", re.I)
@@ -164,35 +171,77 @@ def http_get(url, timeout=60) -> bytes:
     return r.stdout
 
 
+def check_public(url):
+    """Los links los pega cualquiera: no dejar que apunten a la red interna de Railway, a localhost ni a
+    direcciones de metadatos de la nube (SSRF). Se revisa el link y también adónde terminó tras redirecciones."""
+    if ALLOW_PRIVATE_URLS:
+        return
+    host = urllib.parse.urlparse(url).hostname or ""
+    bad = not host or host == "localhost" or host.endswith((".internal", ".local", ".localhost"))
+    if not bad:
+        try:
+            addrs = {a[4][0] for a in socket.getaddrinfo(host, None)}
+        except socket.gaierror:
+            raise UserError(f"Could not resolve the host of {url}")
+        bad = any(not ipaddress.ip_address(a.split("%")[0]).is_global for a in addrs)
+    if bad:
+        raise UserError(f"The link {url} points to a private network address; use a public download link")
+
+
+def downloaded_bytes(p: Progress) -> int:
+    with p.lock:
+        return int(p.d["downloaded_gb"] * 1e9)
+
+
 def curl(url, out_dir, p: Progress, label) -> str:
-    """Descarga con el nombre que da el servidor; devuelve la ruta. Reintenta y sigue redirecciones."""
+    """Descarga con el nombre que da el servidor; devuelve la ruta. Reintenta, sigue redirecciones y corta
+    apenas el trabajo supera su límite de GB (no espera a que termine el archivo)."""
+    check_public(url)
+    budget = int(LIMIT_BYTES - downloaded_bytes(p))
+    if budget <= 0:
+        raise UserError(f"The files exceed the limit of {LIMIT_BYTES / 1e9:g} GB per job")
     os.makedirs(out_dir, exist_ok=True)
     tmp = os.path.join(out_dir, f".part-{uuid.uuid4().hex}")
     os.makedirs(tmp)
     with p.lock:
         p.watch_base = int(p.d["downloaded_gb"] * 1e9)
-    p.set(message=f"Downloading {label}")
-    # -J -O dentro de una carpeta vacía: así sabemos qué archivo quedó aunque el nombre venga del servidor
-    with p.lock:
         p.watch_path = None
-    # --speed-limit/--speed-time: si pasan 2 min a < 10 KB/s la conexión se dio por muerta y se reintenta
+    p.set(message=f"Downloading {label}")
+    # -J -O dentro de una carpeta vacía: así sabemos qué archivo quedó aunque el nombre venga del servidor.
+    # --speed-limit/--speed-time: si pasan 2 min a < 10 KB/s la conexión se dio por muerta y se reintenta.
     proc = subprocess.Popen(["curl", "-fsSL", "--retry", "5", "--retry-delay", "10", "--retry-all-errors",
                              "--connect-timeout", "30", "--speed-limit", "10000", "--speed-time", "120",
-                             "-J", "-O", url], cwd=tmp, stderr=subprocess.PIPE, text=True)
-    while proc.poll() is None:  # para el avance en vivo, vigilar el archivo apenas aparece
+                             "--proto", "=http,https,ftp", "--proto-redir", "=http,https,ftp",
+                             "--max-filesize", str(budget), "-w", "%{url_effective}", "-J", "-O", url],
+                            cwd=tmp, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    over = False
+    while proc.poll() is None:  # avance en vivo y tope de tamaño aunque el servidor no diga cuánto pesa
         files = os.listdir(tmp)
         if files:
+            path = os.path.join(tmp, files[0])
             with p.lock:
-                p.watch_path = os.path.join(tmp, files[0])
+                p.watch_path = path
+            if os.path.exists(path) and os.path.getsize(path) > budget:
+                proc.kill()
+                over = True
         time.sleep(2)
-    err = proc.stderr.read()
+    out, err = proc.communicate()
     with p.lock:
         p.watch_path = None
     files = os.listdir(tmp)
+    if over or proc.returncode == 63:  # 63 = --max-filesize superado
+        shutil.rmtree(tmp, ignore_errors=True)
+        raise UserError(f"The files exceed the limit of {LIMIT_BYTES / 1e9:g} GB per job")
     if proc.returncode != 0 or not files:
         shutil.rmtree(tmp, ignore_errors=True)
         raise UserError(f"Could not download {url} ({err.strip()[-200:] or f'curl exit code {proc.returncode}'})")
-    name = urllib.parse.unquote(files[0])
+    try:
+        check_public(out.strip() or url)  # adónde llevaron las redirecciones
+    except UserError:
+        shutil.rmtree(tmp, ignore_errors=True)
+        raise
+    # El nombre lo elige el servidor: solo el nombre base, nunca una ruta (p. ej. "..%2F..%2Fapp%2Fworker.py")
+    name = os.path.basename(urllib.parse.unquote(files[0]).replace("\\", "/")).lstrip(".") or "download"
     dest = os.path.join(out_dir, name)
     if os.path.exists(dest):
         dest = os.path.join(out_dir, f"{uuid.uuid4().hex[:6]}_{name}")
@@ -239,12 +288,14 @@ def list_folder(url: str) -> list[str]:
     else:
         html = http_get(url).decode("utf-8", "replace")
         names = [urllib.parse.unquote(h) for h in re.findall(r'href="([^"?#]+)"', html, re.I)]
-    out = []
+    out = set()
     for n in names:
         full = urllib.parse.urljoin(url if url.endswith("/") else url + "/", n)
-        if FQ_RE.search(n) or ARCHIVE_RE.search(n):
-            out.append(full)
-    return sorted(set(out))
+        if (FQ_RE.search(n) or ARCHIVE_RE.search(n)) and full.lower().startswith(("http://", "https://", "ftp://")):
+            out.add(full)
+    if len(out) > MAX_FOLDER_FILES:
+        raise UserError(f"The folder {url} has more than {MAX_FOLDER_FILES} files; split it into smaller folders")
+    return sorted(out)
 
 
 def sniff(path) -> str:
@@ -275,6 +326,19 @@ def unpack(path, p: Progress, depth=0) -> list[str]:
     if kind in ("zip", "tar") and depth < 3:
         p.set(message=f"Extracting {os.path.basename(path)}")
         dest = path + ".d"
+        if kind == "zip":
+            with zipfile.ZipFile(path) as z:
+                infos = z.infolist()
+                size, n = sum(i.file_size for i in infos), len(infos)
+        else:
+            with tarfile.open(path) as t:
+                members = t.getmembers()
+                size, n = sum(m.size for m in members), len(members)
+        free = shutil.disk_usage(os.path.dirname(path)).free
+        if n > MAX_ARCHIVE_MEMBERS or size > LIMIT_BYTES or size > 0.9 * free:
+            os.remove(path)
+            raise UserError(f"{os.path.basename(path)} is too large to extract on the server "
+                            f"({gb(size)} GB, {n} files): share the FASTQ files separately or in smaller archives")
         try:
             if kind == "zip":
                 with zipfile.ZipFile(path) as z:
@@ -485,7 +549,9 @@ def run_job(job):
 
 
 def _run(job, p: Progress):
+    global LIMIT_BYTES
     max_samples, max_bytes = job["max_samples"], job["max_gb"] * 1e9
+    LIMIT_BYTES = max_bytes
     tx2gene = build_index(job["genome_accession"], p)
     idx = os.path.join(WORK, "idx")
     p.check()
@@ -502,8 +568,10 @@ def _run(job, p: Progress):
                 runs.append(r)
     expanded = []
     for u in urls:
+        check_public(u)
         if not (FQ_RE.search(urllib.parse.urlparse(u).path) or ARCHIVE_RE.search(urllib.parse.urlparse(u).path)):
             ctype, final = probe(u)  # sin extensión conocida: ¿archivo o página/carpeta?
+            check_public(final)
             if ctype.startswith("text/html"):
                 found = list_folder(final if final.endswith("/") else final + "/")
                 if not found:
@@ -529,7 +597,7 @@ def _run(job, p: Progress):
         path = curl(u, raw, p, f"file {i} of {len(expanded)}")
         if p.d["downloaded_gb"] * 1e9 > max_bytes:
             raise UserError(f"The files exceed the limit of {job['max_gb']:g} GB per job")
-        if sniff(path) == "html":
+        if sniff(path) == "html" and len(expanded) < MAX_FOLDER_FILES:
             # una carpeta pegada sin "/" final devuelve su índice: se trata como carpeta
             try:
                 found = [f for f in list_folder(u if u.endswith("/") else u + "/") if f not in expanded]
