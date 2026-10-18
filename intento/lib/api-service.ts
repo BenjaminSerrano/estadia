@@ -82,3 +82,76 @@ export const getGenes = (
   if (pathway && pathway !== '__TODOS_LOS_DATOS__') p.set('pathway', pathway)
   return apiFetch<{ genes: Gene[]; total: number }>(`/datasets/${datasetId}/genes?${p}`)
 }
+
+// ── Jobs from raw reads (links or NCBI accessions) ───────────────────────────
+// queued -> running -> needs_conditions -> done, or error. The token is the only
+// handle to a job (the API has no accounts), so the job page lives at /job/?id=<token>.
+
+export interface JobSample {
+  name: string
+  source?: string
+  files?: string[]
+  state: string // queued | downloading | qc | counting | done | error
+  layout?: string
+  reads?: number
+  q30?: number
+  passed?: number
+  mapped?: number
+  warning?: string
+  error?: string
+}
+
+export interface Job {
+  token: string
+  name: string
+  organism: string | null
+  genome_accession: string
+  links: string[]
+  status: "queued" | "running" | "needs_conditions" | "done" | "error"
+  error: string | null
+  progress: { stage: string; message: string; samples: JobSample[]; downloaded_gb: number; warnings: string[] } | null
+  created_at: string | null
+  dataset_id: number | null
+  dataset_status: string | null
+  queue_position: number | null
+}
+
+async function apiSend<T>(path: string, init: RequestInit): Promise<T> {
+  const r = await fetch(`${API_BASE}${path}`, init)
+  if (!r.ok) throw new Error((await r.json().catch(() => null))?.detail || `${r.status} ${r.statusText}`)
+  return r.json()
+}
+
+export const getJobsConfig = () => apiFetch<{ max_samples: number; max_gb: number }>('/jobs/config')
+
+export const createJob = (formData: FormData) =>
+  apiSend<{ token: string; status: string; organism: string }>('/jobs', { method: 'POST', body: formData })
+
+export const getJob = (token: string) => apiFetch<Job>(`/jobs/${encodeURIComponent(token)}`)
+
+export const jobCountsUrl = (token: string) => `${API_BASE}/jobs/${encodeURIComponent(token)}/counts.csv`
+
+export const setJobConditions = (token: string, baseline: string, conditions: Record<string, string>) =>
+  apiSend<{ dataset_id: number; status: string }>(`/jobs/${encodeURIComponent(token)}/conditions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ baseline, conditions }),
+  })
+
+// Jobs started from this browser, so the home page can list them (per-viewer convenience only)
+const JOBS_KEY = 'dpdds_jobs'
+
+export function rememberJob(token: string, name: string) {
+  try {
+    const jobs = recentJobs().filter(j => j.token !== token)
+    localStorage.setItem(JOBS_KEY, JSON.stringify([{ token, name }, ...jobs].slice(0, 20)))
+  } catch { /* storage unavailable: the job link still works */ }
+}
+
+export function recentJobs(): { token: string; name: string }[] {
+  try {
+    return JSON.parse(localStorage.getItem(JOBS_KEY) || '[]')
+  } catch {
+    return []
+  }
+}
