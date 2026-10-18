@@ -26,6 +26,7 @@ import shutil
 import socket
 import subprocess
 import tarfile
+import tempfile
 import threading
 import time
 import traceback
@@ -43,6 +44,10 @@ THREADS = int(os.getenv("THREADS") or min(8, os.cpu_count() or 4))
 POLL_S = 15
 HEARTBEAT_S = 20
 MAX_FOLDER_FILES = 1000
+MAX_REDIRECTS = 10
+# Base de todas las llamadas a curl hacia afuera: sin -L (las redirecciones se siguen a mano, revisando cada
+# salto) y solo http/https/ftp
+CURL = ["curl", "-sS", "--proto", "=http,https,ftp", "--connect-timeout", "20", "-A", "DPDDS-procesador"]
 MAX_ARCHIVE_MEMBERS = 10000
 # Solo para pruebas locales (servidor de archivos en 127.0.0.1); en Railway queda sin definir
 ALLOW_PRIVATE_URLS = os.getenv("ALLOW_PRIVATE_URLS") == "1"
@@ -161,31 +166,57 @@ def sh(cmd, cwd=None):
     return r.stdout
 
 
+def fetch(url, timeout=60) -> tuple[bytes, str]:
+    """GET con curl (urllib se queda colgado si la conexión se congela): tiempo máximo por intento, reintentos
+    y redirecciones seguidas a mano con pin() en cada salto. Devuelve (contenido, URL final)."""
+    with tempfile.NamedTemporaryFile() as f:
+        for _ in range(MAX_REDIRECTS):
+            r = subprocess.run(CURL + ["-f", "--retry", "3", "--retry-delay", "3", "--retry-all-errors",
+                                       "--max-time", str(timeout), "-o", f.name, "-w", "%{http_code} %{redirect_url}",
+                                       *pin(url), url], capture_output=True, text=True)
+            if r.returncode != 0:
+                raise RuntimeError(f"could not read {url} (curl exit code {r.returncode})")
+            code, _, redirect = r.stdout.strip().partition(" ")
+            if code.startswith("3") and redirect:
+                url = redirect
+                continue
+            with open(f.name, "rb") as fh:
+                return fh.read(), url
+    raise UserError(f"Too many redirects for {url}")
+
+
 def http_get(url, timeout=60) -> bytes:
-    """GET con curl: tiempo máximo por intento y reintentos (urllib se queda colgado si la conexión se congela)."""
-    r = subprocess.run(["curl", "-fsSL", "--retry", "3", "--retry-delay", "3", "--retry-all-errors",
-                        "--connect-timeout", "20", "--max-time", str(timeout), "-A", "DPDDS-procesador", url],
-                       capture_output=True)
-    if r.returncode != 0:
-        raise RuntimeError(f"could not read {url} (curl exit code {r.returncode})")
-    return r.stdout
+    return fetch(url, timeout)[0]
 
 
-def check_public(url):
+def check_public(url) -> list[str]:
     """Los links los pega cualquiera: no dejar que apunten a la red interna de Railway, a localhost ni a
-    direcciones de metadatos de la nube (SSRF). Se revisa el link y también adónde terminó tras redirecciones."""
+    direcciones de metadatos de la nube (SSRF). Devuelve las IPs revisadas ([] si ALLOW_PRIVATE_URLS)."""
     if ALLOW_PRIVATE_URLS:
-        return
+        return []
     host = urllib.parse.urlparse(url).hostname or ""
-    bad = not host or host == "localhost" or host.endswith((".internal", ".local", ".localhost"))
+    bad, addrs = not host or host == "localhost" or host.endswith((".internal", ".local", ".localhost")), []
     if not bad:
         try:
-            addrs = {a[4][0] for a in socket.getaddrinfo(host, None)}
+            addrs = sorted({a[4][0].split("%")[0] for a in socket.getaddrinfo(host, None)})
         except socket.gaierror:
             raise UserError(f"Could not resolve the host of {url}")
-        bad = any(not ipaddress.ip_address(a.split("%")[0]).is_global for a in addrs)
+        bad = not addrs or any(not ipaddress.ip_address(a).is_global for a in addrs)
     if bad:
         raise UserError(f"The link {url} points to a private network address; use a public download link")
+    return addrs
+
+
+def pin(url) -> list[str]:
+    """check_public + --resolve: curl se conecta exactamente a la IP revisada, así una segunda respuesta DNS
+    distinta (DNS rebinding) no puede llevarlo a una IP interna."""
+    ips = check_public(url)
+    if not ips:
+        return []
+    u = urllib.parse.urlparse(url)
+    port = u.port or {"http": 80, "https": 443, "ftp": 21}.get(u.scheme.lower(), 443)
+    ip = next((a for a in ips if ":" not in a), ips[0])
+    return ["--resolve", f"{u.hostname}:{port}:{'[' + ip + ']' if ':' in ip else ip}"]
 
 
 def downloaded_bytes(p: Progress) -> int:
@@ -194,40 +225,48 @@ def downloaded_bytes(p: Progress) -> int:
 
 
 def curl(url, out_dir, p: Progress, label) -> str:
-    """Descarga con el nombre que da el servidor; devuelve la ruta. Reintenta, sigue redirecciones y corta
-    apenas el trabajo supera su límite de GB (no espera a que termine el archivo)."""
-    check_public(url)
+    """Descarga con el nombre que da el servidor; devuelve la ruta. Reintenta, sigue redirecciones (a mano,
+    revisando cada salto) y corta apenas el trabajo supera su límite de GB, sin esperar a que termine."""
     budget = int(LIMIT_BYTES - downloaded_bytes(p))
     if budget <= 0:
         raise UserError(f"The files exceed the limit of {LIMIT_BYTES / 1e9:g} GB per job")
     os.makedirs(out_dir, exist_ok=True)
     tmp = os.path.join(out_dir, f".part-{uuid.uuid4().hex}")
-    os.makedirs(tmp)
     with p.lock:
         p.watch_base = int(p.d["downloaded_gb"] * 1e9)
         p.watch_path = None
     p.set(message=f"Downloading {label}")
-    # -J -O dentro de una carpeta vacía: así sabemos qué archivo quedó aunque el nombre venga del servidor.
-    # --speed-limit/--speed-time: si pasan 2 min a < 10 KB/s la conexión se dio por muerta y se reintenta.
-    proc = subprocess.Popen(["curl", "-fsSL", "--retry", "5", "--retry-delay", "10", "--retry-all-errors",
-                             "--connect-timeout", "30", "--speed-limit", "10000", "--speed-time", "120",
-                             "--proto", "=http,https,ftp", "--proto-redir", "=http,https,ftp",
-                             "--max-filesize", str(budget), "-w", "%{url_effective}", "-J", "-O", url],
-                            cwd=tmp, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    over = False
-    while proc.poll() is None:  # avance en vivo y tope de tamaño aunque el servidor no diga cuánto pesa
-        files = os.listdir(tmp)
-        if files:
-            path = os.path.join(tmp, files[0])
-            with p.lock:
-                p.watch_path = path
-            if os.path.exists(path) and os.path.getsize(path) > budget:
-                proc.kill()
-                over = True
-        time.sleep(2)
-    out, err = proc.communicate()
-    with p.lock:
-        p.watch_path = None
+    for _ in range(MAX_REDIRECTS):
+        shutil.rmtree(tmp, ignore_errors=True)
+        os.makedirs(tmp)
+        # -J -O dentro de una carpeta vacía: así sabemos qué archivo quedó aunque el nombre venga del servidor.
+        # --speed-limit/--speed-time: si pasan 2 min a < 10 KB/s la conexión se dio por muerta y se reintenta.
+        proc = subprocess.Popen(CURL + ["-f", "--retry", "5", "--retry-delay", "10", "--retry-all-errors",
+                                        "--speed-limit", "10000", "--speed-time", "120", "--max-filesize", str(budget),
+                                        "-w", "%{http_code} %{redirect_url}", *pin(url), "-J", "-O", url],
+                                cwd=tmp, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        over = False
+        while proc.poll() is None:  # avance en vivo y tope de tamaño aunque el servidor no diga cuánto pesa
+            files = os.listdir(tmp)
+            if files:
+                path = os.path.join(tmp, files[0])
+                with p.lock:
+                    p.watch_path = path
+                if os.path.exists(path) and os.path.getsize(path) > budget:
+                    proc.kill()
+                    over = True
+            time.sleep(2)
+        out, err = proc.communicate()
+        with p.lock:
+            p.watch_path = None
+        code, _, redirect = out.strip().partition(" ")
+        if proc.returncode == 0 and code.startswith("3") and redirect:
+            url = redirect  # el próximo pin() revisa el destino antes de pedirlo
+            continue
+        break
+    else:
+        shutil.rmtree(tmp, ignore_errors=True)
+        raise UserError(f"Too many redirects for {url}")
     files = os.listdir(tmp)
     if over or proc.returncode == 63:  # 63 = --max-filesize superado
         shutil.rmtree(tmp, ignore_errors=True)
@@ -235,11 +274,6 @@ def curl(url, out_dir, p: Progress, label) -> str:
     if proc.returncode != 0 or not files:
         shutil.rmtree(tmp, ignore_errors=True)
         raise UserError(f"Could not download {url} ({err.strip()[-200:] or f'curl exit code {proc.returncode}'})")
-    try:
-        check_public(out.strip() or url)  # adónde llevaron las redirecciones
-    except UserError:
-        shutil.rmtree(tmp, ignore_errors=True)
-        raise
     # El nombre lo elige el servidor: solo el nombre base, nunca una ruta (p. ej. "..%2F..%2Fapp%2Fworker.py")
     name = os.path.basename(urllib.parse.unquote(files[0]).replace("\\", "/")).lstrip(".") or "download"
     dest = os.path.join(out_dir, name)
@@ -275,19 +309,27 @@ def probe(url) -> tuple[str, str]:
     """(content-type, URL final tras redirecciones) sin descargar; ('', url) si el servidor no responde a HEAD."""
     if url.lower().startswith("ftp://"):
         return ("text/html" if url.endswith("/") else "", url)
-    r = subprocess.run(["curl", "-sIL", "--connect-timeout", "30", "-o", "/dev/null", "-w", "%{content_type}\t%{url_effective}", url],
-                       capture_output=True, text=True)
-    ctype, _, final = r.stdout.partition("\t")
-    return (ctype.lower(), final or url) if r.returncode == 0 else ("", url)
+    for _ in range(MAX_REDIRECTS):
+        r = subprocess.run(CURL + ["-I", "--max-time", "60", "-o", "/dev/null",
+                                   "-w", "%{http_code}\t%{redirect_url}\t%{content_type}", *pin(url), url],
+                           capture_output=True, text=True)
+        if r.returncode != 0:
+            return ("", url)
+        code, redirect, ctype = (r.stdout.split("\t") + ["", ""])[:3]
+        if code.startswith("3") and redirect:
+            url = redirect
+            continue
+        return (ctype.lower(), url)
+    return ("", url)
 
 
 def list_folder(url: str) -> list[str]:
     """Archivos FASTQ o comprimidos dentro de una carpeta HTTP (índice HTML) o FTP."""
     if url.lower().startswith("ftp://"):
-        names = sh(["curl", "-fsSL", "--list-only", url]).split()
+        names = sh(CURL + ["-f", "--max-time", "120", "--list-only", *pin(url), url]).split()
     else:
-        html = http_get(url).decode("utf-8", "replace")
-        names = [urllib.parse.unquote(h) for h in re.findall(r'href="([^"?#]+)"', html, re.I)]
+        body, url = fetch(url)
+        names = [urllib.parse.unquote(h) for h in re.findall(r'href="([^"?#]+)"', body.decode("utf-8", "replace"), re.I)]
     out = set()
     for n in names:
         full = urllib.parse.urljoin(url if url.endswith("/") else url + "/", n)
@@ -571,7 +613,6 @@ def _run(job, p: Progress):
         check_public(u)
         if not (FQ_RE.search(urllib.parse.urlparse(u).path) or ARCHIVE_RE.search(urllib.parse.urlparse(u).path)):
             ctype, final = probe(u)  # sin extensión conocida: ¿archivo o página/carpeta?
-            check_public(final)
             if ctype.startswith("text/html"):
                 found = list_folder(final if final.endswith("/") else final + "/")
                 if not found:
