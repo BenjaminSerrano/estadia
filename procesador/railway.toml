@@ -1,0 +1,8 @@
+# Servicio `procesador` en Railway: mismo repo y rama que el backend, con "Root Directory" = procesador.
+# Variables: BACKEND_URL (URL del backend) y WORKER_TOKEN (la misma del backend).
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+restartPolicyType = "ALWAYS"

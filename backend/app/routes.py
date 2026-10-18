@@ -397,10 +397,16 @@ async def upload_dataset(
     if counts is None or metadata is None:
         raise HTTPException(400, "both 'counts' and 'metadata' files are required")
 
-    counts_bytes = await counts.read()
-    metadata_bytes = await metadata.read()
+    dataset = create_dataset(db, background_tasks, name, organism, baseline, _clean_accession(genome_accession),
+                             await counts.read(), await metadata.read())
+    return {"dataset_id": dataset.id, "status": dataset.status}
+
+
+def create_dataset(db: Session, background_tasks: BackgroundTasks, name: str, organism: str, baseline: str,
+                   accession: str | None, counts_bytes: bytes, metadata_bytes: bytes) -> Dataset:
+    """Valida, guarda el dataset y lanza DESeq2 + anotación en segundo plano. La usan el upload de
+    tablas de conteo y los trabajos desde lecturas crudas (app/jobs.py): un solo pipeline de análisis."""
     parsed = _validate_upload(counts_bytes, metadata_bytes, baseline)
-    accession = _clean_accession(genome_accession)
 
     dataset = Dataset(name=name, organism=organism, status="pending", genome_accession=accession)
     db.add(dataset)
@@ -426,7 +432,7 @@ async def upload_dataset(
         f.write(metadata_bytes)
 
     background_tasks.add_task(run_analysis, dataset.id)
-    return {"dataset_id": dataset.id, "status": dataset.status}
+    return dataset
 
 
 @router.post("/datasets/{dataset_id}/annotate")

@@ -17,6 +17,26 @@ class Dataset(Base):
     genome_accession = Column(String(64), nullable=True)
 
 
+class Job(Base):
+    """Procesamiento desde lecturas crudas (links o accesiones de NCBI) que hace el servicio `procesador`.
+    queued -> running -> needs_conditions -> done, o error. Al asignar condiciones se crea un Dataset normal."""
+    __tablename__ = "jobs"
+    id = Column(Integer, primary_key=True)
+    # La API no tiene auth: el token (inadivinable) es lo único que da acceso al trabajo desde la página
+    token = Column(String(32), unique=True, index=True, nullable=False)
+    name = Column(String(256), nullable=False)
+    organism = Column(String(256))
+    genome_accession = Column(String(64), nullable=False)
+    links = Column(String, nullable=False)  # uno por línea, tal como los pegó el usuario
+    status = Column(String(24), default="queued")
+    progress = Column(String)  # JSON que manda el procesador: etapa, mensaje y estado de cada muestra
+    error = Column(String)
+    attempts = Column(Integer, default=0)
+    dataset_id = Column(Integer, ForeignKey("datasets.id"))
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
 class Condition(Base):
     __tablename__ = "conditions"
     id = Column(Integer, primary_key=True)

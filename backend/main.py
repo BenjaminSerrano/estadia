@@ -5,6 +5,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 from app.database import engine, Base
 from app.routes import router
+from app.jobs import router as jobs_router
 import uvicorn
 
 # Crear las tablas
@@ -54,6 +55,7 @@ app.add_middleware(
 
 # Incluir los routers - Sin prefijo para que coincida con el frontend
 app.include_router(router)
+app.include_router(jobs_router)
 
 # Redirigir la ruta raíz a /docs
 @app.get("/")
