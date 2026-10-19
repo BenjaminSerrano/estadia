@@ -479,13 +479,14 @@ def ena_runs(acc) -> list[dict]:
         rows = []
     if rows:
         return [{"run": r["run_accession"], "title": r.get("sample_title") or r.get("sample_alias") or r["run_accession"],
+                 "alias": r.get("sample_alias") or "",
                  "bytes": sum(int(x) for x in (r.get("fastq_bytes") or "0").split(";") if x),
                  "ena": ["https://" + u for u in (r.get("fastq_ftp") or "").split(";") if u]} for r in rows]
     text = http_get(f"https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/runinfo?acc={acc}").decode()
     rows = [r for r in csv.DictReader(io.StringIO(text)) if r.get("Run", "").startswith(("SRR", "ERR", "DRR"))]
     if not rows:
         raise UserError(f"No sequencing runs found for {acc} on NCBI or ENA")
-    return [{"run": r["Run"], "title": r.get("SampleName") or r["Run"],
+    return [{"run": r["Run"], "title": r.get("SampleName") or r["Run"], "alias": r.get("SampleName") or "",
              "bytes": int(float(r.get("size_MB") or 0) * 1e6), "ena": []} for r in rows]
 
 
@@ -551,12 +552,14 @@ def quantify(s, idx, p: Progress) -> dict:
         r2 = merge(s["r2"], os.path.join(d, "R2")) if s["r2"] else None
         p.sample(name, state="qc")
         qc = os.path.join(d, "fastp.json")
+        t0 = time.time()
         try:
             sh(["fastp", "-i", r1] + (["-I", r2] if r2 else []) + ["-w", str(THREADS), "-j", qc, "-h", "/dev/null"])
         except RuntimeError as e:
             raise SampleFailed("Failed quality control: are R1 and R2 from different samples, or is a FASTQ "
                                f"file damaged? ({str(e)[-200:]})")
         p.check()
+        t1 = time.time()
         p.sample(name, state="counting")
         reads = ["-1", r1, "-2", r2] if r2 else ["-r", r1]
         try:
@@ -577,6 +580,7 @@ def quantify(s, idx, p: Progress) -> dict:
     q = json.load(open(qc))
     before, after = q["summary"]["before_filtering"], q["summary"]["after_filtering"]
     meta = json.load(open(os.path.join(d, "quant", "aux_info", "meta_info.json")))
+    log(f"{name}: fastp {t1 - t0:.0f} s, Salmon {time.time() - t1:.0f} s")
     stats = {"state": "done", "layout": "paired" if r2 else "single",
              "reads": before["total_reads"] // (2 if r2 else 1), "q30": round(100 * before["q30_rate"], 1),
              "passed": round(100 * after["total_reads"] / max(1, before["total_reads"]), 1),
@@ -587,27 +591,39 @@ def quantify(s, idx, p: Progress) -> dict:
     return stats
 
 
-def sra_fetch(run, ena_urls, out_dir, p: Progress) -> dict:
-    """Descarga una corrida de NCBI (espejo en AWS, el más rápido) y la pasa a FASTQ; ENA como respaldo."""
+def sra_download(run, ena_urls, out_dir, p: Progress) -> list[str]:
+    """Solo la descarga de una corrida (corre adelantada, en paralelo con el conteo de la muestra anterior): el
+    .sra desde el espejo de NCBI en AWS (el más rápido) o, si falla, los FASTQ de ENA."""
     os.makedirs(out_dir, exist_ok=True)
+    t0 = time.time()
     try:
         sra = curl(f"https://sra-pub-run-odp.s3.amazonaws.com/sra/{run}/{run}", out_dir, p, run)
         dest = os.path.join(out_dir, f"{run}.sra")
         os.rename(sra, dest)
-        sh(["fasterq-dump", "--split-files", "-e", str(THREADS), "-t", os.path.join(out_dir, "tmp"), "-O", out_dir, dest])
-        os.remove(dest)
-        shutil.rmtree(os.path.join(out_dir, "tmp"), ignore_errors=True)
-        fq = sorted(f for f in os.listdir(out_dir) if f.startswith(run) and f.endswith(".fastq"))
-    except (UserError, RuntimeError) as e:
+        files = [dest]
+    except UserError as e:
         if not ena_urls:
             raise UserError(f"Could not download {run}: {e}")
         log(f"{run}: NCBI falló ({e}); uso ENA")
-        fq = [os.path.basename(curl(u, out_dir, p, f"{run} desde ENA")) for u in ena_urls]
-    paths = [os.path.join(out_dir, f) for f in fq]
-    pair = [f for f in paths if re.search(r"_[12]\.f(ast)?q(\.gz)?$", f)]
+        files = [curl(u, out_dir, p, f"{run} from ENA") for u in ena_urls]
+    log(f"{run}: descarga {time.time() - t0:.0f} s, {gb(sum(os.path.getsize(f) for f in files))} GB")
+    return files
+
+
+def sra_fastq(run, files, out_dir) -> dict:
+    """.sra -> FASTQ con fasterq-dump, en el hilo principal: así no compite por CPU con Salmon (como en la
+    prueba de carga del 2026-10-08, donde solo la descarga iba adelantada)."""
+    if files[0].endswith(".sra"):
+        t0 = time.time()
+        sh(["fasterq-dump", "--split-files", "-e", str(THREADS), "-t", os.path.join(out_dir, "tmp"), "-O", out_dir, files[0]])
+        os.remove(files[0])
+        shutil.rmtree(os.path.join(out_dir, "tmp"), ignore_errors=True)
+        files = [os.path.join(out_dir, f) for f in sorted(os.listdir(out_dir)) if f.startswith(run) and f.endswith(".fastq")]
+        log(f"{run}: fasterq-dump {time.time() - t0:.0f} s")
+    pair = [f for f in files if re.search(r"_[12]\.f(ast)?q(\.gz)?$", f)]
     if len(pair) == 2:
         return {"r1": [pair[0]], "r2": [pair[1]]}
-    return {"r1": paths[:1], "r2": []}
+    return {"r1": files[:1], "r2": []}
 
 
 # ── Trabajo ────────────────────────────────────────────────────────────────────
@@ -689,8 +705,14 @@ def _run(job, p: Progress):
     for s in group_samples(fastqs):
         s["name"] = unique_name(s["name"], used)
         samples.append(dict(s, kind="file", source="file"))
+    # Si NCBI repite el título en todas las muestras (p. ej. "Microbe sample from …"), el nombre es la corrida
+    # más su alias: "SRR15714631 (1)"
+    titles_repeat = len({r["title"] for r in runs}) < len(runs)
     for r in runs:
-        samples.append({"name": unique_name(r["title"], used), "kind": "sra", "run": r["run"], "ena": r["ena"],
+        name = r["title"]
+        if titles_repeat:
+            name = f"{r['run']} ({r['alias']})" if r["alias"] and r["alias"] != r["run"] else r["run"]
+        samples.append({"name": unique_name(name, used), "kind": "sra", "run": r["run"], "ena": r["ena"],
                         "source": r["run"], "r1": [], "r2": []})
     if not samples:
         raise UserError("No samples found in the links")
@@ -706,21 +728,25 @@ def _run(job, p: Progress):
     p.set(stage="counting", message="Counting reads per gene")
     sra = [s for s in samples if s["kind"] == "sra"]
     with ThreadPoolExecutor(1) as pool:
-        nxt = pool.submit(sra_fetch, sra[0]["run"], sra[0]["ena"], os.path.join(WORK, "sra", sra[0]["id"]), p) if sra else None
+        nxt = pool.submit(sra_download, sra[0]["run"], sra[0]["ena"], os.path.join(WORK, "sra", sra[0]["id"]), p) if sra else None
         for s in samples:
             p.check()
             try:
                 if s["kind"] == "sra":
                     p.sample(s["name"], state="downloading")
                     try:
-                        s.update(nxt.result())
+                        files = nxt.result()
                     except (UserError, RuntimeError) as e:
                         raise SampleFailed(f"Download failed: {str(e)[-300:]}")
                     finally:
                         k = sra.index(s)
                         if k + 1 < len(sra):
                             n = sra[k + 1]
-                            nxt = pool.submit(sra_fetch, n["run"], n["ena"], os.path.join(WORK, "sra", n["id"]), p)
+                            nxt = pool.submit(sra_download, n["run"], n["ena"], os.path.join(WORK, "sra", n["id"]), p)
+                    try:
+                        s.update(sra_fastq(s["run"], files, os.path.join(WORK, "sra", s["id"])))
+                    except RuntimeError as e:
+                        raise SampleFailed(f"Could not convert the run to FASTQ: {str(e)[-300:]}")
                 quantify(s, idx, p)
             except SampleFailed as e:
                 s["failed"] = True
