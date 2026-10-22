@@ -1,6 +1,7 @@
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 from app.database import engine, Base
@@ -52,6 +53,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# /datasets/{id}/results trae todos los genes (cientos de KB en JSON); comprimido pesa ~5 veces menos
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Incluir los routers - Sin prefijo para que coincida con el frontend
 app.include_router(router)

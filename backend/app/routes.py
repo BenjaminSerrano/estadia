@@ -23,6 +23,8 @@ MIN_REPLICATES = 2
 # Un gen "está" en una condición del Venn solo si es DEG ahí (mismos umbrales del paper de Cobetia).
 DEG_PADJ = 0.05
 DEG_LFC = 1.0
+# Venn por dirección: además del umbral, el signo del log2FC ("" = cualquier dirección)
+DIRECTIONS = {"": "", "up": " AND log2FoldChange > 0", "down": " AND log2FoldChange < 0"}
 DESEQ2_TIMEOUT_SEC = 600
 
 
@@ -35,18 +37,21 @@ def _parse_ids(s: str) -> list:
         raise HTTPException(400, "condition IDs must be integers")
 
 
-def _filter_clause(include_ids: list, exclude_ids: list, params: dict) -> str:
+def _filter_clause(include_ids: list, exclude_ids: list, params: dict, direction: str = "") -> str:
     """
     Builds the SQL WHERE fragment that restricts genes to those that are DEGs
     in ALL include_ids and in NONE of exclude_ids. Populates params in place.
     Uploaded datasets store DESeq2 results for every gene, so membership must
-    be the DEG threshold, not just having a row.
+    be the DEG threshold, not just having a row. With direction "up"/"down" the
+    sets are the up- or downregulated DEGs only (both include and exclude).
     ponytail: named params prevent injection; string-interpolated placeholders are safe
               because they're derived from the param dict keys, not user strings.
     """
     n = len(include_ids)
     if n == 0:
         raise HTTPException(400, "include_conditions is required")
+    if direction not in DIRECTIONS:
+        raise HTTPException(400, "direction must be 'up', 'down' or empty")
 
     inc_ph = ",".join(f":inc{i}" for i in range(n))
     for i, cid in enumerate(include_ids):
@@ -54,7 +59,7 @@ def _filter_clause(include_ids: list, exclude_ids: list, params: dict) -> str:
     params["n"] = n
     params["deg_padj"] = DEG_PADJ
     params["deg_lfc"] = DEG_LFC
-    is_deg = "padj < :deg_padj AND ABS(log2FoldChange) >= :deg_lfc"
+    is_deg = "padj < :deg_padj AND ABS(log2FoldChange) >= :deg_lfc" + DIRECTIONS[direction]
 
     excl = ""
     if exclude_ids:
@@ -88,6 +93,43 @@ def list_conditions(dataset_id: int, db: Session = Depends(get_db)):
     return [{"id": r.id, "label": r.label, "is_baseline": bool(r.is_baseline)} for r in rows]
 
 
+@router.get("/datasets/{dataset_id}/results")
+def get_results(dataset_id: int, db: Session = Depends(get_db)):
+    """
+    Every gene (not only DEGs) with log2FC and padj for each comparison vs the control,
+    as arrays in the order of `comparisons`; null where there is no result. The
+    post-analysis figures and the joint table are computed from this in the browser.
+    """
+    conditions = db.query(Condition).filter(Condition.dataset_id == dataset_id).order_by(Condition.id).all()
+    if not conditions:
+        raise HTTPException(404, f"Dataset {dataset_id} not found")
+    comparisons = [c for c in conditions if not c.is_baseline]
+    col = {c.id: i for i, c in enumerate(comparisons)}
+
+    genes: dict = {}
+    for r in db.execute(text("""
+        SELECT g.id, g.locustag, g.Name, g.KO_code, er.condition_id, er.log2FoldChange, er.padj
+        FROM genes g LEFT JOIN expression_results er ON er.gene_id = g.id
+        WHERE g.dataset_id = :dataset_id
+        ORDER BY g.id
+    """), {"dataset_id": dataset_id}):
+        g = genes.get(r.id)
+        if g is None:
+            g = genes[r.id] = {"locustag": r.locustag, "name": r.Name, "ko": r.KO_code,
+                               "log2fc": [None] * len(comparisons), "padj": [None] * len(comparisons)}
+        i = col.get(r.condition_id)
+        if i is not None:
+            g["log2fc"][i] = r.log2FoldChange
+            g["padj"][i] = r.padj
+
+    return {
+        "control": next((c.label for c in conditions if c.is_baseline), None),
+        "thresholds": {"padj": DEG_PADJ, "log2fc": DEG_LFC},
+        "comparisons": [{"id": c.id, "label": c.label} for c in comparisons],
+        "genes": list(genes.values()),
+    }
+
+
 # ── Gene queries ───────────────────────────────────────────────────────────────
 
 @router.get("/datasets/{dataset_id}/genes")
@@ -96,6 +138,7 @@ def get_genes(
     include_conditions: str = Query(..., description="Comma-separated condition IDs (gene must appear in ALL)"),
     exclude_conditions: str = Query("", description="Comma-separated condition IDs (gene must appear in NONE)"),
     pathway: str = Query(""),
+    direction: str = Query("", description="up, down or empty (any direction)"),
     skip: int = 0,
     limit: int = MAX_LIMIT,
     db: Session = Depends(get_db),
@@ -107,7 +150,7 @@ def get_genes(
     exclude_ids = _parse_ids(exclude_conditions)
 
     params: dict = {"dataset_id": dataset_id, "skip": skip, "limit": limit}
-    filt = _filter_clause(include_ids, exclude_ids, params)
+    filt = _filter_clause(include_ids, exclude_ids, params, direction)
 
     pathway_clause = ""
     if pathway:
@@ -156,13 +199,14 @@ def get_pathways(
     dataset_id: int,
     include_conditions: str = Query(...),
     exclude_conditions: str = Query(""),
+    direction: str = Query("", description="up, down or empty (any direction)"),
     db: Session = Depends(get_db),
 ):
     include_ids = _parse_ids(include_conditions)
     exclude_ids = _parse_ids(exclude_conditions)
 
     params: dict = {"dataset_id": dataset_id}
-    filt = _filter_clause(include_ids, exclude_ids, params)
+    filt = _filter_clause(include_ids, exclude_ids, params, direction)
 
     rows = db.execute(text(f"""
         SELECT g.Pathway FROM genes g
@@ -186,20 +230,21 @@ def get_stats(
     dataset_id: int,
     include_conditions: str = Query(...),
     exclude_conditions: str = Query(""),
+    direction: str = Query("", description="up, down or empty (any direction)"),
     db: Session = Depends(get_db),
 ):
     include_ids = _parse_ids(include_conditions)
     exclude_ids = _parse_ids(exclude_conditions)
 
     params: dict = {"dataset_id": dataset_id}
-    filt = _filter_clause(include_ids, exclude_ids, params)
+    filt = _filter_clause(include_ids, exclude_ids, params, direction)
 
     total = db.execute(text(f"""
         SELECT COUNT(DISTINCT g.id) FROM genes g
         WHERE g.dataset_id = :dataset_id {filt}
     """), params).scalar()
 
-    pathway_data = get_pathways(dataset_id, include_conditions, exclude_conditions, db)
+    pathway_data = get_pathways(dataset_id, include_conditions, exclude_conditions, direction, db)
 
     return {
         "total_genes": total,
