@@ -1,18 +1,18 @@
 import { FONT, mixColor, truncate } from "./scale"
-import { formatCondition, STATUS_COLOR, type HeatmapData, type RankBy } from "@/lib/deg"
+import type { HeatmapData, RankBy } from "@/lib/deg"
 import type { Results } from "@/lib/api-service"
+import type { FigureStyle } from "@/lib/figure-style"
 
 // log2FC heatmap, genes x comparisons (heatmap_log2FC in the issue's script): diverging colors
 // capped at ±limit for display only, "*" where the gene is a DEG, rows clustered when complete.
 
-const MID_COLOR = "#FFFFFF"
-const NA_COLOR = "#D5D5D5"
 const ROW_H = 14
 const TOP = 104
 const LABEL_W = 470
 
-export default function Heatmap({ results, data, limit, rankBy }: {
+export default function Heatmap({ results, data, limit, rankBy, style }: {
   results: Results
+  style: FigureStyle
   data: HeatmapData
   limit: number
   rankBy: RankBy
@@ -26,8 +26,8 @@ export default function Heatmap({ results, data, limit, rankBy }: {
   const H = TOP + rows.length * ROW_H + 16
   const y = (row: number) => TOP + row * ROW_H
 
-  const color = (v: number | null) => v == null ? NA_COLOR
-    : mixColor(MID_COLOR, v >= 0 ? STATUS_COLOR.up : STATUS_COLOR.down, Math.min(Math.abs(v), limit) / limit)
+  const { up, down, mid, missing } = style.colors
+  const color = (v: number | null) => v == null ? missing : mixColor(mid, v >= 0 ? up : down, Math.min(Math.abs(v), limit) / limit)
 
   // Dendrogram: each merge drawn as an elbow between its two members, root at the left
   const branches: string[] = []
@@ -44,7 +44,7 @@ export default function Heatmap({ results, data, limit, rankBy }: {
     })
   }
 
-  const vs = results.control ? ` vs ${formatCondition(results.control)}` : ""
+  const vs = style.control ? ` vs ${style.control}` : ""
   const legendX = W - 190
 
   return (
@@ -52,9 +52,9 @@ export default function Heatmap({ results, data, limit, rankBy }: {
       aria-label="Heatmap of log2 fold changes, genes by comparison">
       <defs>
         <linearGradient id="heatmap-scale">
-          <stop offset="0" stopColor={STATUS_COLOR.down} />
-          <stop offset="0.5" stopColor={MID_COLOR} />
-          <stop offset="1" stopColor={STATUS_COLOR.up} />
+          <stop offset="0" stopColor={down} />
+          <stop offset="0.5" stopColor={mid} />
+          <stop offset="1" stopColor={up} />
         </linearGradient>
       </defs>
       <rect width={W} height={H} fill="#ffffff" />
@@ -75,7 +75,7 @@ export default function Heatmap({ results, data, limit, rankBy }: {
 
       {results.comparisons.map((c, j) => (
         <text key={c.id} x={cellsX + j * cellW + cellW / 2} y={TOP - 10} textAnchor="middle" fontSize="12" fontWeight="700" fill="#333333">
-          {formatCondition(c.label)}
+          {style.comparisons[j]}
         </text>
       ))}
 
@@ -87,7 +87,7 @@ export default function Heatmap({ results, data, limit, rankBy }: {
           <g key={row.k}>
             <title>
               {`${g.locustag}${g.name ? ` · ${g.name}` : ""}\n` + results.comparisons.map((c, j) =>
-                `${formatCondition(c.label)}: log2FC ${g.log2fc[j]?.toFixed(3) ?? "NA"}, padj ${g.padj[j]?.toExponential(2) ?? "NA"}`).join("\n")}
+                `${style.comparisons[j]}: log2FC ${g.log2fc[j]?.toFixed(3) ?? "NA"}, padj ${g.padj[j]?.toExponential(2) ?? "NA"}`).join("\n")}
             </title>
             {row.values.map((v, j) => (
               <rect key={j} x={cellsX + j * cellW} y={y(i)} width={cellW} height={ROW_H} fill={color(v)} />

@@ -1,6 +1,6 @@
 import { FONT, niceTicks, truncate } from "./scale"
-import { formatCondition, STATUS_COLOR, STATUS_LABEL } from "@/lib/deg"
 import type { Results } from "@/lib/api-service"
+import type { FigureStyle } from "@/lib/figure-style"
 
 // Genes with the largest effects in one comparison (barras_log2FC_comparacion in the issue's
 // script): horizontal log2FC bars, upregulated on top, labelled with the gene product.
@@ -10,8 +10,9 @@ const LABEL_W = 400
 const PLOT_W = 330
 const TOP = 70
 
-export default function GeneBars({ results, index, genes, perDirection }: {
+export default function GeneBars({ results, index, genes, perDirection, style }: {
   results: Results
+  style: FigureStyle
   index: number
   genes: number[] // gene indices, top to bottom
   perDirection: number
@@ -24,14 +25,14 @@ export default function GeneBars({ results, index, genes, perDirection }: {
   const plotH = Math.max(genes.length, 1) * ROW_H
   const W = plotX + PLOT_W + 24
   const H = TOP + plotH + 90
-  const c = results.comparisons[index]
+  const name = style.comparisons[index]
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto max-w-4xl mx-auto block" fontFamily={FONT} role="img"
-      aria-label={`Genes with the largest log2 fold change at ${formatCondition(c.label)}`}>
+      aria-label={`Genes with the largest log2 fold change at ${name}`}>
       <rect width={W} height={H} fill="#ffffff" />
       <text x={12} y={28} fontSize="17" fontWeight="700" fill="#333333">
-        Largest changes: {formatCondition(c.label)}{results.control ? ` vs ${formatCondition(results.control)}` : ""}
+        Largest changes: {name}{style.control ? ` vs ${style.control}` : ""}
       </text>
       <text x={12} y={48} fontSize="12" fill="#555555">
         Up to {perDirection} DEGs per direction with the largest |log2FC| (padj &lt; {results.thresholds.padj}, |log2FC| ≥ {results.thresholds.log2fc})
@@ -57,7 +58,7 @@ export default function GeneBars({ results, index, genes, perDirection }: {
           <g key={k}>
             <title>{`${g.locustag}${g.name ? ` · ${g.name}` : ""}\nlog2FC ${v.toFixed(3)}, padj ${g.padj[index]!.toExponential(2)}`}</title>
             <rect x={Math.min(x(0), x(v))} y={TOP + i * ROW_H + 3} width={Math.abs(x(v) - x(0))} height={ROW_H - 6}
-              fill={v > 0 ? STATUS_COLOR.up : STATUS_COLOR.down} />
+              fill={v > 0 ? style.colors.up : style.colors.down} />
             <text x={plotX - 8} y={TOP + i * ROW_H + ROW_H / 2} textAnchor="end" dominantBaseline="central" fontSize="11" fill="#333333">
               {g.name ? <>{truncate(g.name, 50)}<tspan fill="#8A8A8A"> {g.locustag}</tspan></> : g.locustag}
             </text>
@@ -67,8 +68,8 @@ export default function GeneBars({ results, index, genes, perDirection }: {
 
       {(["up", "down"] as const).map((s, i) => (
         <g key={s} transform={`translate(${plotX + PLOT_W / 2 - 110 + i * 120}, ${TOP + plotH + 62})`}>
-          <rect width={14} height={14} fill={STATUS_COLOR[s]} />
-          <text x={20} y={7} dominantBaseline="central" fontSize="12" fill="#333333">{STATUS_LABEL[s]}</text>
+          <rect width={14} height={14} fill={style.colors[s]} />
+          <text x={20} y={7} dominantBaseline="central" fontSize="12" fill="#333333">{style.status[s]}</text>
         </g>
       ))}
     </svg>

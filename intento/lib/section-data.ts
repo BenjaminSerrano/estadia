@@ -1,16 +1,17 @@
 import { Circle, CheckCircle } from "lucide-react"
 import type { Condition, Direction } from "./api-service"
 
-// Given ordered conditions [c0, c1, c2], map Venn section → include/exclude condition IDs.
-// Section letters A/B/C map to conditions by position (0/1/2).
+// Given ordered conditions [c0, c1, ...], map a Venn region / UpSet intersection → include/exclude
+// condition IDs. Section letters map to conditions by position (A = 0, B = 1, ...).
+const letterIndex = (l: string) => l.charCodeAt(0) - 65
+
 export function sectionToConditions(
   section: string,
   conditions: Condition[]
 ): { include: number[]; exclude: number[] } {
   if (!conditions.length) return { include: [], exclude: [] }
   const ids = conditions.map(c => c.id)
-  const letterIdx: Record<string, number> = { A: 0, B: 1, C: 2 }
-  const included = section.split('').map(l => ids[letterIdx[l]]).filter((x): x is number => x !== undefined)
+  const included = section.split('').map(l => ids[letterIndex(l)]).filter((x): x is number => x !== undefined)
   const excluded = ids.filter(id => !included.includes(id))
   return { include: included, exclude: excluded }
 }
@@ -21,18 +22,21 @@ export function isIntersection(section: string) {
 
 export function getSectionInfo(section: string, conditions: Condition[] = [], direction: Direction = '') {
   const lbl = (i: number) => conditions[i]?.label ?? '?'
-  const idx = section.split('').map(l => 'ABC'.indexOf(l))
+  const idx = section.split('').map(letterIndex)
+  if (!section || idx.some(i => i < 0 || (conditions.length && i >= conditions.length))) return null
   const inside = idx.map(lbl)
-  // Conditions not in this section (works for 1, 2 or 3 comparisons)
+  // Conditions not in this section (any number of comparisons)
   const outside = conditions.map((_, i) => i).filter(i => !idx.includes(i)).map(lbl)
+  const list = (xs: string[], last: string) => xs.length > 1 ? `${xs.slice(0, -1).join(', ')} ${last} ${xs[xs.length - 1]}` : xs[0]
+  const all = section.length >= 3 && section.length === conditions.length
   const verb = direction === 'up' ? 'upregulated' : direction === 'down' ? 'downregulated' : 'differentially expressed'
   const title = direction
-    ? `${direction === 'up' ? 'Upregulated' : 'Downregulated'} at ${section.length === 3 ? 'all conditions' : inside.join(' and ')}`
+    ? `${direction === 'up' ? 'Upregulated' : 'Downregulated'} at ${all ? 'all conditions' : list(inside, 'and')}`
     : section.length === 1 ? `Genes at ${inside[0]}`
-    : section.length === 3 ? 'Common genes at all conditions'
-    : `Common genes: ${inside.join(' and ')}`
-  const description = `Genes ${verb} at ${inside.join(' and ')}` +
-    (outside.length ? `, but not at ${outside.join(' or ')}.` : '.')
+    : all ? 'Common genes at all conditions'
+    : `Common genes: ${list(inside, 'and')}`
+  const description = `Genes ${verb} at ${list(inside, 'and')}` +
+    (outside.length ? `, but not at ${list(outside, 'or')}.` : '.')
 
   const styles: Record<string, { color: string; accentColor: string; icon: any }> = {
     A:   { color: "bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30",     accentColor: "text-purple-600 dark:text-purple-400",   icon: Circle },
@@ -43,5 +47,11 @@ export function getSectionInfo(section: string, conditions: Condition[] = [], di
     BC:  { color: "bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-900/30 dark:to-violet-800/30",     accentColor: "text-violet-600 dark:text-violet-400",   icon: CheckCircle },
     ABC: { color: "bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-700/50",         accentColor: "text-slate-700 dark:text-slate-300",     icon: CheckCircle },
   }
-  return styles[section] ? { title, description, ...styles[section] } : null
+  // Regions beyond the three-circle Venn (UpSet intersections) share one style
+  const style = styles[section] ?? {
+    color: "bg-gradient-to-br from-sky-50 to-slate-100 dark:from-sky-900/20 dark:to-slate-800/50",
+    accentColor: "text-sky-700 dark:text-sky-400",
+    icon: section.length > 1 ? CheckCircle : Circle,
+  }
+  return { title, description, ...style }
 }

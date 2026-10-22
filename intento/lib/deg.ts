@@ -21,7 +21,8 @@ export const STATUS_COLOR: Record<Status, string> = {
   na: "#E6E6E6",
 }
 
-export const SECTION_LETTERS = "ABC"
+// Region / intersection keys: one letter per comparison in order ("A", "AB", "ABD", ...)
+export const SECTION_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 // Numeric labels are temperatures ("16" -> "16°C"); anything else is shown as-is
 export const formatCondition = (l: string) => /^\d+(\.\d+)?$/.test(l) ? `${l}°C` : l
@@ -47,6 +48,20 @@ export function regionCounts(statuses: Status[][], direction: Direction): Record
     if (key) counts[key] = (counts[key] ?? 0) + 1
   }
   return counts
+}
+
+// Exact intersections (UpSet columns), largest first; ties as in the issue's script:
+// more comparisons first, then the 0/1 membership pattern
+export function intersections(statuses: Status[][], direction: Direction) {
+  const groups = new Map<string, number[]>()
+  statuses.forEach((row, k) => {
+    const key = row.map((s, i) => inSet(s, direction) ? SECTION_LETTERS[i] : "").join("")
+    if (key) groups.set(key, [...(groups.get(key) ?? []), k])
+  })
+  const n = statuses[0]?.length ?? 0
+  const bits = (key: string) => Array.from({ length: n }, (_, i) => key.includes(SECTION_LETTERS[i]) ? "1" : "0").join("")
+  return [...groups].map(([key, genes]) => ({ key, genes }))
+    .sort((a, b) => b.genes.length - a.genes.length || b.key.length - a.key.length || (bits(a.key) < bits(b.key) ? -1 : 1))
 }
 
 export const directionCounts = (statuses: Status[][], n: number) =>

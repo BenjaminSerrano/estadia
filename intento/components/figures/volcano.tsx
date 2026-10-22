@@ -1,6 +1,7 @@
 import { FONT, niceTicks } from "./scale"
-import { formatCondition, STATUS_COLOR, STATUS_LABEL, type Status } from "@/lib/deg"
+import type { Status } from "@/lib/deg"
 import type { Results } from "@/lib/api-service"
+import type { FigureStyle } from "@/lib/figure-style"
 
 // Volcano plot of one comparison (volcano_comparacion in the issue's script): every gene with
 // log2FC and padj, colored by classification, dashed lines at the DEG thresholds.
@@ -11,8 +12,9 @@ const PLOT_W = 440
 const PLOT_H = 330
 const DOUBLE_XMIN = 2.2250738585072014e-308 // R's .Machine$double.xmin
 
-export default function Volcano({ results, statuses, index }: {
+export default function Volcano({ results, statuses, index, style }: {
   results: Results
+  style: FigureStyle
   statuses: Status[][]
   index: number
 }) {
@@ -33,16 +35,16 @@ export default function Volcano({ results, statuses, index }: {
   const y = (v: number) => TOP + PLOT_H - (v / yt[yt.length - 1]) * PLOT_H
   const W = LEFT + PLOT_W + 24
   const H = TOP + PLOT_H + 92
-  const c = results.comparisons[index]
+  const name = style.comparisons[index]
   const order: Status[] = ["ns", "down", "up"] // DEGs drawn on top
   const count = (s: Status) => pts.filter(d => d.s === s).length
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto max-w-2xl mx-auto block" fontFamily={FONT} role="img"
-      aria-label={`Volcano plot at ${formatCondition(c.label)}`}>
+      aria-label={`Volcano plot at ${name}`}>
       <rect width={W} height={H} fill="#ffffff" />
       <text x={LEFT} y={28} fontSize="17" fontWeight="700" fill="#333333">
-        Volcano: {formatCondition(c.label)}{results.control ? ` vs ${formatCondition(results.control)}` : ""}
+        Volcano: {name}{style.control ? ` vs ${style.control}` : ""}
       </text>
       <text x={LEFT} y={48} fontSize="12" fill="#555555">
         {pts.length} genes with log2FC and padj{hasZero ? `; padj = 0 drawn at ${floor.toExponential(1)}` : ""}
@@ -67,7 +69,7 @@ export default function Volcano({ results, statuses, index }: {
       </text>
 
       {order.map(s => (
-        <g key={s} fill={STATUS_COLOR[s]} fillOpacity={0.65}>
+        <g key={s} fill={style.colors[s as "up" | "down" | "ns"]} fillOpacity={0.65}>
           {pts.filter(d => d.s === s).map(d => (
             <circle key={d.k} cx={x(d.l)} cy={y(yv(d.p))} r={s === "ns" ? 2 : 2.6} />
           ))}
@@ -81,8 +83,8 @@ export default function Volcano({ results, statuses, index }: {
 
       {(["up", "down", "ns"] as const).map((s, i) => (
         <g key={s} transform={`translate(${LEFT + PLOT_W / 2 - 200 + i * 140}, ${TOP + PLOT_H + 64})`}>
-          <circle cx={6} cy={7} r={5} fill={STATUS_COLOR[s]} />
-          <text x={16} y={7} dominantBaseline="central" fontSize="12" fill="#333333">{STATUS_LABEL[s]} ({count(s)})</text>
+          <circle cx={6} cy={7} r={5} fill={style.colors[s]} />
+          <text x={16} y={7} dominantBaseline="central" fontSize="12" fill="#333333">{style.status[s]} ({count(s)})</text>
         </g>
       ))}
     </svg>

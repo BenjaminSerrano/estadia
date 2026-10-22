@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import VennDiagram from "@/components/venn-diagram"
-import { ArrowRight, ChevronLeft, HelpCircle, Info, FlaskConical, Download } from "lucide-react"
+import { ArrowRight, ChevronLeft, HelpCircle, Info, FlaskConical, Download, SlidersHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Tutorial from "@/components/tutorial"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -11,7 +11,8 @@ import { useToast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { getSectionInfo, sectionToConditions } from "@/lib/section-data"
 import { getConditions, getStats, getPathways, getResults, listDatasets, type Condition, type Dataset, type Direction, type Results } from "@/lib/api-service"
-import { directionCounts, formatCondition, heatmapData, isOpposite, jointTable, regionCounts, statusMatrix, STATUS_LABEL, topGenes, type RankBy } from "@/lib/deg"
+import { directionCounts, heatmapData, inSet, intersections, isOpposite, jointTable, regionCounts, statusMatrix, STATUS_LABEL, topGenes, type RankBy } from "@/lib/deg"
+import { DEFAULT_SETTINGS, loadSettings, resolveStyle, saveSettings, type FigureSettings } from "@/lib/figure-style"
 import { downloadCsv } from "@/lib/export-figure"
 import FigureCard from "@/components/figure-card"
 import VennFigure from "@/components/figures/venn-figure"
@@ -19,9 +20,26 @@ import DegBars from "@/components/figures/deg-bars"
 import Heatmap from "@/components/figures/heatmap"
 import GeneBars from "@/components/figures/gene-bars"
 import Volcano from "@/components/figures/volcano"
+import UpSet, { type UpsetPalette } from "@/components/figures/upset"
+import FigureSettingsSheet from "@/components/figure-settings"
 import Segmented from "@/components/segmented"
 
 const TOP_GENES = 10
+// The Venn draws at most three circles; beyond that the UpSet is the only view
+const MAX_VENN = 3
+
+// Interactive UpSet on the page's card follows the theme; the figure below is drawn on white
+const THEME_UPSET: Omit<UpsetPalette, "bar"> = {
+  text: "hsl(var(--foreground))", muted: "hsl(var(--muted-foreground))", stripe: "hsl(var(--muted) / 0.5)",
+  dotOff: "hsl(var(--border))", selected: "hsl(var(--primary) / 0.15)",
+}
+const PAPER_UPSET: Omit<UpsetPalette, "bar"> = {
+  background: "#ffffff", text: "#333333", muted: "#666666", stripe: "#F4F4F4", dotOff: "#DDDDDD", selected: "transparent",
+}
+
+// Chip colors per comparison: the Venn's three temperature hues, then more for larger designs
+const condColors = ['var(--temp-cold)', 'var(--temp-warm)', 'var(--temp-hot)', '160 84% 39%', '262 83% 58%', '330 81% 60%', '25 95% 53%', '173 80% 40%']
+const condColor = (i: number) => condColors[i % condColors.length]
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/theme-toggle"
 
@@ -58,6 +76,11 @@ function VennPage() {
   const [rankBy, setRankBy] = useState<RankBy>("padj")
   const [colorLimit, setColorLimit] = useState(3)
   const [comparison, setComparison] = useState(0)
+  const [view, setView] = useState<"venn" | "upset">("venn")
+  const [upsetDirection, setUpsetDirection] = useState<Direction>("up")
+  // Figure colors and names (this browser only), loaded per dataset
+  const [settings, setSettings] = useState<FigureSettings>(DEFAULT_SETTINGS)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const { toast } = useToast()
 
   // Redirect back home if no valid dataset id
@@ -77,15 +100,40 @@ function VennPage() {
       })
       .catch(() => setConditionsLoaded(true))
     getResults(datasetId).then(setResults).catch(console.error)
+    setSettings(loadSettings(datasetId))
   }, [datasetId])
+
+  const updateSettings = (s: FigureSettings) => {
+    setSettings(s)
+    saveSettings(datasetId, s)
+  }
 
   const statuses = useMemo(() => results ? statusMatrix(results) : [], [results])
   const counts = useMemo(() => results ? regionCounts(statuses, direction) : undefined, [results, statuses, direction])
   const opposite = useMemo(() => statuses.filter(isOpposite).length, [statuses])
   const heatmap = useMemo(() => results ? heatmapData(results, statuses, heatmapTop, rankBy) : null, [results, statuses, heatmapTop, rankBy])
+  const style = useMemo(() => results ? resolveStyle(results, settings) : null, [results, settings])
+  const columns = useMemo(() => intersections(statuses, direction), [statuses, direction])
+  const figureColumns = useMemo(() => intersections(statuses, upsetDirection), [statuses, upsetDirection])
+  const setSizes = (d: Direction) => (results?.comparisons ?? []).map((_, i) => statuses.filter(row => inSet(row[i], d)).length)
+  const barColor = (d: Direction, allColor: string) => d && style ? style.colors[d] : allColor
+  const upsetView = conditions.length > MAX_VENN || (view === "upset" && conditions.length > 1)
   const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "")
   const fileBase = slug(dataset?.name ?? `dataset_${datasetId}`)
   const comparisonLabel = results?.comparisons[comparison]?.label ?? ""
+
+  // Every exact intersection of the figure's direction (the plot shows the 30 largest), with its genes
+  const downloadIntersectionsCsv = () => {
+    if (!results) return
+    downloadCsv([
+      ["direction", "comparisons", "n_comparisons", "n_genes", "locus_tags"],
+      ...figureColumns.map(c => [
+        upsetDirection || "any",
+        c.key.split("").map(l => results.comparisons[l.charCodeAt(0) - 65].label).join(" & "),
+        c.key.length, c.genes.length, c.genes.map(k => results.genes[k].locustag).join(";"),
+      ]),
+    ], `${fileBase}_intersections_${upsetDirection || "all"}.csv`)
+  }
 
   // Heatmap rows as shown (clustered order) with their unscaled values, like the script's ranking/matrix tables
   const downloadHeatmapCsv = () => {
@@ -213,15 +261,12 @@ function VennPage() {
     </div>
   )
 
-  const condColors = ['var(--temp-cold)', 'var(--temp-warm)', 'var(--temp-hot)']
-
-  if (conditionsLoaded && (conditions.length < 1 || conditions.length > 3)) {
+  if (conditionsLoaded && conditions.length < 1) {
     return (
       <div className="min-h-screen bg-background dot-grid flex items-center justify-center p-8">
         <div className="text-center space-y-4 max-w-md">
           <p className="text-slate-600 dark:text-slate-300">
-            The Venn view currently supports datasets with 1 to 3 conditions compared against the control.
-            {dataset ? ` "${dataset.name}"` : " This dataset"} has {conditions.length}
+            {dataset ? `"${dataset.name}"` : "This dataset"} has no conditions compared against a control
             {control ? ` (control: ${control.label})` : ""}.
           </p>
           <Button variant="outline" onClick={() => router.push("/")}>Back to datasets</Button>
@@ -255,7 +300,7 @@ function VennPage() {
                   <span
                     key={c.id}
                     className="font-[family-name:var(--font-mono)] text-xs px-1.5 py-0.5 rounded border"
-                    style={{ color: `hsl(${condColors[i]})`, borderColor: `hsl(${condColors[i]} / 0.4)` }}
+                    style={{ color: `hsl(${condColor(i)})`, borderColor: `hsl(${condColor(i)} / 0.4)` }}
                   >
                     {c.label}
                   </span>
@@ -289,8 +334,8 @@ function VennPage() {
             </div>
           </header>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-            {/* Left: Venn Diagram */}
+          <div className={`grid grid-cols-1 ${upsetView ? "" : "lg:grid-cols-2"} gap-8 items-start`}>
+            {/* Left (or full width for the UpSet): Venn Diagram / UpSet */}
             <div className="bg-card border border-border rounded-2xl shadow-xl p-6 transition-all duration-300 relative">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
@@ -302,11 +347,24 @@ function VennPage() {
                   Interactive
                 </span>
               </div>
-              <div className="mb-4">
+              <div className="mb-4 flex flex-wrap gap-3">
+                {conditions.length > 1 && conditions.length <= MAX_VENN && (
+                  <Segmented label="Diagram" value={view} onChange={v => { setView(v); setSelectedSection(null); setSelectedElement(null) }}
+                    options={[["venn", "Venn"], ["upset", "UpSet"]]} />
+                )}
                 <Segmented label="Direction of change" value={direction} onChange={changeDirection}
                   options={[["", "All DEGs"], ["up", "Upregulated"], ["down", "Downregulated"]]} />
               </div>
-              <VennDiagram onSectionClick={handleSectionClick} selectedSection={selectedSection} labels={conditions.map(c => c.label)} counts={counts} />
+              {upsetView ? (
+                results && style ? (
+                  <UpSet names={style.comparisons} sizes={setSizes(direction)} columns={columns}
+                    palette={{ ...THEME_UPSET, bar: barColor(direction, "hsl(var(--primary))") }}
+                    subtitle="Click a column to explore its genes" selected={selectedSection} onSelect={handleSectionClick} />
+                ) : <Spinner />
+              ) : (
+                <VennDiagram onSectionClick={handleSectionClick} selectedSection={selectedSection}
+                  labels={style?.comparisons ?? conditions.map(c => c.label)} counts={counts} />
+              )}
               {direction === "" && opposite > 0 && (
                 <p className="mt-4 text-xs text-muted-foreground">
                   {opposite} gene{opposite > 1 ? "s go" : " goes"} up in one comparison and down in another; the shared regions count {opposite > 1 ? "them" : "it"} regardless of direction.
@@ -363,7 +421,7 @@ function VennPage() {
                         <span
                           key={c.id}
                           className="font-[family-name:var(--font-mono)] text-sm px-3 py-1.5 rounded border"
-                          style={{ color: `hsl(${condColors[i]})`, borderColor: `hsl(${condColors[i]} / 0.4)`, background: `hsl(${condColors[i]} / 0.08)` }}
+                          style={{ color: `hsl(${condColor(i)})`, borderColor: `hsl(${condColor(i)} / 0.4)`, background: `hsl(${condColor(i)} / 0.08)` }}
                         >
                           {c.label}
                         </span>
@@ -383,17 +441,17 @@ function VennPage() {
                 <h2 className="text-xl font-semibold mb-4">How to use this diagram?</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="p-4 rounded-lg border border-border bg-muted">
-                    <p className="font-[family-name:var(--font-mono)] text-3xl font-bold mb-2" style={{ color: `hsl(${condColors[0]})` }}>1</p>
+                    <p className="font-[family-name:var(--font-mono)] text-3xl font-bold mb-2" style={{ color: `hsl(${condColor(0)})` }}>1</p>
                     <h3 className="font-medium mb-1">Explore</h3>
                     <p className="text-slate-600 dark:text-slate-300 text-sm">Hover over the different sections to see them highlighted</p>
                   </div>
                   <div className="p-4 rounded-lg border border-border bg-muted">
-                    <p className="font-[family-name:var(--font-mono)] text-3xl font-bold mb-2" style={{ color: `hsl(${condColors[1]})` }}>2</p>
+                    <p className="font-[family-name:var(--font-mono)] text-3xl font-bold mb-2" style={{ color: `hsl(${condColor(1)})` }}>2</p>
                     <h3 className="font-medium mb-1">Select</h3>
                     <p className="text-slate-600 dark:text-slate-300 text-sm">Click on any section of the diagram to view its information</p>
                   </div>
                   <div className="p-4 rounded-lg border border-border bg-muted">
-                    <p className="font-[family-name:var(--font-mono)] text-3xl font-bold mb-2" style={{ color: `hsl(${condColors[2]})` }}>3</p>
+                    <p className="font-[family-name:var(--font-mono)] text-3xl font-bold mb-2" style={{ color: `hsl(${condColor(2)})` }}>3</p>
                     <h3 className="font-medium mb-1">Explore data</h3>
                     <p className="text-slate-600 dark:text-slate-300 text-sm">Select a pathway and explore the gene data table</p>
                   </div>
@@ -402,23 +460,47 @@ function VennPage() {
             </div>
           </div>
 
-          {results && results.comparisons.length > 0 && (
+          {results && style && results.comparisons.length > 0 && (
             <section className="mt-12 space-y-6">
-              <h2 className="text-2xl font-bold font-[family-name:var(--font-display)] text-foreground">Figures and downloads</h2>
-              <FigureCard title="Venn diagram by direction" name={`${fileBase}_venn_up_down`}>
-                <VennFigure
-                  labels={results.comparisons.map(c => c.label)}
-                  control={results.control}
-                  thresholds={results.thresholds}
-                  up={regionCounts(statuses, "up")}
-                  down={regionCounts(statuses, "down")}
-                />
-              </FigureCard>
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="text-2xl font-bold font-[family-name:var(--font-display)] text-foreground mr-auto">Figures and downloads</h2>
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setSettingsOpen(true)}>
+                  <SlidersHorizontal className="h-3.5 w-3.5" /> Figure settings
+                </Button>
+              </div>
+              <FigureSettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} results={results}
+                settings={settings} onChange={updateSettings} />
+              {results.comparisons.length <= MAX_VENN && (
+                <FigureCard title="Venn diagram by direction" name={`${fileBase}_venn_up_down`}>
+                  <VennFigure
+                    style={style}
+                    thresholds={results.thresholds}
+                    up={regionCounts(statuses, "up")}
+                    down={regionCounts(statuses, "down")}
+                  />
+                </FigureCard>
+              )}
+              {results.comparisons.length > 1 && (
+                <FigureCard title="UpSet plot" name={`${fileBase}_upset_${upsetDirection || "all"}`} controls={
+                  <>
+                    <Segmented label="Direction of change" value={upsetDirection} onChange={setUpsetDirection}
+                      options={[["up", "Upregulated"], ["down", "Downregulated"], ["", "All DEGs"]]} />
+                    <Button variant="outline" size="sm" className="h-7 gap-1.5 font-[family-name:var(--font-mono)] text-xs ml-auto"
+                      onClick={downloadIntersectionsCsv} disabled={!figureColumns.length}>
+                      <Download className="h-3 w-3" /> Intersections (CSV)
+                    </Button>
+                  </>
+                }>
+                  <UpSet names={style.comparisons} sizes={setSizes(upsetDirection)} columns={figureColumns}
+                    palette={{ ...PAPER_UPSET, bar: barColor(upsetDirection, "#5A6B7D") }}
+                    title={`Intersections: ${upsetDirection ? style.status[upsetDirection] : "all DEGs"}`}
+                    subtitle={`Exact intersections; padj < ${results.thresholds.padj}, |log2FC| ≥ ${results.thresholds.log2fc}${style.control ? ` vs control ${style.control}` : ""}`} />
+                </FigureCard>
+              )}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                 <FigureCard title="DEGs per comparison" name={`${fileBase}_deg_counts`}>
                   <DegBars
-                    labels={results.comparisons.map(c => c.label)}
-                    control={results.control}
+                    style={style}
                     thresholds={results.thresholds}
                     counts={directionCounts(statuses, results.comparisons.length)}
                   />
@@ -469,7 +551,7 @@ function VennPage() {
                   </>
                 }>
                   {heatmap.rows.length
-                    ? <Heatmap results={results} data={heatmap} limit={colorLimit} rankBy={rankBy} />
+                    ? <Heatmap results={results} data={heatmap} limit={colorLimit} rankBy={rankBy} style={style} />
                     : <p className="text-sm text-slate-600 p-6 text-center">No DEGs in this dataset.</p>}
                 </FigureCard>
               )}
@@ -479,16 +561,16 @@ function VennPage() {
                   <h3 className="font-semibold mr-2">Per comparison</h3>
                   {results.comparisons.length > 1 && (
                     <Segmented label="Comparison" value={comparison} onChange={setComparison}
-                      options={results.comparisons.map((c, i) => [i, formatCondition(c.label)] as [number, string])} />
+                      options={style.comparisons.map((name, i) => [i, name] as [number, string])} />
                   )}
                 </div>
                 <div className="space-y-6">
                   <FigureCard title="Largest changes" name={`${fileBase}_top_genes_${slug(comparisonLabel)}`}>
-                    <GeneBars results={results} index={comparison} perDirection={TOP_GENES}
+                    <GeneBars results={results} index={comparison} perDirection={TOP_GENES} style={style}
                       genes={topGenes(results, statuses, comparison, TOP_GENES)} />
                   </FigureCard>
                   <FigureCard title="Volcano plot" name={`${fileBase}_volcano_${slug(comparisonLabel)}`}>
-                    <Volcano results={results} statuses={statuses} index={comparison} />
+                    <Volcano results={results} statuses={statuses} index={comparison} style={style} />
                   </FigureCard>
                 </div>
               </div>

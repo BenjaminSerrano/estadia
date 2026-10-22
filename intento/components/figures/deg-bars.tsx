@@ -1,5 +1,5 @@
-import { formatCondition, STATUS_COLOR, STATUS_LABEL } from "@/lib/deg"
 import type { Results } from "@/lib/api-service"
+import type { FigureStyle } from "@/lib/figure-style"
 import { FONT } from "./scale"
 
 // Divergent bars (barras_divergentes_numero_genes in the issue's script): upregulated DEGs above
@@ -12,13 +12,13 @@ function niceStep(max: number) {
   return Math.max(1, [1, 2, 5, 10].find(m => m * mag >= raw)! * mag)
 }
 
-export default function DegBars({ labels, control, thresholds, counts }: {
-  labels: string[]
-  control: string | null
+export default function DegBars({ style, thresholds, counts }: {
+  style: FigureStyle
   thresholds: Results["thresholds"]
   counts: { up: number; down: number }[]
 }) {
   const left = 78, right = 24, top = 70, plotH = 280
+  const labels = style.comparisons
   const band = Math.max(120, 320 / Math.max(labels.length, 1))
   const barW = Math.min(band * 0.6, 72)
   const plotW = band * labels.length
@@ -55,24 +55,24 @@ export default function DegBars({ labels, control, thresholds, counts }: {
         const x = left + i * band + (band - barW) / 2
         return (
           <g key={i}>
-            <rect x={x} y={y(c.up)} width={barW} height={y(0) - y(c.up)} fill={STATUS_COLOR.up} />
-            <rect x={x} y={y(0)} width={barW} height={y(-c.down) - y(0)} fill={STATUS_COLOR.down} />
+            <rect x={x} y={y(c.up)} width={barW} height={y(0) - y(c.up)} fill={style.colors.up} />
+            <rect x={x} y={y(0)} width={barW} height={y(-c.down) - y(0)} fill={style.colors.down} />
             {c.up > 0 && <text x={x + barW / 2} y={y(c.up) - 6} textAnchor="middle" fontSize="13" fill="#333333">{c.up}</text>}
             {c.down > 0 && <text x={x + barW / 2} y={y(-c.down) + 16} textAnchor="middle" fontSize="13" fill="#333333">{c.down}</text>}
             <text x={x + barW / 2} y={top + plotH + 22} textAnchor="middle" fontSize="13" fill="#333333">
-              {formatCondition(labels[i])}
+              {labels[i]}
             </text>
           </g>
         )
       })}
       <text x={left + plotW / 2} y={top + plotH + 46} textAnchor="middle" fontSize="13" fill="#333333">
-        {control ? `Comparison vs control ${formatCondition(control)}` : "Comparison"}
+        {style.control ? `Comparison vs control ${style.control}` : "Comparison"}
       </text>
 
       {(["up", "down"] as const).map((s, i) => (
         <g key={s} transform={`translate(${legendX + i * 120}, ${top + plotH + 70})`}>
-          <rect width={14} height={14} fill={STATUS_COLOR[s]} />
-          <text x={20} y={7} dominantBaseline="central" fontSize="12" fill="#333333">{STATUS_LABEL[s]}</text>
+          <rect width={14} height={14} fill={style.colors[s]} />
+          <text x={20} y={7} dominantBaseline="central" fontSize="12" fill="#333333">{style.status[s]}</text>
         </g>
       ))}
     </svg>
