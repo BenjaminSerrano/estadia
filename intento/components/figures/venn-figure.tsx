@@ -1,11 +1,11 @@
 import { BORDERS, COUNT_POS, LAYOUT, R, SECTIONS, VW, type Letter } from "@/components/venn-diagram"
 import { formatCondition, STATUS_COLOR, STATUS_LABEL } from "@/lib/deg"
 import type { Results } from "@/lib/api-service"
+import { FONT } from "./scale"
 
 // Venn of up- and downregulated DEGs side by side (venn_aumento_y_disminucion in the issue's script):
 // every circle takes the direction's color and its name says which comparison it is.
 
-const FONT = "Arial, Helvetica, sans-serif"
 const TITLE_H = 40
 const CAPTION_H = 44
 

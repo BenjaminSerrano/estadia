@@ -1,4 +1,5 @@
 import type { Direction, Results } from "./api-service"
+import { hclustComplete, type Tree } from "./cluster"
 
 // Post-analysis of the DESeq2 results (issue #1 «Prueba con S. aureus»): same DEG rule as the
 // backend's _filter_clause, so counts here match the Venn regions and the gene tables.
@@ -75,4 +76,51 @@ export function jointTable(r: Results, statuses: Status[][], keep: (row: Status[
     ]]
   })
   return [header, ...rows]
+}
+
+const isDeg = (s: Status) => s === "up" || s === "down"
+const byLocus = (r: Results, a: number, b: number) =>
+  r.genes[a].locustag < r.genes[b].locustag ? -1 : r.genes[a].locustag > r.genes[b].locustag ? 1 : 0
+
+export type RankBy = "padj" | "lfc"
+
+// Heatmap rows as in the issue's script: DEGs in at least one comparison, ranked by their smallest
+// padj (or largest |log2FC|) over the comparisons where both values exist; rows clustered
+// with complete linkage unless a value is missing (then they keep the ranking order)
+export function heatmapData(r: Results, statuses: Status[][], topN: number, rankBy: RankBy) {
+  const ranked = r.genes.flatMap((g, k) => {
+    if (!statuses[k].some(isDeg)) return []
+    let minPadj = Infinity, maxAbsLfc = 0
+    g.log2fc.forEach((l, i) => {
+      if (statuses[k][i] === "na") return
+      minPadj = Math.min(minPadj, g.padj[i]!)
+      maxAbsLfc = Math.max(maxAbsLfc, Math.abs(l!))
+    })
+    return [{ k, minPadj, maxAbsLfc }]
+  }).sort((a, b) => rankBy === "padj"
+    ? a.minPadj - b.minPadj || b.maxAbsLfc - a.maxAbsLfc || byLocus(r, a.k, b.k)
+    : b.maxAbsLfc - a.maxAbsLfc || a.minPadj - b.minPadj || byLocus(r, a.k, b.k))
+
+  const rows = ranked.slice(0, topN).map((x, i) => ({
+    ...x,
+    rank: i + 1,
+    values: r.genes[x.k].log2fc.map(v => v != null && Number.isFinite(v) ? v : null),
+    marks: statuses[x.k].map(isDeg),
+  }))
+  const missing = rows.some(row => row.values.includes(null))
+  const tree: Tree | null = rows.length > 1 && !missing ? hclustComplete(rows.map(row => row.values as number[])) : null
+  return { rows: tree ? tree.order.map(i => rows[i]) : rows, tree, missing }
+}
+
+export type HeatmapData = ReturnType<typeof heatmapData>
+
+// Up to n DEGs per direction with the largest |log2FC| in comparison i (ties: smaller padj, then
+// locus tag), listed from the largest log2FC to the most negative, as in the script's gene bars
+export function topGenes(r: Results, statuses: Status[][], i: number, n = 10) {
+  const lfc = (k: number) => r.genes[k].log2fc[i]!
+  const pick = (dir: Status) => r.genes.map((_, k) => k)
+    .filter(k => statuses[k][i] === dir)
+    .sort((a, b) => Math.abs(lfc(b)) - Math.abs(lfc(a)) || r.genes[a].padj[i]! - r.genes[b].padj[i]! || byLocus(r, a, b))
+    .slice(0, n)
+  return [...pick("up"), ...pick("down")].sort((a, b) => lfc(b) - lfc(a))
 }

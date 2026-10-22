@@ -5,8 +5,14 @@ import { Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { downloadPng, downloadSvg } from "@/lib/export-figure"
 
-// A publication figure on a white sheet (what you see is what gets exported) with SVG/PNG downloads
-export default function FigureCard({ title, name, children }: { title: string; name: string; children: ReactNode }) {
+// A publication figure on a white sheet (what you see is what gets exported) with SVG/PNG downloads;
+// `controls` (options for the figure) go in a bar between the header and the sheet
+export default function FigureCard({ title, name, controls, children }: {
+  title: string
+  name: string
+  controls?: ReactNode
+  children: ReactNode
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const svg = () => ref.current?.querySelector("svg") ?? null
 
@@ -22,6 +28,7 @@ export default function FigureCard({ title, name, children }: { title: string; n
           </Button>
         ))}
       </div>
+      {controls && <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 border-b border-border bg-muted/30">{controls}</div>}
       <div ref={ref} className="bg-white p-4">{children}</div>
     </div>
   )

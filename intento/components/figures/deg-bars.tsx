@@ -1,10 +1,9 @@
 import { formatCondition, STATUS_COLOR, STATUS_LABEL } from "@/lib/deg"
 import type { Results } from "@/lib/api-service"
+import { FONT } from "./scale"
 
 // Divergent bars (barras_divergentes_numero_genes in the issue's script): upregulated DEGs above
 // zero, downregulated below, one column per comparison vs the control.
-
-const FONT = "Arial, Helvetica, sans-serif"
 
 // 1, 2 or 5 × 10^k, so that each side of zero gets about four ticks
 function niceStep(max: number) {

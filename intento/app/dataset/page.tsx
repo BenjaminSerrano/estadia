@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import VennDiagram from "@/components/venn-diagram"
-import { ArrowRight, HelpCircle, Info, FlaskConical, Database, Download } from "lucide-react"
+import { ArrowRight, ChevronLeft, HelpCircle, Info, FlaskConical, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Tutorial from "@/components/tutorial"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -11,11 +11,17 @@ import { useToast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { getSectionInfo, sectionToConditions } from "@/lib/section-data"
 import { getConditions, getStats, getPathways, getResults, listDatasets, type Condition, type Dataset, type Direction, type Results } from "@/lib/api-service"
-import { directionCounts, isOpposite, jointTable, regionCounts, statusMatrix } from "@/lib/deg"
+import { directionCounts, formatCondition, heatmapData, isOpposite, jointTable, regionCounts, statusMatrix, STATUS_LABEL, topGenes, type RankBy } from "@/lib/deg"
 import { downloadCsv } from "@/lib/export-figure"
 import FigureCard from "@/components/figure-card"
 import VennFigure from "@/components/figures/venn-figure"
 import DegBars from "@/components/figures/deg-bars"
+import Heatmap from "@/components/figures/heatmap"
+import GeneBars from "@/components/figures/gene-bars"
+import Volcano from "@/components/figures/volcano"
+import Segmented from "@/components/segmented"
+
+const TOP_GENES = 10
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/theme-toggle"
 
@@ -47,6 +53,11 @@ function VennPage() {
   // All genes x comparisons, for the region counts, the figures and the CSV downloads
   const [results, setResults] = useState<Results | null>(null)
   const [direction, setDirection] = useState<Direction>("")
+  // Heatmap options (defaults from the issue's script) and the comparison shown in the per-comparison figures
+  const [heatmapTop, setHeatmapTop] = useState(100)
+  const [rankBy, setRankBy] = useState<RankBy>("padj")
+  const [colorLimit, setColorLimit] = useState(3)
+  const [comparison, setComparison] = useState(0)
   const { toast } = useToast()
 
   // Redirect back home if no valid dataset id
@@ -71,7 +82,24 @@ function VennPage() {
   const statuses = useMemo(() => results ? statusMatrix(results) : [], [results])
   const counts = useMemo(() => results ? regionCounts(statuses, direction) : undefined, [results, statuses, direction])
   const opposite = useMemo(() => statuses.filter(isOpposite).length, [statuses])
-  const fileBase = (dataset?.name ?? `dataset_${datasetId}`).toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "")
+  const heatmap = useMemo(() => results ? heatmapData(results, statuses, heatmapTop, rankBy) : null, [results, statuses, heatmapTop, rankBy])
+  const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "")
+  const fileBase = slug(dataset?.name ?? `dataset_${datasetId}`)
+  const comparisonLabel = results?.comparisons[comparison]?.label ?? ""
+
+  // Heatmap rows as shown (clustered order) with their unscaled values, like the script's ranking/matrix tables
+  const downloadHeatmapCsv = () => {
+    if (!results || !heatmap) return
+    const vs = (l: string) => results.control ? `${l}_vs_${results.control}` : l
+    downloadCsv([
+      ["row", "rank", "locus_tag", "product", "min_padj", "max_abs_log2FC",
+        ...results.comparisons.flatMap(c => [`log2FC_${vs(c.label)}`, `class_${vs(c.label)}`])],
+      ...heatmap.rows.map((row, i) => [
+        i + 1, row.rank, results.genes[row.k].locustag, results.genes[row.k].name, row.minPadj, row.maxAbsLfc,
+        ...results.comparisons.flatMap((_, j) => [results.genes[row.k].log2fc[j], STATUS_LABEL[statuses[row.k][j]]]),
+      ]),
+    ], `${fileBase}_heatmap_genes.csv`)
+  }
 
   const handleSectionClick = async (section: string) => {
     setSelectedSection(section)
@@ -208,6 +236,11 @@ function VennPage() {
         <div className="container mx-auto px-4 py-8">
           <header className="flex flex-col md:flex-row justify-between items-center mb-8">
             <div className="text-center md:text-left mb-6 md:mb-0">
+              <Button variant="ghost" size="sm" onClick={() => router.push("/")}
+                className="mb-3 gap-1.5 text-muted-foreground hover:text-foreground border border-border">
+                <ChevronLeft className="h-4 w-4" />
+                <span className="font-[family-name:var(--font-mono)] text-xs">All datasets</span>
+              </Button>
               <h1 className="text-4xl md:text-5xl font-bold mb-1 font-[family-name:var(--font-display)] text-foreground tracking-tight">
                 {dataset?.name ?? "Loading dataset…"}
               </h1>
@@ -234,15 +267,6 @@ function VennPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" className="rounded-full" onClick={() => router.push("/")} aria-label="Back to datasets">
-                    <Database className="h-5 w-5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent><p>Back to datasets</p></TooltipContent>
-              </Tooltip>
-
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="outline" size="icon" className="rounded-full" onClick={() => setShowTutorial(true)} aria-label="Show tutorial">
@@ -278,17 +302,9 @@ function VennPage() {
                   Interactive
                 </span>
               </div>
-              <div className="flex rounded-lg border border-border overflow-hidden mb-4 w-fit" role="group" aria-label="Direction of change">
-                {([["", "All DEGs"], ["up", "Upregulated"], ["down", "Downregulated"]] as [Direction, string][]).map(([d, label]) => (
-                  <button
-                    key={label}
-                    onClick={() => changeDirection(d)}
-                    aria-pressed={direction === d}
-                    className={`px-3 py-1.5 font-[family-name:var(--font-mono)] text-xs border-r border-border last:border-r-0 transition-colors ${
-                      direction === d ? "bg-sky-500/15 text-sky-400" : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
-                    }`}
-                  >{label}</button>
-                ))}
+              <div className="mb-4">
+                <Segmented label="Direction of change" value={direction} onChange={changeDirection}
+                  options={[["", "All DEGs"], ["up", "Upregulated"], ["down", "Downregulated"]]} />
               </div>
               <VennDiagram onSectionClick={handleSectionClick} selectedSection={selectedSection} labels={conditions.map(c => c.label)} counts={counts} />
               {direction === "" && opposite > 0 && (
@@ -431,6 +447,49 @@ function VennPage() {
                     DEG: padj &lt; {results.thresholds.padj} and |log2FC| ≥ {results.thresholds.log2fc}. &quot;Not evaluable&quot; = no log2FC or padj
                     (e.g. DESeq2 independent filtering, or genes not reported in a curated dataset).
                   </p>
+                </div>
+              </div>
+
+              {heatmap && (
+                <FigureCard title="Heatmap" name={`${fileBase}_heatmap_log2fc`} controls={
+                  <>
+                    <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-widest text-muted-foreground">Genes</span>
+                    <Segmented label="Number of genes" value={heatmapTop} onChange={setHeatmapTop}
+                      options={[[25, "25"], [50, "50"], [100, "100"], [200, "200"]]} />
+                    <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-widest text-muted-foreground">Rank by</span>
+                    <Segmented label="Rank genes by" value={rankBy} onChange={setRankBy}
+                      options={[["padj", "smallest padj"], ["lfc", "largest |log2FC|"]]} />
+                    <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-widest text-muted-foreground">Color scale</span>
+                    <Segmented label="Color scale limit" value={colorLimit} onChange={setColorLimit}
+                      options={[[2, "±2"], [3, "±3"], [5, "±5"]]} />
+                    <Button variant="outline" size="sm" className="h-7 gap-1.5 font-[family-name:var(--font-mono)] text-xs ml-auto"
+                      onClick={downloadHeatmapCsv} disabled={!heatmap.rows.length}>
+                      <Download className="h-3 w-3" /> Genes (CSV)
+                    </Button>
+                  </>
+                }>
+                  {heatmap.rows.length
+                    ? <Heatmap results={results} data={heatmap} limit={colorLimit} rankBy={rankBy} />
+                    : <p className="text-sm text-slate-600 p-6 text-center">No DEGs in this dataset.</p>}
+                </FigureCard>
+              )}
+
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h3 className="font-semibold mr-2">Per comparison</h3>
+                  {results.comparisons.length > 1 && (
+                    <Segmented label="Comparison" value={comparison} onChange={setComparison}
+                      options={results.comparisons.map((c, i) => [i, formatCondition(c.label)] as [number, string])} />
+                  )}
+                </div>
+                <div className="space-y-6">
+                  <FigureCard title="Largest changes" name={`${fileBase}_top_genes_${slug(comparisonLabel)}`}>
+                    <GeneBars results={results} index={comparison} perDirection={TOP_GENES}
+                      genes={topGenes(results, statuses, comparison, TOP_GENES)} />
+                  </FigureCard>
+                  <FigureCard title="Volcano plot" name={`${fileBase}_volcano_${slug(comparisonLabel)}`}>
+                    <Volcano results={results} statuses={statuses} index={comparison} />
+                  </FigureCard>
                 </div>
               </div>
             </section>
