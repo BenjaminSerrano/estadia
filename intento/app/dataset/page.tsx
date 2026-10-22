@@ -1,16 +1,21 @@
 "use client"
 
-import { Suspense, useState, useEffect } from "react"
+import { Suspense, useState, useEffect, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import VennDiagram from "@/components/venn-diagram"
-import { ArrowRight, HelpCircle, Info, FlaskConical, Database } from "lucide-react"
+import { ArrowRight, HelpCircle, Info, FlaskConical, Database, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Tutorial from "@/components/tutorial"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useToast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { getSectionInfo, sectionToConditions } from "@/lib/section-data"
-import { getConditions, getStats, getPathways, listDatasets, type Condition, type Dataset } from "@/lib/api-service"
+import { getConditions, getStats, getPathways, getResults, listDatasets, type Condition, type Dataset, type Direction, type Results } from "@/lib/api-service"
+import { directionCounts, isOpposite, jointTable, regionCounts, statusMatrix } from "@/lib/deg"
+import { downloadCsv } from "@/lib/export-figure"
+import FigureCard from "@/components/figure-card"
+import VennFigure from "@/components/figures/venn-figure"
+import DegBars from "@/components/figures/deg-bars"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ThemeToggle } from "@/components/theme-toggle"
 
@@ -39,6 +44,9 @@ function VennPage() {
   const [conditions, setConditions] = useState<Condition[]>([])
   const [control, setControl] = useState<Condition | null>(null)
   const [conditionsLoaded, setConditionsLoaded] = useState(false)
+  // All genes x comparisons, for the region counts, the figures and the CSV downloads
+  const [results, setResults] = useState<Results | null>(null)
+  const [direction, setDirection] = useState<Direction>("")
   const { toast } = useToast()
 
   // Redirect back home if no valid dataset id
@@ -57,7 +65,13 @@ function VennPage() {
         setConditionsLoaded(true)
       })
       .catch(() => setConditionsLoaded(true))
+    getResults(datasetId).then(setResults).catch(console.error)
   }, [datasetId])
+
+  const statuses = useMemo(() => results ? statusMatrix(results) : [], [results])
+  const counts = useMemo(() => results ? regionCounts(statuses, direction) : undefined, [results, statuses, direction])
+  const opposite = useMemo(() => statuses.filter(isOpposite).length, [statuses])
+  const fileBase = (dataset?.name ?? `dataset_${datasetId}`).toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "")
 
   const handleSectionClick = async (section: string) => {
     setSelectedSection(section)
@@ -68,8 +82,8 @@ function VennPage() {
     try {
       const { include, exclude } = sectionToConditions(section, conditions)
       const [stats, pathwaysData] = await Promise.all([
-        getStats(datasetId, include, exclude),
-        getPathways(datasetId, include, exclude),
+        getStats(datasetId, include, exclude, direction),
+        getPathways(datasetId, include, exclude, direction),
       ])
       setSectionStats({ elements: stats.total_genes, uniqueProperties: stats.unique_pathways })
       setPathways(pathwaysData.pathways)
@@ -98,19 +112,27 @@ function VennPage() {
     }
   }, [firstVisit])
 
+  // The region's genes for another direction are a different set: start the selection over
+  const changeDirection = (d: Direction) => {
+    setDirection(d)
+    setSelectedSection(null)
+    setSelectedElement(null)
+  }
+
   const handleViewData = () => {
     if (selectedSection && selectedElement) {
       toast({ title: "Loading data", description: "Processing information, please wait..." })
-      const elementSlug = selectedElement === "__TODOS_LOS_DATOS__"
-        ? "__TODOS_LOS_DATOS__"
-        : selectedElement.replace(/ /g, '-').toLowerCase()
-      router.push(`/data/${selectedSection}/${elementSlug}/?dataset=${datasetId}`)
+      // Query params, not route segments: the static export only has pages known at build time
+      const q = new URLSearchParams({ dataset: String(datasetId), section: selectedSection })
+      if (direction) q.set("dir", direction)
+      if (selectedElement !== "__TODOS_LOS_DATOS__") q.set("pathway", selectedElement)
+      router.push(`/genes/?${q}`)
     } else {
       toast({ title: "Selection required", description: "Please select a section and a specific element", variant: "destructive" })
     }
   }
 
-  const sectionInfo = selectedSection ? getSectionInfo(selectedSection, conditions) : null
+  const sectionInfo = selectedSection ? getSectionInfo(selectedSection, conditions, direction) : null
 
   const Spinner = () => (
     <div className="flex items-center justify-center h-8">
@@ -256,7 +278,25 @@ function VennPage() {
                   Interactive
                 </span>
               </div>
-              <VennDiagram onSectionClick={handleSectionClick} selectedSection={selectedSection} labels={conditions.map(c => c.label)} />
+              <div className="flex rounded-lg border border-border overflow-hidden mb-4 w-fit" role="group" aria-label="Direction of change">
+                {([["", "All DEGs"], ["up", "Upregulated"], ["down", "Downregulated"]] as [Direction, string][]).map(([d, label]) => (
+                  <button
+                    key={label}
+                    onClick={() => changeDirection(d)}
+                    aria-pressed={direction === d}
+                    className={`px-3 py-1.5 font-[family-name:var(--font-mono)] text-xs border-r border-border last:border-r-0 transition-colors ${
+                      direction === d ? "bg-sky-500/15 text-sky-400" : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >{label}</button>
+                ))}
+              </div>
+              <VennDiagram onSectionClick={handleSectionClick} selectedSection={selectedSection} labels={conditions.map(c => c.label)} counts={counts} />
+              {direction === "" && opposite > 0 && (
+                <p className="mt-4 text-xs text-muted-foreground">
+                  {opposite} gene{opposite > 1 ? "s go" : " goes"} up in one comparison and down in another; the shared regions count {opposite > 1 ? "them" : "it"} regardless of direction.
+                  Use Upregulated / Downregulated to separate them.
+                </p>
+              )}
             </div>
 
             {/* Right: Info panel */}
@@ -345,6 +385,56 @@ function VennPage() {
               </div>
             </div>
           </div>
+
+          {results && results.comparisons.length > 0 && (
+            <section className="mt-12 space-y-6">
+              <h2 className="text-2xl font-bold font-[family-name:var(--font-display)] text-foreground">Figures and downloads</h2>
+              <FigureCard title="Venn diagram by direction" name={`${fileBase}_venn_up_down`}>
+                <VennFigure
+                  labels={results.comparisons.map(c => c.label)}
+                  control={results.control}
+                  thresholds={results.thresholds}
+                  up={regionCounts(statuses, "up")}
+                  down={regionCounts(statuses, "down")}
+                />
+              </FigureCard>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                <FigureCard title="DEGs per comparison" name={`${fileBase}_deg_counts`}>
+                  <DegBars
+                    labels={results.comparisons.map(c => c.label)}
+                    control={results.control}
+                    thresholds={results.thresholds}
+                    counts={directionCounts(statuses, results.comparisons.length)}
+                  />
+                </FigureCard>
+                <div className="bg-card border border-border rounded-2xl shadow-lg p-6 space-y-4">
+                  <h3 className="font-semibold">Tables</h3>
+                  <div className="space-y-1">
+                    <Button variant="outline" size="sm" className="gap-1.5" onClick={() => downloadCsv(jointTable(results, statuses), `${fileBase}_joint_table.csv`)}>
+                      <Download className="h-3.5 w-3.5" /> Joint table (CSV)
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      All {results.genes.length} genes: log2FC, padj and classification at each comparison vs control
+                      {results.control ? ` ${results.control}` : ""}, number of comparisons where the gene is a DEG and whether it changes sign.
+                    </p>
+                  </div>
+                  {results.comparisons.length > 1 && (
+                    <div className="space-y-1">
+                      <Button variant="outline" size="sm" className="gap-1.5" disabled={!opposite}
+                        onClick={() => downloadCsv(jointTable(results, statuses, isOpposite), `${fileBase}_opposite_direction_genes.csv`)}>
+                        <Download className="h-3.5 w-3.5" /> Opposite-direction genes ({opposite})
+                      </Button>
+                      <p className="text-xs text-muted-foreground">Upregulated in one comparison and downregulated in another.</p>
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground border-t border-border pt-3">
+                    DEG: padj &lt; {results.thresholds.padj} and |log2FC| ≥ {results.thresholds.log2fc}. &quot;Not evaluable&quot; = no log2FC or padj
+                    (e.g. DESeq2 independent filtering, or genes not reported in a curated dataset).
+                  </p>
+                </div>
+              </div>
+            </section>
+          )}
 
           <footer className="mt-16 text-center pb-8">
             <p className="font-[family-name:var(--font-mono)] text-xs text-slate-500 dark:text-slate-400">Proyecto ANID Exploración 13220184</p>

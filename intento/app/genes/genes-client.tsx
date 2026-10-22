@@ -1,9 +1,10 @@
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
-import { useRouter, useParams, useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { getSectionInfo, sectionToConditions } from "@/lib/section-data"
-import { getConditions, getGenes, type Gene, type Condition } from "@/lib/api-service"
+import { getConditions, getGenes, type Gene, type Condition, type Direction } from "@/lib/api-service"
+import { downloadCsv } from "@/lib/export-figure"
 import { Button } from "@/components/ui/button"
 import {
   ChevronLeft, ChevronRight, Download, Search, X,
@@ -61,14 +62,14 @@ function SkeletonRows({ cols }: { cols: number }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function ElementDataClient() {
+export default function GenesClient() {
   const router  = useRouter()
-  const params  = useParams()
-  // Netlify lowercases these URLs on reload/direct links (/data/A/... → /data/a/...)
-  const section = (params.section as string).toUpperCase()
-  const elementSlug = params.element as string
-  const pathway = elementSlug.toUpperCase() === "__TODOS_LOS_DATOS__" ? "__TODOS_LOS_DATOS__" : elementSlug.replace(/-/g, " ")
-  const datasetId = Number(useSearchParams().get("dataset")) || 1
+  const query   = useSearchParams()
+  const section = (query.get("section") ?? "").toUpperCase()
+  const pathway = query.get("pathway") || "__TODOS_LOS_DATOS__"
+  const dir = query.get("dir")
+  const direction: Direction = dir === "up" || dir === "down" ? dir : ""
+  const datasetId = Number(query.get("dataset")) || 1
 
   const [conditions, setConditions]   = useState<Condition[]>([])
   const [genesData, setGenesData]     = useState<Gene[]>([])
@@ -91,7 +92,7 @@ export default function ElementDataClient() {
     [conditions, include]
   )
 
-  const info = useMemo(() => getSectionInfo(section, conditions), [section, conditions])
+  const info = useMemo(() => getSectionInfo(section, conditions, direction), [section, conditions, direction])
 
   // Fetch conditions once, then genes
   useEffect(() => {
@@ -105,7 +106,7 @@ export default function ElementDataClient() {
       try {
         setLoading(true)
         setError(null)
-        const data = await getGenes(datasetId, include, exclude, pathway)
+        const data = await getGenes(datasetId, include, exclude, pathway, 0, 1000, direction)
         setGenesData(data.genes)
         setServerTotal(data.total)
       } catch (err) {
@@ -116,13 +117,13 @@ export default function ElementDataClient() {
       }
     }
     fetchGenes()
-  }, [datasetId, include.join(','), exclude.join(','), pathway])
+  }, [datasetId, include.join(','), exclude.join(','), pathway, direction])
 
   const loadMore = async () => {
     if (loadingMore || genesData.length >= (serverTotal ?? 0)) return
     try {
       setLoadingMore(true)
-      const data = await getGenes(datasetId, include, exclude, pathway, genesData.length)
+      const data = await getGenes(datasetId, include, exclude, pathway, genesData.length, 1000, direction)
       setGenesData(prev => [...prev, ...data.genes])
       setServerTotal(data.total)
     } catch (err) {
@@ -134,18 +135,60 @@ export default function ElementDataClient() {
 
   useEffect(() => { if (!info && !loading) router.push(`/dataset/?id=${datasetId}`) }, [info, loading, router, datasetId])
 
+  // CSV of the whole selection (also the pages not loaded yet), with the search filter applied
+  const [exporting, setExporting] = useState(false)
+  const exportCsv = async () => {
+    setExporting(true)
+    try {
+      const all = [...genesData]
+      while (serverTotal != null && all.length < serverTotal) {
+        const data = await getGenes(datasetId, include, exclude, pathway, all.length, 1000, direction)
+        if (!data.genes.length) break
+        all.push(...data.genes)
+      }
+      const rows = all.filter(matchesSearch).map(g => [
+        g.locustag, g.Name, g.KO_code, g.Protein_accession,
+        ...includedLabels.flatMap(l => [g.expression?.[l]?.log2FoldChange, g.expression?.[l]?.padj]),
+        g.Pathway, g.Brite_protein_families_1, g.Brite_specific_family_1,
+      ])
+      const header = [
+        "locus_tag", "product", "KO", "protein_accession",
+        ...includedLabels.flatMap(l => [`log2FC_${l}`, `padj_${l}`]),
+        "pathway", "protein_family", "specific_family",
+      ]
+      const name = [section, direction, pathway === "__TODOS_LOS_DATOS__" ? "all" : pathway]
+        .filter(Boolean).join("_").toLowerCase().replace(/[^a-z0-9]+/g, "_")
+      downloadCsv([header, ...rows], `genes_${name}.csv`)
+    } catch (err) {
+      console.error("Error exporting genes:", err)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   // ─── Filter + sort ────────────────────────────────────────────────────────
+  function matchesSearch(g: Gene) {
+    if (!searchTerm) return true
+    return [g.Name, g.KO_code, g.locustag]
+      .some(f => f && f.toLowerCase().includes(searchTerm.toLowerCase()))
+  }
+
   const filteredData = useMemo(() => {
+    // log2FC columns ("expr_<label>") sort by value, missing values last; the rest as text
+    const exprLabel = sortField.startsWith("expr_") ? sortField.slice(5) : null
+    const sign = sortDir === "asc" ? 1 : -1
     return genesData
-      .filter(g => {
-        if (!searchTerm) return true
-        return [g.Name, g.KO_code, g.locustag]
-          .some(f => f && f.toLowerCase().includes(searchTerm.toLowerCase()))
-      })
+      .filter(matchesSearch)
       .sort((a, b) => {
+        if (exprLabel) {
+          const av = a.expression?.[exprLabel]?.log2FoldChange
+          const bv = b.expression?.[exprLabel]?.log2FoldChange
+          if (av == null || bv == null) return (av == null ? 1 : 0) - (bv == null ? 1 : 0)
+          return sign * (av - bv)
+        }
         const av = (a as any)[sortField] ?? ""
         const bv = (b as any)[sortField] ?? ""
-        return sortDir === "asc" ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av))
+        return sign * String(av).localeCompare(String(bv))
       })
   }, [genesData, searchTerm, sortField, sortDir])
 
@@ -250,9 +293,10 @@ export default function ElementDataClient() {
               )}
             </div>
 
-            <Button variant="outline" size="sm" className="h-7 gap-1.5 font-[family-name:var(--font-mono)] text-xs">
+            <Button variant="outline" size="sm" className="h-7 gap-1.5 font-[family-name:var(--font-mono)] text-xs"
+              onClick={exportCsv} disabled={loading || exporting || !!error || !genesData.length}>
               <Download className="h-3 w-3" />
-              Export
+              {exporting ? "Exporting…" : "Export CSV"}
             </Button>
           </div>
 

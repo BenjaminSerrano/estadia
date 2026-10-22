@@ -1,5 +1,5 @@
 import { Circle, CheckCircle } from "lucide-react"
-import type { Condition } from "./api-service"
+import type { Condition, Direction } from "./api-service"
 
 // Given ordered conditions [c0, c1, c2], map Venn section → include/exclude condition IDs.
 // Section letters A/B/C map to conditions by position (0/1/2).
@@ -19,16 +19,19 @@ export function isIntersection(section: string) {
   return section.length > 1
 }
 
-export function getSectionInfo(section: string, conditions: Condition[] = []) {
+export function getSectionInfo(section: string, conditions: Condition[] = [], direction: Direction = '') {
   const lbl = (i: number) => conditions[i]?.label ?? '?'
   const idx = section.split('').map(l => 'ABC'.indexOf(l))
   const inside = idx.map(lbl)
   // Conditions not in this section (works for 1, 2 or 3 comparisons)
   const outside = conditions.map((_, i) => i).filter(i => !idx.includes(i)).map(lbl)
-  const title = section.length === 1 ? `Genes at ${inside[0]}`
+  const verb = direction === 'up' ? 'upregulated' : direction === 'down' ? 'downregulated' : 'differentially expressed'
+  const title = direction
+    ? `${direction === 'up' ? 'Upregulated' : 'Downregulated'} at ${section.length === 3 ? 'all conditions' : inside.join(' and ')}`
+    : section.length === 1 ? `Genes at ${inside[0]}`
     : section.length === 3 ? 'Common genes at all conditions'
     : `Common genes: ${inside.join(' and ')}`
-  const description = `Genes differentially expressed at ${inside.join(' and ')}` +
+  const description = `Genes ${verb} at ${inside.join(' and ')}` +
     (outside.length ? `, but not at ${outside.join(' or ')}.` : '.')
 
   const styles: Record<string, { color: string; accentColor: string; icon: any }> = {

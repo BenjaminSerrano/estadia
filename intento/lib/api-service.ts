@@ -29,30 +29,52 @@ export interface Gene {
   expression: Record<string, { log2FoldChange: number | null; pvalue: number | null; padj: number | null }>
 }
 
+// Venn sets by direction: "" = any DEG, "up"/"down" = only up- or downregulated DEGs
+export type Direction = "" | "up" | "down"
+
+// Every gene with log2FC/padj per comparison vs the control (arrays follow `comparisons`)
+export interface ResultGene {
+  locustag: string
+  name: string | null
+  ko: string | null
+  log2fc: (number | null)[]
+  padj: (number | null)[]
+}
+
+export interface Results {
+  control: string | null
+  thresholds: { padj: number; log2fc: number }
+  comparisons: { id: number; label: string }[]
+  genes: ResultGene[]
+}
+
 async function apiFetch<T>(path: string): Promise<T> {
   const r = await fetch(`${API_BASE}${path}`, { cache: 'no-store' })
   if (!r.ok) throw new Error(`${r.status} ${r.statusText}`)
   return r.json()
 }
 
-function condParams(include: number[], exclude: number[]): string {
+function condParams(include: number[], exclude: number[], direction: Direction = ''): string {
   const p = new URLSearchParams({ include_conditions: include.join(',') })
   if (exclude.length) p.set('exclude_conditions', exclude.join(','))
+  if (direction) p.set('direction', direction)
   return p.toString()
 }
 
 export const getConditions = (datasetId = 1) =>
   apiFetch<Condition[]>(`/datasets/${datasetId}/conditions`)
 
-export const getStats = (datasetId: number, include: number[], exclude: number[]) =>
+export const getStats = (datasetId: number, include: number[], exclude: number[], direction: Direction = '') =>
   apiFetch<{ total_genes: number; unique_pathways: number; pathways_list: string[] }>(
-    `/datasets/${datasetId}/stats?${condParams(include, exclude)}`
+    `/datasets/${datasetId}/stats?${condParams(include, exclude, direction)}`
   )
 
-export const getPathways = (datasetId: number, include: number[], exclude: number[]) =>
+export const getPathways = (datasetId: number, include: number[], exclude: number[], direction: Direction = '') =>
   apiFetch<{ pathways: string[] }>(
-    `/datasets/${datasetId}/pathways?${condParams(include, exclude)}`
+    `/datasets/${datasetId}/pathways?${condParams(include, exclude, direction)}`
   )
+
+export const getResults = (datasetId: number) => apiFetch<Results>(`/datasets/${datasetId}/results`)
 
 export const listDatasets = () => apiFetch<Dataset[]>('/datasets')
 
@@ -71,7 +93,8 @@ export const getGenes = (
   exclude: number[],
   pathway = '',
   skip = 0,
-  limit = 1000
+  limit = 1000,
+  direction: Direction = ''
 ) => {
   const p = new URLSearchParams({
     include_conditions: include.join(','),
@@ -79,6 +102,7 @@ export const getGenes = (
     limit: String(limit),
   })
   if (exclude.length) p.set('exclude_conditions', exclude.join(','))
+  if (direction) p.set('direction', direction)
   if (pathway && pathway !== '__TODOS_LOS_DATOS__') p.set('pathway', pathway)
   return apiFetch<{ genes: Gene[]; total: number }>(`/datasets/${datasetId}/genes?${p}`)
 }

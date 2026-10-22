@@ -1,24 +1,33 @@
 "use client"
 
 import { Fragment, useState, useEffect, useRef } from "react"
+import { formatCondition as fmt } from "@/lib/deg"
 
 interface VennDiagramProps {
   onSectionClick: (section: string) => void | Promise<void>
   selectedSection: string | null
   labels: string[] // one per circle (A, B, C), in order
+  counts?: Record<string, number> // genes per region ("A", "AB", ...); missing = 0
 }
 
 // ─── Geometry ────────────────────────────────────────────────────────────────
 // Circle centres and outside-label positions for 1, 2 or 3 comparisons vs the control
-type Letter = "A" | "B" | "C"
-const LAYOUT: Record<1 | 2 | 3, { c: Partial<Record<Letter, [number, number]>>; t: Partial<Record<Letter, [number, number]>> }> = {
+export type Letter = "A" | "B" | "C"
+export const LAYOUT: Record<1 | 2 | 3, { c: Partial<Record<Letter, [number, number]>>; t: Partial<Record<Letter, [number, number]>> }> = {
   1: { c: { A: [220, 160] },                         t: { A: [220, 66] } },
   2: { c: { A: [160, 160], B: [280, 160] },             t: { A: [90, 98], B: [350, 98] } },
   3: { c: { A: [160, 140], B: [280, 140], C: [220, 220] }, t: { A: [90, 88], B: [350, 88], C: [220, 315] } },
 }
-const R  = 80
-const VW = 440
-const VH = 320
+export const R  = 80
+export const VW = 440
+export const VH = 320
+
+// Where each region's gene count goes (inside that region only), per number of circles
+export const COUNT_POS: Record<1 | 2 | 3, Record<string, [number, number]>> = {
+  1: { A: [220, 160] },
+  2: { A: [120, 160], B: [320, 160], AB: [220, 160] },
+  3: { A: [128, 126], B: [312, 126], C: [220, 255], AB: [220, 112], AC: [172, 188], BC: [268, 188], ABC: [220, 165] },
+}
 
 // ─── Temperature-semantic palette ────────────────────────────────────────────
 const PALETTE = {
@@ -31,20 +40,17 @@ const PALETTE = {
   ABC: { base: "rgba(255,255,255,0.45)",hover: "rgba(255,255,255,0.70)",active: "rgba(255,255,255,0.90)",ring: "rgb(255,255,255)" },
 } as const
 
-type SectionId = keyof typeof PALETTE
+export type SectionId = keyof typeof PALETTE
 
-// Numeric labels are temperatures ("16" -> "16°C"); anything else is shown as-is
-const fmt = (l: string) => /^\d+(\.\d+)?$/.test(l) ? `${l}°C` : l
-
-const SECTIONS: SectionId[] = ["A", "B", "C", "AB", "AC", "BC", "ABC"]
+export const SECTIONS: SectionId[] = ["A", "B", "C", "AB", "AC", "BC", "ABC"]
 
 // Which circles border each region (for ring highlighting)
-const BORDERS: Record<SectionId, Letter[]> = {
+export const BORDERS: Record<SectionId, Letter[]> = {
   A: ["A"], B: ["B"], C: ["C"],
   AB: ["A", "B"], AC: ["A", "C"], BC: ["B", "C"], ABC: ["A", "B", "C"],
 }
 
-export default function VennDiagram({ onSectionClick, selectedSection, labels }: VennDiagramProps) {
+export default function VennDiagram({ onSectionClick, selectedSection, labels, counts }: VennDiagramProps) {
   const [a, b, c] = labels.map(fmt)
   const n = Math.min(Math.max(labels.length, 1), 3) as 1 | 2 | 3
   const L = LAYOUT[n]
@@ -176,6 +182,17 @@ export default function VennDiagram({ onSectionClick, selectedSection, labels }:
               <rect {...rp(id)} />,
             )}
           </Fragment>
+        ))}
+
+        {/* Gene count of each region (non-interactive, above the fills) */}
+        {counts && visible.map(id => (
+          <text
+            key={`n-${id}`}
+            x={COUNT_POS[n][id][0]} y={COUNT_POS[n][id][1]}
+            fontSize="16" fontWeight="700" textAnchor="middle" dominantBaseline="central"
+            fontFamily="var(--font-mono), monospace" pointerEvents="none"
+            style={{ fill: "hsl(var(--foreground))" }}
+          >{counts[id] ?? 0}</text>
         ))}
 
         {/* ══════════════════════════════════════════════════════════════════
